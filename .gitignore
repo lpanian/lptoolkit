@@ -1,0 +1,13 @@
+*.swp
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.exe
+*.idb
+*.ilk
+*.pdb
+*.vcxproj
+*.vcxproj.*
+*~
+obj/
