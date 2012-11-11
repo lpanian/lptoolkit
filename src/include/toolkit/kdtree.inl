@@ -7,56 +7,9 @@
 
 namespace detail 
 {
-	template<class T>
-	void Sort2(T* p, int axis)
-	{
-		if(p[0][axis] > p[1][axis])
-			std::swap(p[0], p[1]);
-	}
-
-	template<class T>
-	void Sort3(T* p, int axis)
-	{
-		Sort2(&p[0], axis);
-		Sort2(&p[1], axis);
-		Sort2(&p[0], axis);
-	}
-
-	template<class T>
-	int Median3(const T* p, int aIdx, int bIdx, int cIdx, int axis)
-	{
-		const typename T::baseType a = p[aIdx][axis];
-		const typename T::baseType b = p[bIdx][axis];
-		const typename T::baseType c = p[cIdx][axis];
-
-		if(a < b)
-		{
-			// a b c
-			if(b < c) 
-				return bIdx;
-			// c a b
-			else if(c < a)
-				return aIdx;
-			// a c b
-			else 
-				return cIdx;
-		} 
-		else // b <= a
-		{
-			if(a < c)
-				// b a c
-				return aIdx;
-			else if(c < b)
-				// c b a
-				return bIdx;
-			else
-				// b c a
-				return cIdx;
-		}
-	}
-
-	// ensure all points lesss than the pivot are on the left side, and all points
-	// right of the pivot are on the right side
+	// ensure all points less than the pivot are on the left side, and all points
+	// right of the pivot are on the right side. Points equal to the pivot can
+	// end up on either side.
 	template<class T>
 	inline int Partition(T* points, int left, int right, int pivot, int axis)
 	{

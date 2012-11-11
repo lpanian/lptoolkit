@@ -65,4 +65,5 @@ solution "Toolkit"
 		kind "ConsoleApp"
 		language "C++"
 		files { "tests/kdtree/**.hh", "tests/kdtree/**.cpp" }
+		files { "src/include/**.hh", "src/include/**.inl" }
 		
