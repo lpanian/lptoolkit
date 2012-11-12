@@ -3,7 +3,6 @@
 #define INCLUDED_kdtree_hh
 
 #include <vector>
-#include <random>
 #include "aabb.hh"
 
 // T must be a vector type

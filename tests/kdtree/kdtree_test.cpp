@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <random>
 #include "toolkit/vec.hh"
 #include "toolkit/kdtree.hh"
 
