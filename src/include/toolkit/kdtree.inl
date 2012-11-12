@@ -109,7 +109,7 @@ void KdTree<T>::Validate(int idx)
 template<class T>
 int KdTree<T>::Build(typename BoxType<T>::type& bounds, int offset, int len)
 {
-	int idx = m_nodes.size();
+	const int idx = m_nodes.size();
 	m_nodes.emplace_back();
 
 	m_nodes[idx].m_split = typename T::baseType(0);
@@ -134,12 +134,14 @@ int KdTree<T>::Build(typename BoxType<T>::type& bounds, int offset, int len)
 
 	typename T::baseType save = bounds.m_max[axis];
 	bounds.m_max[axis] = split;
-	m_nodes[idx].m_children[0] = Build(bounds, offset, splitIdx);
+	const int leftChild = Build(bounds, offset, splitIdx);
+	m_nodes[idx].m_children[0] = leftChild;
 	bounds.m_max[axis] = save;
 	
 	save = bounds.m_min[axis];
 	bounds.m_min[axis] = split;
-	m_nodes[idx].m_children[1] = Build(bounds, offset + splitIdx, len - splitIdx);
+	const int rightChild = Build(bounds, offset + splitIdx, len - splitIdx);
+	m_nodes[idx].m_children[1] = rightChild;
 	bounds.m_min[axis] = save;
 
 	return idx;

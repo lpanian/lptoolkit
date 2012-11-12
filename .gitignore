@@ -11,3 +11,6 @@
 *.vcxproj.*
 *~
 obj/
+Makefile
+*.make
+

@@ -2,6 +2,7 @@
 #ifndef INCLUDED_aabb_HH
 #define INCLUDED_aabb_HH
 
+#include <cfloat>
 #include "vec.hh"
 
 template< class T >

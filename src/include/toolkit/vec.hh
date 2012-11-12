@@ -253,12 +253,12 @@ std::tuple<vec3<T>, vec3<T> > CreateArbitraryBasis(const vec3<T>& dir)
 			smallest = i;
 	T minAxisVals[3] = {0,0,0};
 	minAxisVals[smallest] = 1.f;
-	const vec3 minAxis = vec3(minAxisVals[0], minAxisVals[1], minAxisVals[2]);
+	const vec3<T> minAxis = vec3<T>(minAxisVals[0], minAxisVals[1], minAxisVals[2]);
 
-	const vec3 up = Cross(minAxis, dir);
-	const vec3 side = Cross(dir, up);
+	const vec3<T> up = Cross(minAxis, dir);
+	const vec3<T> side = Cross(dir, up);
 
-	const vec3 expectedDir = Cross(side, up);
+	const vec3<T> expectedDir = Cross(side, up);
 	if(Dot(expectedDir, dir) < 0)
 		return std::make_tuple(-Normalize(side), -Normalize(up));
 	else
