@@ -7,6 +7,11 @@ end
 
 function addIncludes ()
 	includedirs { "src/include" }
+	if os.is("linux") then
+		buildoptions { "-include toolkit/common.hh" }
+	elseif os.is("windows") then
+		buildoptions { "/FItoolkit/common.hh" }
+	end
 end
 
 function addCpp11Flag()
@@ -29,15 +34,6 @@ solution "Toolkit"
 
 	platforms { "x64", "x32" }
 
-	configuration "x32"
-		if os.is("windows") then
-			libdirs { path.join(os.getenv('DXSDK_DIR'), "Lib\\x86") }
-		end
-	configuration "x64"
-		if os.is("windows") then
-			libdirs { path.join(os.getenv('DXSDK_DIR'), "Lib\\x64") }
-		end
-
 	configuration "Debug"
 		defines { "DEBUG", "_DEBUG", "PROFILE", "GPU_PROFILE" }
 		flags { "Symbols" }
@@ -56,6 +52,20 @@ solution "Toolkit"
 		targetsuffix "-f"
 
 	--
+	project "lptoolkit"
+		flags { "ExtraWarnings" }
+		addNoExceptions()
+		addCpp11Flag()
+		addIncludes()
+		kind "StaticLib"
+		language "C++"
+		files { 
+			"src/*.cpp",
+			"src/include/**.hh", 
+			"src/include/**.inl" 
+		}
+
+	--
 	project "kdtree_test"
 		flags { "ExtraWarnings" }
 		addNoExceptions()
@@ -64,6 +74,20 @@ solution "Toolkit"
 		defines { "CONSOLE" }
 		kind "ConsoleApp"
 		language "C++"
+		links { "lptoolkit" }
 		files { "tests/kdtree/**.hh", "tests/kdtree/**.cpp" }
+		files { "src/include/**.hh", "src/include/**.inl" }
+
+	--
+	project "timer_test"
+		flags { "ExtraWarnings" }
+		addNoExceptions()
+		addCpp11Flag()
+		addIncludes()
+		defines { "CONSOLE" }
+		kind "ConsoleApp"
+		language "C++"
+		links { "lptoolkit" }
+		files { "tests/timer/**.hh", "tests/timer/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
 		

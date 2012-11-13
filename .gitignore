@@ -13,4 +13,5 @@
 obj/
 Makefile
 *.make
+*.lib
 
