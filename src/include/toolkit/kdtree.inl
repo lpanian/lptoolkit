@@ -1,6 +1,6 @@
 #pragma once
-#ifndef INCLUDED_kdtree_INL
-#define INCLUDED_kdtree_INL
+#ifndef INCLUDED_toolkit_kdtree_INL
+#define INCLUDED_toolkit_kdtree_INL
 
 #include <algorithm>
 #include <iostream>

@@ -14,4 +14,6 @@ obj/
 Makefile
 *.make
 *.lib
+*.swo
+*.swp
 

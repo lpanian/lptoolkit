@@ -3,6 +3,21 @@
 #define INCLUDED_toolkit_timer_HH
 
 ////////////////////////////////////////////////////////////////////////////////
+// clock that works entirely with REAL time 
+class Clock
+{
+public:
+	Clock();
+
+	float GetDt() const { return m_lastDt; }
+	void Step(float minDt = 0.0);
+
+private:
+	unsigned long long m_lastTime;
+	float m_lastDt;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // timer that works entirely with REAL time 
 class Timer
 {

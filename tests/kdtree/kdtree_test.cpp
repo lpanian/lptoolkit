@@ -36,7 +36,7 @@ int main()
 			}
 		}
 
-		if(nearest != bestIdx && best != nearestD2) {
+		if(nearest != bestIdx) {
 			std::cerr << "Test pt " << test << " kdnearest: " << nearest << " but brute force nearest: " << bestIdx << std::endl;
 			std::cerr << "    testPt " << testPt << std::endl
 				<< "    nearestDist2 " << nearestD2 << std::endl

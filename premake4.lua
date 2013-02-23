@@ -22,6 +22,7 @@ end
 
 solution "Toolkit"
 	configurations { "Debug", "Release" }
+	flags { "ExtraWarnings" }
 	
 	if os.is("linux") then
 		defines {"LINUX"}
@@ -30,6 +31,11 @@ solution "Toolkit"
 		defines { "_SCL_SECURE_NO_WARNINGS" }
 		defines {"_WINDOWS", "WINDOWS", "WIN32", "_CRT_SECURE_NO_DEPRECATE", "_CRT_SECURE_NO_WARNINGS", "_MT", "_DLL" }
 		platformtoolset "v110" -- this is a custom thing in my own premake4 build
+	end
+	
+	if os.is("windows") then
+		-- temporary fix for variadic templates in vs2012
+		defines { "_VARIADIC_MAX=10" }
 	end
 
 	platforms { "x64", "x32" }
@@ -53,7 +59,6 @@ solution "Toolkit"
 
 	--
 	project "lptoolkit"
-		flags { "ExtraWarnings" }
 		addNoExceptions()
 		addCpp11Flag()
 		addIncludes()
@@ -67,7 +72,6 @@ solution "Toolkit"
 
 	--
 	project "kdtree_test"
-		flags { "ExtraWarnings" }
 		addNoExceptions()
 		addCpp11Flag()
 		addIncludes()
@@ -77,10 +81,27 @@ solution "Toolkit"
 		links { "lptoolkit" }
 		files { "tests/kdtree/**.hh", "tests/kdtree/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
+	
+	--
+	project "googletest"
+		kind "StaticLib"
+		language "C++"
+		files { 
+			"extern/googletest/src/gtest-all.cc", 
+			"extern/googletest/include/gtest/**.h", 
+			"extern/googletest/include/gtest/**.pump" 
+		}
+		includedirs { 
+			"extern/googletest/include", 
+			"extern/googletest" 
+		}
+		if os.is("windows") then
+			-- disable stupid MS warnings about exceptions...
+			buildoptions { "/wd4275" }
+		end
 
 	--
 	project "timer_test"
-		flags { "ExtraWarnings" }
 		addNoExceptions()
 		addCpp11Flag()
 		addIncludes()
@@ -90,4 +111,21 @@ solution "Toolkit"
 		links { "lptoolkit" }
 		files { "tests/timer/**.hh", "tests/timer/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
-		
+
+	--
+	project "unit_tests"
+		addNoExceptions()
+		addCpp11Flag()
+		addIncludes()
+		defines { "CONSOLE" }
+		kind "ConsoleApp"
+		language "C++"
+		links { "lptoolkit", "googletest" }
+		files { "tests/unit/**.hh", "tests/unit/**.cpp" }
+		files { "src/include/**.hh", "src/include/**.inl" }
+		includedirs { 
+			"extern/googletest/include", 
+			"extern/googletest" 
+		}
+
+

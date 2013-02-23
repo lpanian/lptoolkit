@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 #include "compat.hh"
+#include "mem.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
 // array helpers
@@ -153,5 +154,35 @@ inline const char* ChoosePlural(T count, const char* singular, const char* plura
 	else return plural;
 }
 
+
+#ifdef USING_VS
+inline bool IsNativeBigEndian() {
+	union EndianHelper {
+		EndianHelper(int val) : i(val) {}
+		uint32_t i;
+		char c[4];
+	};
+	return EndianHelper(0x01020304).c[0] == 0x01;
+}
+#else
+constexpr bool IsNativeBigEndian() {
+	union EndianHelper {
+		constexpr EndianHelper() : i{0x01020304} {}
+		uint32_t i;
+		char c[4];
+	};
+	return EndianHelper().c[0] == 0x01;
+}
+#endif
+
+#ifdef USING_VS
+inline
+#else
+constexpr 
+#endif
+bool IsNativeLittleEndian() 
+{ 
+	return !IsNativeBigEndian();
+}
 #endif
 

@@ -27,6 +27,27 @@ static unsigned long long CurTime()
 #endif
 }
 
+////////////////////////////////////////////////////////////////////////////////
+Clock::Clock()
+	: m_lastDt(0)
+{
+	m_lastTime = CurTime();
+}
+	
+void Clock::Step(float minDt)
+{
+	unsigned long long cur = CurTime();
+	unsigned long long diff = cur - m_lastTime;
+	float dt = diff / 1e6f;
+	if(dt < minDt)
+	{
+		m_lastDt = 0.0;
+		return;
+	}
+
+	m_lastDt = dt;
+	m_lastTime = cur;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 Timer::Timer()

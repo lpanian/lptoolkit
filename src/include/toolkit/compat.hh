@@ -1,6 +1,7 @@
 #pragma once
 #ifndef INCLUDED_toolkit_compat_HH
 #define INCLUDED_toolkit_compat_HH
+
 bool StrCaseEqual(const char* str1, const char* str2);
 bool StrNCaseEqual(const char* str1, const char* str2, unsigned int len);
 void SleepMS(unsigned int ms);

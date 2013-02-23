@@ -1,7 +1,8 @@
 #pragma once
-#ifndef INCLUDED_kdtree_hh
-#define INCLUDED_kdtree_hh
+#ifndef INCLUDED_toolkit_kdtree_HH
+#define INCLUDED_toolkit_kdtree_HH
 
+//#include "dynary.hh"
 #include <vector>
 #include "aabb.hh"
 
