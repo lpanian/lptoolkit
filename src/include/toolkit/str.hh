@@ -298,7 +298,7 @@ public:
 		// before doing a replace
 		const str_head* head = reinterpret_cast<str_head*>(m_data);
 		if(head->refCount > 1)
-			*this = Str(this->c_str(), this->length());
+			*this = StringImpl<POOL>(this->c_str(), this->length());
 
 		ASSERT(reinterpret_cast<str_head*>(m_data)->refCount == 1);
 		char* str = m_data + sizeof(str_head);

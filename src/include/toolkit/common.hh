@@ -58,7 +58,7 @@ at_scope_exiter<T> at_scope_exit(T&& fn) {
 }
 
 #ifndef USING_VS
-template<class T>
+template<class T, typename... Args>
 inline std::unique_ptr<T> make_unique(Args&&... args)
 {
 	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));

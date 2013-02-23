@@ -89,7 +89,7 @@ public:
 };
 
 template<class T> 
-void MemWriter::PutVec3(const vec3<T>&, bool swapEndian)
+void MemWriter::PutVec3(const vec3<T>& v, bool swapEndian)
 {
 	Put<T>(v.x, swapEndian);
 	Put<T>(v.y, swapEndian);

@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <type_traits>
+#include "toolkit/mathcommon.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
 // DynAry is a vector-like structure with realloc'd growing capacity.
@@ -173,7 +174,7 @@ public:
 
 		T* destObj = reinterpret_cast<T*>(storage);
 		T* srcObj = reinterpret_cast<T*>(m_array);
-		size_type ewSize = Min(m_size, newCapacity);
+		size_type newSize = Min(m_size, newCapacity);
 		for(size_type i = 0, c = newSize; i < c; ++i)
 			new (&destObj[i]) T(std::move(srcObj[i]));
 

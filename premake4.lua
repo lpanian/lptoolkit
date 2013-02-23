@@ -20,6 +20,13 @@ function addCpp11Flag()
 	end
 end
 
+function addToolkitLibs()
+	links { "lptoolkit" }
+	if os.is("linux") then
+		links { "rt", "pthread" }
+	end
+end
+
 solution "Toolkit"
 	configurations { "Debug", "Release" }
 	flags { "ExtraWarnings" }
@@ -78,7 +85,7 @@ solution "Toolkit"
 		defines { "CONSOLE" }
 		kind "ConsoleApp"
 		language "C++"
-		links { "lptoolkit" }
+		addToolkitLibs()
 		files { "tests/kdtree/**.hh", "tests/kdtree/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
 	
@@ -108,7 +115,7 @@ solution "Toolkit"
 		defines { "CONSOLE" }
 		kind "ConsoleApp"
 		language "C++"
-		links { "lptoolkit" }
+		addToolkitLibs()
 		files { "tests/timer/**.hh", "tests/timer/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
 
@@ -120,7 +127,8 @@ solution "Toolkit"
 		defines { "CONSOLE" }
 		kind "ConsoleApp"
 		language "C++"
-		links { "lptoolkit", "googletest" }
+		addToolkitLibs()
+		links { "googletest" }
 		files { "tests/unit/**.hh", "tests/unit/**.cpp" }
 		files { "src/include/**.hh", "src/include/**.inl" }
 		includedirs { 

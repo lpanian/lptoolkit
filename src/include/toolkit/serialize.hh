@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <list>
 #include <cstdint>
+#include <cstring>
 #include "toolkit/mathcommon.hh"
 
 class Color;

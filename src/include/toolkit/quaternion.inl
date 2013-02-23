@@ -59,7 +59,7 @@ mat44<T> quaternion<T>::ToMatrix() const
 	T cc = c*c;
 	T cr = c*r;
 
-	mat4 result;
+	mat44<T> result;
 
 	result.m[0] = T(1) - T(2) * (bb + cc);
 	result.m[1] = T(2) * (ab + cr);
