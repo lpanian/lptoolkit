@@ -20,6 +20,11 @@
 	#define FILE_SEP_STR "\\"
 #endif
 
+namespace lptk
+{
+	constexpr char kFileSep = FILE_SEP;
+	constexpr char kFileSepStr[] = FILE_SEP_STR;
+
 std::vector<char> ReadFile(const char* filename);
 bool WriteFile(const char* filename, const std::vector<char>& buffer);
 bool FileExists(const char* filename);
@@ -30,6 +35,8 @@ time_t FileModifiedTime(const char* filename);
 unsigned int FileSize(const char* filename);
 bool IsAbsolutePath(const char* filename);
 Str GetProgramPath();
+Str GetWorkingDirectory();
+bool ChangeWorkingDirectory(const char* path);
 
 Str FileBasename(const char* filename);
 Str FileBasename(const Str& filename);
@@ -59,6 +66,22 @@ private:
 #endif
 
 };
+
+class PushWorkingDirectory
+{
+public:
+	explicit PushWorkingDirectory(const char* filename);
+	~PushWorkingDirectory();
+
+	PushWorkingDirectory(const PushWorkingDirectory&) = delete;
+	PushWorkingDirectory& operator=(const PushWorkingDirectory&) = delete;
+	PushWorkingDirectory(PushWorkingDirectory&&) = delete;
+	PushWorkingDirectory& operator=(PushWorkingDirectory&&) = delete;
+private:
+	lptk::Str m_old;
+};
+
+}
 
 #endif
 

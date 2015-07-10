@@ -2,6 +2,9 @@
 #ifndef INCLUDED_toolkit_timer_HH
 #define INCLUDED_toolkit_timer_HH
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 // clock that works entirely with REAL time 
 class Clock
@@ -60,6 +63,8 @@ private:
 	static unsigned long long s_worldTime;	
 	unsigned long long m_time;
 };
+
+}
 
 #endif
 

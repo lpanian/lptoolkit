@@ -1,5 +1,8 @@
 #include "toolkit/poolmem.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 PoolAlloc::PoolAlloc()
 	: m_itemsPerBlock(0)
@@ -102,5 +105,7 @@ void PoolAlloc::Free(void* ptr)
 	BlockItem* item = reinterpret_cast<BlockItem*>(ptr);
 	item->m_next = m_next;
 	m_next = item;
+}
+
 }
 

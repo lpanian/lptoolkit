@@ -9,6 +9,9 @@
 #include "toolkit/common.hh"
 #include "toolkit/timer.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 // returns time in microseconds
 static unsigned long long CurTime() 
@@ -113,5 +116,7 @@ float SysTime::operator-(const SysTime& o) const
 		return (m_time - o.m_time) / 1e6f; 
 	else 
 		return ((o.m_time - m_time) / -1e6f);
+}
+
 }
 

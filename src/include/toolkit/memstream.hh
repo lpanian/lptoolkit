@@ -7,6 +7,9 @@
 #include "common.hh"
 #include "color.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace MemFormatFlag
 {
@@ -106,6 +109,7 @@ vec3<T> MemReader::GetVec3(bool swapEndian)
 	return result;
 }
 	
+}
 
 #endif
 

@@ -3,7 +3,9 @@
 #define INCLUDED_toolkit_compat_HH
 
 bool StrCaseEqual(const char* str1, const char* str2);
+int StrCaseCmp(const char* str1, const char* str2);
 bool StrNCaseEqual(const char* str1, const char* str2, unsigned int len);
+int StrNCaseCmp(const char* str1, const char* str2, unsigned int len);
 void SleepMS(unsigned int ms);
 
 #ifdef _MSC_VER
@@ -20,6 +22,7 @@ void SleepMS(unsigned int ms);
 #include <Windows.h>
 #undef max
 #undef min
+#define noexcept
 
 #pragma warning( disable: 4351)
 
@@ -35,14 +38,14 @@ inline void bzero(void* ptr, size_t n) {
 }
 #endif
 
-#define DELETED /* nothing */
+#define DELETED =delete
 
 #define isnan _isnan
 
 #define CONSTEXPR_CONST const
 #else // linux
 #define DELETED =delete
-#define CONSTEXPR_CONST constexpr const
+#define CONSTEXPR_CONST constexpr 
 #endif
 
 #endif

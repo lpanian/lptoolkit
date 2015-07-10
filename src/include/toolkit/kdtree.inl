@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <iostream>
 
+namespace lptk
+{
+
 namespace detail 
 {
 	// ensure all points less than the pivot are on the left side, and all points
@@ -59,17 +62,17 @@ KdTree<T>::KdTree()
 {}
 
 template<class T>
-void KdTree<T>::Init(const T* points, int numPoints, int bucketSize)
+void KdTree<T>::Init(const T* points, uint32_t numPoints, uint32_t bucketSize)
 {
 	m_points.clear();
 	m_points.reserve(numPoints);
 	m_points.insert(m_points.begin(), points, points + numPoints);
-	m_bucketSize = Max(bucketSize, 2);
-	for(int i = 0; i < numPoints; ++i)
+	m_bucketSize = Max(bucketSize, uint32_t(2));
+	for(auto i = uint32_t(0); i < numPoints; ++i)
 		m_bounds.Extend(points[i]);
 
 	auto box = m_bounds;
-	Build(box, 0, m_points.size());
+	Build(box, 0, static_cast<uint32_t>(m_points.size()));
 //	Validate(0);
 }
 
@@ -107,9 +110,9 @@ void KdTree<T>::Validate(int idx)
 }
 
 template<class T>
-int KdTree<T>::Build(typename BoxType<T>::type& bounds, int offset, int len)
+uint32_t KdTree<T>::Build(typename BoxType<T>::type& bounds, uint32_t offset, uint32_t len)
 {
-	const int idx = m_nodes.size();
+	const auto idx = m_nodes.size();
 	m_nodes.emplace_back();
 
 	m_nodes[idx].m_split = typename T::baseType(0);
@@ -121,7 +124,7 @@ int KdTree<T>::Build(typename BoxType<T>::type& bounds, int offset, int len)
 	if(len <= m_bucketSize)
 	{
 		m_nodes[idx].m_axis = 3 ;
-		return idx;
+		return static_cast<uint32_t>(idx);
 	}
 
 	const int axis = bounds.MajorAxis();
@@ -144,7 +147,7 @@ int KdTree<T>::Build(typename BoxType<T>::type& bounds, int offset, int len)
 	m_nodes[idx].m_children[1] = rightChild;
 	bounds.m_min[axis] = save;
 
-	return idx;
+	return static_cast<uint32_t>(idx);
 }
 
 template<class T>
@@ -206,19 +209,22 @@ void KdTree<T>::NearestBody(
 }
 
 template<class T>
-const T& KdTree<T>::GetPoint(int idx) const
+const T& KdTree<T>::GetPoint(uint32_t idx) const
 {
 	return m_points[idx];
 }
 
 template<class T>
-T& KdTree<T>::GetPoint(int idx) 
+T& KdTree<T>::GetPoint(uint32_t idx) 
 {
 	return m_points[idx];
 }
 
 template<class T>
-inline int KdTree<T>::GetNumPoints() const {
-	return m_points.size();
+inline uint32_t KdTree<T>::GetNumPoints() const {
+	return static_cast<uint32_t>(m_points.size());
 }
+
+}
+
 #endif

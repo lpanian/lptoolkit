@@ -6,19 +6,22 @@
 #include <vector>
 #include "aabb.hh"
 
+namespace lptk
+{
+
 // T must be a vector type
 template<class T>
 class KdTree
 {
 public:
 	KdTree();
-	void Init(const T* points, int numPoints, int bucketSize);
+	void Init(const T* points, uint32_t numPoints, uint32_t bucketSize);
 
 	int Nearest(const T& p) const;
 
-	int GetNumPoints() const ;
-	const T& GetPoint(int idx) const;
-	T& GetPoint(int idx) ;
+	uint32_t GetNumPoints() const ;
+	const T& GetPoint(uint32_t idx) const;
+	T& GetPoint(uint32_t idx) ;
 private:
 	////////////////////////////////////////	
 	struct Node {
@@ -29,12 +32,12 @@ private:
 		int m_children[2];
 
 		// point list
-		int m_offset;
-		int m_count;
+		uint32_t m_offset;
+		uint32_t m_count;
 	};
 
 	////////////////////////////////////////	
-	int Build(typename BoxType<T>::type& bounds, int offset, int len);
+	uint32_t Build(typename BoxType<T>::type& bounds, uint32_t offset, uint32_t len);
 	void Validate(int idx);
 
 	void NearestBody(
@@ -49,8 +52,10 @@ private:
 	std::vector<T> m_points;
 	std::vector<Node> m_nodes;
 	typename BoxType<T>::type m_bounds;
-	int m_bucketSize;
+	uint32_t m_bucketSize;
 };
+
+}
 
 #include "kdtree.inl"
 

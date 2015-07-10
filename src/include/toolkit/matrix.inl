@@ -11,6 +11,10 @@
 #include "matrix.hh"
 #include "vec.hh"
 #include "common.hh"
+#include "mathcommon.hh"
+
+namespace lptk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
@@ -89,6 +93,23 @@ inline mat44<T> mat44<T>::operator*(const mat44<T>& r) const
 }
 
 template<class T>
+mat44<T> mat44<T>::operator*(T r) const
+{
+    mat44<T> result = *this;
+    for(int i = 0; i < 16; ++i)
+        result.m[i] *= r;
+    return result;
+}
+
+template<class T>
+mat44<T>& mat44<T>::operator*=(T r) 
+{
+    for(int i = 0; i < 16; ++i)
+        m[i] *= r;
+    return *this;
+}
+
+template<class T>
 inline mat44<T>& mat44<T>::operator*=(const mat44<T>& r) 
 {
 	mat44<T> cur = *this;
@@ -106,7 +127,46 @@ inline mat44<T>& mat44<T>::operator*=(const mat44<T>& r)
 	}
 	return *this;
 }
-	
+
+template<class T>
+mat44<T> mat44<T>::operator+(const mat44<T>& r) const
+{
+    mat44<T> result = *this;
+    for(int i = 0; i < 16; ++i) {
+        result.m[i] += r.m[i];
+    }
+    return result;
+}
+
+template<class T>
+mat44<T>& mat44<T>::operator+=(const mat44<T>& r) 
+{
+    for(int i = 0; i < 16; ++i) {
+        this->m[i] += r.m[i];
+    }
+    return *this;
+}
+
+template<class T>
+mat44<T> mat44<T>::operator-(const mat44<T>& r) const
+{
+    mat44<T> result = *this;
+    for(int i = 0; i < 16; ++i) {
+        result.m[i] -= r.m[i];
+    }
+    return result;
+    
+}
+
+template<class T>
+mat44<T>& mat44<T>::operator-=(const mat44<T>& r) 
+{
+    for(int i = 0; i < 16; ++i) {
+        this->m[i] -= r.m[i];
+    }
+    return *this;
+}
+
 template<class T>
 inline vec4<T> mat44<T>::Col(int idx) const
 {
@@ -121,14 +181,9 @@ inline vec4<T> mat44<T>::Row(int idx) const
 }
 	
 template<class T>
-bool mat44<T>::Equal(const mat44<T>& other, float eps) const
+bool mat44<T>::Equal(const mat44<T>& other, T eps) const
 {
-	T total = 0;
-	for(int i = 0; i < 16; ++i) {
-		T diff = other[i] - m[i];
-		total += diff*diff;
-	}
-	return total <= eps;
+    return NormDiffSq(*this, other) <= eps;
 }
 
 template<class T>
@@ -142,7 +197,37 @@ inline std::ostream& operator<<(std::ostream& s, const mat44<T>& mat)
 	return s;
 }
 
+template<class T>
+inline T NormDiffSq(const mat44<T>& a, const mat44<T>& b)
+{
+    T result = T(0);
+    for(int i = 0; i < 16; i+=4) {
+        const vec4<T> leftCol(a[i], a[i+1], a[i+2], a[i+3]);
+        const vec4<T> rightCol(b[i], b[i+1], b[i+2], b[i+3]);
+        const vec4<T> diff = leftCol - rightCol;
+        const T diffSq = LengthSq(diff);
+        if(diffSq > result) {
+            result = diffSq;
+        }
+    }
+    return result;
+}
+
+template<class T>
+inline T NormDiff(const mat44<T>& a, const mat44<T>& b) {
+    return Sqrt(NormDiffSq(a, b));
+}
+
+template<class T>
+inline mat44<T> operator*(T l, const mat44<T>& r)
+{
+    return r * l;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
+
+}
 
 #endif
 

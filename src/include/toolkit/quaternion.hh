@@ -7,96 +7,99 @@
 #include "matrix.hh"
 #include "mathcommon.hh"
 
+namespace lptk
+{
+
 template<class T>
 class quaternion
 {
 public:
-	T a, b, c, r;	
+    T a, b, c, r;	
 
-	enum NoRotationType { no_rotation };
+    enum NoRotationType { no_rotation };
 
-	inline quaternion() {}
-	inline quaternion(NoRotationType) 
-		: a(0), b(0), c(0), r(1.f) {}
-	inline quaternion( T a, T b, T c, T r ) :
-		a(a),b(b),c(c),r(r) {}
-	inline quaternion( const vec3<T>& v, T r) :
-		a(v.x),b(v.y),c(v.z),r(r) { }
-	inline quaternion( const quaternion& q ) : a(q.a), b(q.b), c(q.c), r(q.r) { }
-	quaternion(const mat44<T>& m);
+    inline quaternion() {}
+    inline quaternion(NoRotationType) 
+            : a(0), b(0), c(0), r(1.f) {}
+    inline quaternion( T a, T b, T c, T r ) :
+            a(a),b(b),c(c),r(r) {}
+    inline quaternion( const vec3<T>& v, T r) :
+            a(v.x),b(v.y),c(v.z),r(r) { }
+    inline quaternion( const quaternion& q ) : a(q.a), b(q.b), c(q.c), r(q.r) { }
+    quaternion(const mat44<T>& m);
 
-	inline bool AllNumeric() const { return !isnan(a) && !isnan(b) && !isnan(c) && !isnan(r); }
+    inline bool AllNumeric() const { return !isnan(a) && !isnan(b) && !isnan(c) && !isnan(r); }
 
-	inline quaternion& operator=( const quaternion& q )  {
-		if(this != &q) {
-			a = q.a;
-			b = q.b;
-			c = q.c;
-			r = q.r;
-		}
-		return *this;
-	}
+    inline quaternion& operator=( const quaternion& q )  {
+            if(this != &q) {
+                    a = q.a;
+                    b = q.b;
+                    c = q.c;
+                    r = q.r;
+            }
+            return *this;
+    }
 
-	inline void Set(T qa, T qb, T qc, T qr) {
-		a = qa;
-		b = qb;
-		c = qc;
-		r = qr;
-	}
+    inline void Set(T qa, T qb, T qc, T qr) {
+            a = qa;
+            b = qb;
+            c = qc;
+            r = qr;
+    }
 
-	inline quaternion operator-() const {
-		return quaternion(-a,-b,-c,-r);
-	}
+    inline quaternion operator-() const {
+            return quaternion(-a,-b,-c,-r);
+    }
 
-	inline quaternion& operator+=(const quaternion& o) {
-		r+=o.r;
-		a+=o.a;
-		b+=o.b;
-		c+=o.c;
-		return *this;
-	}
-		
+    inline quaternion& operator+=(const quaternion& o) {
+            r+=o.r;
+            a+=o.a;
+            b+=o.b;
+            c+=o.c;
+            return *this;
+    }
+            
 
-	inline quaternion& operator-=(const quaternion& o) {
-		r-=o.r;
-		a-=o.a;
-		b-=o.b;
-		c-=o.c;
-		return *this;
-	}
+    inline quaternion& operator-=(const quaternion& o) {
+            r-=o.r;
+            a-=o.a;
+            b-=o.b;
+            c-=o.c;
+            return *this;
+    }
 
-	inline void Conjugate() {
-		a=-a;
-		b=-b;
-		c=-c;
-	}
+    inline void Conjugate() {
+            a=-a;
+            b=-b;
+            c=-c;
+    }
 
-	inline quaternion& operator*=(T f) {
-		r*=f;
-		a*=f;
-		b*=f;
-		c*=f;
-		return *this;
-	}
+    inline quaternion& operator*=(T f) {
+            r*=f;
+            a*=f;
+            b*=f;
+            c*=f;
+            return *this;
+    }
 
-	inline quaternion operator/=(T f) {
-		T inv_f = T(1) / f;
-		*this *= inv_f;
-		return *this;
-	}
-		
-	mat44<T> ToMatrix() const ;
+    inline quaternion operator/=(T f) {
+            T inv_f = T(1) / f;
+            *this *= inv_f;
+            return *this;
+    }
+            
+    mat44<T> ToMatrix() const ;
 
-	inline bool operator==(const quaternion& o) const {
-		return r == o.r &&
-			a == o.a &&
-			b == o.b &&
-			c == o.c;
-	}
+    inline bool operator==(const quaternion& o) const {
+            return r == o.r &&
+                    a == o.a &&
+                    b == o.b &&
+                    c == o.c;
+    }
 
-	inline bool operator!=(const quaternion& o) const {
-		return !(*this == o);
-	}
+    inline bool operator!=(const quaternion& o) const {
+            return !(*this == o);
+    }
 };
 
 template<class T>
@@ -209,10 +212,12 @@ inline bool Equal(const quaternion<T>& lhs, const quaternion<T>& rhs, T eps = T(
 		Equal(lhs.c, rhs.c, eps);
 }
 
-#include "quaternion.inl"
-
 typedef quaternion<float> quatf;
 typedef quaternion<double> quatd;
+}
+
+#include "quaternion.inl"
+
 
 #endif
 

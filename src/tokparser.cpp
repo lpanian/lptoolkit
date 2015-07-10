@@ -3,12 +3,15 @@
 #include <cctype>
 #include "toolkit/tokparser.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
-bool Tokenizer::Next(char* tok, int& tokType, int maxLen)
+bool Tokenizer::Next(char* tok, int& tokType, size_t maxLen)
 {
 	const char* data = m_data;
-	int pos = m_pos;
-	const int maxSize = m_size;
+	auto pos = m_pos;
+	auto const maxSize = m_size;
 
 	// skip to the first non space
 	while(pos < maxSize && isspace(data[pos]) )
@@ -31,11 +34,11 @@ bool Tokenizer::Next(char* tok, int& tokType, int maxLen)
 	}
 	if(pos == maxSize)
 		return 0;
-	int tokStart = pos;
+	auto tokStart = pos;
 
 	// read the token
-	int posTok = 0;
-	const int maxPosTok = maxLen - 1 ;
+	size_t posTok = 0;
+	const size_t maxPosTok = maxLen - 1 ;
 	int type = T_NONE;
 	if(data[pos] == '"')
 	{
@@ -154,7 +157,7 @@ TokParser::TokParser()
 {
 }
 
-TokParser::TokParser(const char* data, int size)
+TokParser::TokParser(const char* data, size_t size)
 	: m_tokenizer(data, size)
 	, m_token()
 	, m_error(false)
@@ -313,10 +316,10 @@ int TokParser::GetFlag(const TokFlagDef* def, int numFlags)
 	const char* cursor = m_token;
 	for(;;) {
 		if(*cursor == '+' || !*cursor) {
-			int len = cursor - curWord;
+			auto const len = cursor - curWord;
 			for(int flag = 0; flag < numFlags; ++flag)
 			{
-				if(StrNCaseEqual(def[flag].m_name, curWord, len))
+				if(StrNCaseEqual(def[flag].m_name, curWord, static_cast<unsigned int>(len)))
 				{
 					value |= def[flag].m_flag;
 					break;
@@ -684,5 +687,7 @@ ParserErrorCtx::~ParserErrorCtx()
 			std::cerr << "error";
 		std::cerr << std::endl;
 	}
+}
+
 }
 

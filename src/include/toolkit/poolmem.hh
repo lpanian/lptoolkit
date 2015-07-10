@@ -7,6 +7,9 @@
 #include <utility>
 #include "common.hh"
 
+namespace lptk
+{
+
 class PoolAlloc
 {
 public:
@@ -169,5 +172,7 @@ public:
 	void destroy(pointer p) { ((T*)p)->~T(); }
 };
 */
+
+}
 
 #endif

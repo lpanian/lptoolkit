@@ -1,7 +1,10 @@
 #include "toolkit/bitvector.hh"
 #include <algorithm>
 
-BitVector::BitVector(int initialSize, bool initialVal)
+namespace lptk
+{
+
+BitVector::BitVector(size_t initialSize, bool initialVal)
 	: m_numBits(initialSize)
 	, m_bytes((initialSize+7) / 8, uint8_t(initialVal ? 0xFF : 0))
 {
@@ -38,35 +41,35 @@ BitVector& BitVector::operator=(const BitVector& o)
 	return *this;
 }
 
-void BitVector::set(int index, bool value)
+void BitVector::set(size_t index, bool value)
 {
-	int byteIndex = index >> 3;
-	int bitIndex = index - byteIndex * 8;
-	uint8_t byte = m_bytes[byteIndex];
-	uint8_t mask = 1 << bitIndex;
-	byte = (~mask & byte) | int(value) << bitIndex;
-	m_bytes[byteIndex] = byte;
+	auto const byteIndex = index >> 3;
+	auto const bitIndex = index - byteIndex * 8;
+	auto const byte = m_bytes[byteIndex];
+	uint8_t const mask = 1 << bitIndex;
+	auto const masked = static_cast<uint8_t>((~mask & byte) | (uint8_t(value) << bitIndex));
+	m_bytes[byteIndex] = masked;
 }
 
-bool BitVector::get(int index) const
+bool BitVector::get(size_t index) const
 {
-	int byteIndex = index >> 3;
-	int bitIndex = index - byteIndex * 8;
-	uint8_t byte = m_bytes[byteIndex];
-	uint8_t mask = 1 << bitIndex;
+	auto const byteIndex = index >> 3;
+	auto const bitIndex = index - byteIndex * 8;
+	auto const byte = m_bytes[byteIndex];
+	uint8_t const mask = 1 << bitIndex;
 	return 0 != (mask & byte);
 }
 
-void BitVector::resize(int newSize, bool value)
+void BitVector::resize(size_t newSize, bool value)
 {
 	const uint8_t newDataVal = value ? 0xFF : 0x00;
-	const int numBytes = (newSize + 7) / 8;
+	const auto numBytes = (newSize + 7) / 8;
 	m_bytes.resize(numBytes, newDataVal);
 
 	// copy the partial byte
-	const int numWholeBits = 8 * (m_numBits / 8);
-	const int numPartialBits = m_numBits - numWholeBits;
-	const int numNewPartialBits = newSize - numWholeBits;
+	const auto numWholeBits = 8 * (m_numBits / 8);
+	const auto numPartialBits = m_numBits - numWholeBits;
+	const auto numNewPartialBits = newSize - numWholeBits;
 	if(numPartialBits > 0) 
 	{
 		const uint8_t partialByte = m_bytes[numBytes - 1];
@@ -84,12 +87,12 @@ void BitVector::resize(int newSize, bool value)
 void BitVector::push_back(bool value)
 {
 	++m_numBits;
-	if( (m_numBits+7) / 8 > (int)m_bytes.size())
+	if( (m_numBits+7) / 8 > m_bytes.size())
 		m_bytes.push_back(0);
 	set(m_numBits - 1, value);
 }
 
-bool BitVector::operator[](int index) const
+bool BitVector::operator[](size_t index) const
 {
 	return get(index);
 }
@@ -99,4 +102,7 @@ void BitVector::swap(BitVector& other)
 	std::swap(m_numBits, other.m_numBits);
 	m_bytes.swap(other.m_bytes);
 }
+
+}
+
 

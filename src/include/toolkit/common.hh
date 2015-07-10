@@ -45,67 +45,30 @@ char (&array_size_helper(T (&)[N]))[N];
 // C++11 helpers
 template<typename T>
 struct at_scope_exiter {
-	T& m_fn;
-	at_scope_exiter(T&& fn) : m_fn(fn) {}
-	~at_scope_exiter() { m_fn(); }
+    at_scope_exiter(T&& fn) : m_fn(std::forward<T>(fn)) {}
+    ~at_scope_exiter() { m_fn(); }
 private:
-	at_scope_exiter operator=(const at_scope_exiter&) DELETED;
+    at_scope_exiter operator=(const at_scope_exiter&) DELETED;
+    T m_fn;
 };
 
 template<typename T>
-at_scope_exiter<T> at_scope_exit(T&& fn) { 	
-	return at_scope_exiter<T>(std::forward<T>(fn)); 
+inline at_scope_exiter<T> at_scope_exit(T&& fn) { 	
+    return at_scope_exiter<T>(std::forward<T>(fn));
 }
 
-#ifndef USING_VS
+#if defined(_MSC_VER) && _MSC_VER >= 1800
+using std::make_unique;
+#else
 template<class T, typename... Args>
 inline std::unique_ptr<T> make_unique(Args&&... args)
 {
-	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+#endif
 
-//template<class T, MemPoolId POOL>
-//inline std::unique_ptr<T> make_unique(Args&&... args)
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<Args>(args)...));
-//}
-#else
-template<class T>
-inline std::unique_ptr<T> make_unique() 
+namespace lptk 
 {
-	return std::unique_ptr<T>(new T());
-}
-
-template<class T, class A0>
-inline std::unique_ptr<T> make_unique(A0&& a0) 
-{
-	return std::unique_ptr<T>(new T(std::forward<A0>(a0)));
-}
-
-template<class T, class A0, class A1>
-inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1) 
-{
-	return std::unique_ptr<T>(new T(std::forward<A0>(a0), std::forward<A1>(a1)));
-}
-
-template<class T, class A0, class A1, class A2>
-inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2) 
-{
-	return std::unique_ptr<T>(new T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2)));
-}
-
-template<class T, class A0, class A1, class A2, class A3>
-inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2, A3&& a3) 
-{
-	return std::unique_ptr<T>(new T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3)));
-}
-
-template<class T, class A0, class A1, class A2, class A3, class A4>
-inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a4) 
-{
-	return std::unique_ptr<T>(new T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4)));
-}
-
 
 //template<class T, MemPoolId POOL>
 //inline std::unique_ptr<T> make_unique() 
@@ -142,38 +105,36 @@ inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a
 //{
 //	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4)));
 //}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // This probably isn't the right place for this. But I don't think I have enough
 // uses to create a core/grammarhelper.hh
+
 template<class T>
 inline const char* ChoosePlural(T count, const char* singular, const char* plural)
 {
-	if(count == T(1)) return singular;
-	else return plural;
+    if(count == T(1)) return singular;
+    else return plural;
 }
 
-
-#ifdef USING_VS
-inline bool IsNativeBigEndian() {
-	union EndianHelper {
-		EndianHelper(int val) : i(val) {}
-		uint32_t i;
-		char c[4];
-	};
-	return EndianHelper(0x01020304).c[0] == 0x01;
-}
-#else
-constexpr bool IsNativeBigEndian() {
-	union EndianHelper {
-		constexpr EndianHelper() : i{0x01020304} {}
-		uint32_t i;
-		char c[4];
-	};
-	return EndianHelper().c[0] == 0x01;
-}
+union EndianHelper {
+#ifndef USING_VS
+    constexpr 
 #endif
+    EndianHelper(int val) : i(val) {}
+    uint32_t i;
+    char c[4];
+};
+
+#ifndef USING_VS
+constexpr 
+#else
+inline
+#endif
+bool IsNativeBigEndian() 
+{
+    return EndianHelper(0x01020304).c[0] == 0x01;
+}
 
 #ifdef USING_VS
 inline
@@ -182,7 +143,25 @@ constexpr
 #endif
 bool IsNativeLittleEndian() 
 { 
-	return !IsNativeBigEndian();
+    return !IsNativeBigEndian();
 }
 #endif
+
+template<class T> struct ReversedType {
+    T m_t;
+    ReversedType (T& t) : m_t(t) {}
+    auto begin() -> decltype(m_t.rbegin()) { return m_t.rbegin(); }
+    auto end() -> decltype(m_t.rend()) { return m_t.rend(); }
+};
+
+template<class T> ReversedType<T> reversed(T& t) { return ReversedType<T>(t); }
+
+template<typename T>
+inline void unused_arg(const T&){}
+template<typename... T>
+inline void unused_args(const T&...){}
+
+} // end lptk
+
+#include "strhash.hh"
 

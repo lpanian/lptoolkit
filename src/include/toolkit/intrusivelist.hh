@@ -3,6 +3,9 @@
 #define INCLUDED_toolkit_intrusivelist_hh
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace lptk
+{
+
 class IntrusiveNode;
 
 struct IntrusiveListHead {
@@ -21,7 +24,7 @@ class IntrusiveList
 {
 public:
 	IntrusiveList() {}
-	IntrusiveList(const IntrusiveList& o) {} // no-op copy
+	IntrusiveList(const IntrusiveList& o) { unused_arg(o); } // no-op copy
 	IntrusiveList& operator=(const IntrusiveList& o) { 
 		if(this != &o) {
 			m_list.m_head = m_list.m_tail = nullptr;
@@ -393,6 +396,8 @@ template<class T, IntrusiveNode T::* NodeMember>
 void IntrusiveList<T,NodeMember>::remove(iterator it)
 {
 	remove(&(*it));
+}
+
 }
 
 #endif

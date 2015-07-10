@@ -2,6 +2,9 @@
 #include "toolkit/memstream.hh"
 #include "toolkit/serialize.hh"
 
+namespace lptk
+{
+
 static const float g_inv255 = 1.f/255.f;
 Color::Color(const ColorRGBA& c)
 	: r(float(c.r))
@@ -29,4 +32,5 @@ void ColorRGBA::SerializeTo(MemSerializer& serializer) const
 	serializer.PutColorRGBA(*this);
 }
 
+}
 

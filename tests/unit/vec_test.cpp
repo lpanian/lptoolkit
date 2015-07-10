@@ -2,6 +2,8 @@
 #include "toolkit/vecutils.hh"
 #include <gtest/gtest.h>
 
+using namespace lptk;
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST(V2fTest, Ctor)
 {

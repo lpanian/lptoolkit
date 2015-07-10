@@ -5,6 +5,9 @@
 #include <tuple>
 #include "vec.hh"
 
+namespace lptk
+{
+
 template<class T>
 inline vec3<T> RotateAround(const vec3<T>& v, const vec3<T>& axis, T angle)
 {
@@ -42,6 +45,8 @@ inline std::tuple<vec3<T>, vec3<T> > CreateArbitraryBasis(const vec3<T>& dir)
 		return std::make_tuple(-Normalize(side), -Normalize(up));
 	else
 		return std::make_tuple(Normalize(side), Normalize(up));
+}
+
 }
 
 #endif

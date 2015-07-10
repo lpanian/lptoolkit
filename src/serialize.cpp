@@ -6,6 +6,9 @@
 
 static constexpr int kSerializeFileVersion = 1;
 
+namespace lptk
+{
+
 // format:
 // header (32 bytes) 
 // ptrTable: 
@@ -146,14 +149,14 @@ void MemSerializer::MergeChildren()
 			ptrData.m_serializer->MergeChildren();
 	}
 
-	const size_t oldSize = m_mem.size();
-	const size_t requiredSize = CalcSize();
+	const auto oldSize = m_mem.size();
+	const auto requiredSize = CalcSize();
 	ASSERT(requiredSize >= m_mem.size());
 	m_mem.resize(requiredSize);
 
 	// merge child memory into this serializer's data
-	size_t curOffset = oldSize;
-	for(unsigned int i = 0, c = m_pointerData.size(); i < c; ++i)
+	auto curOffset = oldSize;
+	for(auto i = size_t(0), c = m_pointerData.size(); i < c; ++i)
 	{
 		auto* ptrData = &m_pointerData[i];
 		if(ptrData->m_serializer)
@@ -214,9 +217,11 @@ std::vector<char> MemSerializer::CreateFileData()
 		}
 	}
 
-	const size_t ptrTableSize = 2 * sizeof(uint32_t)	+
+	const auto ptrTableSize = 
+        static_cast<uint32_t>(
+        2 * sizeof(uint32_t)	+
 		sizeof(uint32_t) * m_pointerOffsets.size() +
-		sizeof(uint32_t) * m_pointerData.size();
+		sizeof(uint32_t) * m_pointerData.size());
 		
 	const size_t requiredSize = 
 		sizeof(SerializeFileHeader) + 
@@ -225,8 +230,8 @@ std::vector<char> MemSerializer::CreateFileData()
 	std::vector<char> fileData(requiredSize);
 
 
-	const size_t ptrTableOffset = sizeof(SerializeFileHeader) ;
-	const size_t dataOffset = ptrTableOffset + ptrTableSize;
+	const auto ptrTableOffset = static_cast<uint32_t>(sizeof(SerializeFileHeader));
+	const auto dataOffset = ptrTableOffset + ptrTableSize;
 	
 	MemWriter writer(&fileData[0], fileData.size());
 	writer.Put("SERL", 4, false);			// m_tag
@@ -235,7 +240,7 @@ std::vector<char> MemSerializer::CreateFileData()
 	writer.Put<uint32_t>(ptrTableOffset);		// m_ptrTableOffset
 	writer.Put<uint32_t>(ptrTableSize);			// m_ptrTableSize
 	writer.Put<uint32_t>(dataOffset);			// m_dataOffset
-	writer.Put<uint32_t>(m_mem.size());			// m_dataSize
+	writer.Put<uint32_t>(static_cast<uint32_t>(m_mem.size()));			// m_dataSize
 	writer.Advance(8);						// m_padding
 
 	// ptr table
@@ -243,14 +248,14 @@ std::vector<char> MemSerializer::CreateFileData()
 
 	// ptr map. Array of offsets that correspond to objects that are pointed to.
 	// ids are index+1, and the value is the offset that contains the object.
-	writer.Put<uint32_t>(m_pointerData.size());
-	for(uint32_t i = 0, c = m_pointerData.size(); i < c; ++i)
-		writer.Put<uint32_t>(m_pointerData[i].m_dataOffset);
+	writer.Put<uint32_t>(static_cast<uint32_t>(m_pointerData.size()));
+	for(auto i = size_t(0), c = m_pointerData.size(); i < c; ++i)
+		writer.Put<uint32_t>(static_cast<uint32_t>(m_pointerData[i].m_dataOffset));
 	
 	// ptr locations (offsets in data that contain a pointer)
-	writer.Put<uint32_t>(m_pointerOffsets.size());
-	for(uint32_t i = 0, c = m_pointerOffsets.size(); i < c; ++i)
-		writer.Put<uint32_t>(m_pointerOffsets[i]);
+	writer.Put<uint32_t>(static_cast<uint32_t>(m_pointerOffsets.size()));
+	for(auto i = size_t(0), c = m_pointerOffsets.size(); i < c; ++i)
+		writer.Put<uint32_t>(static_cast<uint32_t>(m_pointerOffsets[i]));
 
 	// data offset
 	ASSERT(dataOffset == writer.GetPos());
@@ -367,5 +372,7 @@ bool SerializedClassMemory::LoadFile(const char* serializedFile, MemPoolId poolI
 
 	m_dataMem = std::move(mainData);
 	return true;
+}
+
 }
 

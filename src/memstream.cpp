@@ -3,11 +3,14 @@
 #include "toolkit/common.hh"
 #include "toolkit/memstream.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
-inline void SwapEndian(void* memory, int size)
+inline void SwapEndian(void* memory, size_t size)
 {
 	char* bytes = reinterpret_cast<char*>(memory);
-	for(int i = 0; i < size/2; ++i)
+	for(size_t i = 0; i < size/2; ++i)
 	{
 		char byte = bytes[i];
 		bytes[i] = bytes[size - i - 1];
@@ -154,3 +157,6 @@ ColorRGBA MemReader::GetColorRGBA()
 	result.a = Get<uint8_t>(false);
 	return result;
 }
+
+}
+

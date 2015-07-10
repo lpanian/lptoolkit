@@ -1,8 +1,18 @@
 #include <iostream>
 #include "toolkit/thread.hh"
 
+#include <cstring>
+
+#ifdef LINUX
+#include <unistd.h>
+#include <sys/sysctl.h>
+#endif
+
+namespace lptk
+{
+
 Thread::Thread()
-	: m_thread(0)
+    : m_thread(0)
 {
 }
 	
@@ -100,3 +110,81 @@ void Thread::join()
 	}
 #endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+Mutex::Mutex()
+{
+#ifdef USING_VS
+    InitializeCriticalSection(&m_mutex);
+#endif
+
+#ifdef LINUX
+    int err;
+    if((err = pthread_mutex_init(&m_mutex, NULL)) != 0) {
+        std::cerr << "ERROR: failed to initialize pthread mutex: " << strerror(err) << std::endl;
+    }
+#endif
+}
+
+Mutex::~Mutex()
+{
+#ifdef USING_VS
+    DeleteCriticalSection(&m_mutex);
+#endif
+
+#ifdef LINUX
+    int err;
+    if((err = pthread_mutex_destroy(&m_mutex)) != 0) {
+        std::cerr << "ERROR: failed to destroy pthread mutex: " << strerror(err) << std::endl;
+    }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+MutexLock::MutexLock(Mutex& m)
+    : m_mutex(m)
+{
+#ifdef USING_VS
+    EnterCriticalSection(&m_mutex.m_mutex);
+#endif
+
+#ifdef LINUX
+    int err;
+    if((err = pthread_mutex_lock(&m_mutex.m_mutex)) != 0) {
+        std::cerr << "ERROR: failed to lock pthread mutex: " << strerror(err) << std::endl;
+    }
+#endif
+}
+
+MutexLock::~MutexLock()
+{
+#ifdef USING_VS
+    LeaveCriticalSection(&m_mutex.m_mutex);
+#endif
+
+#ifdef LINUX
+    int err;
+    if((err = pthread_mutex_unlock(&m_mutex.m_mutex)) != 0) {
+        std::cerr << "ERROR: failed to unlock pthread mutex: " << strerror(err) << std::endl;
+    }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int NumProcessors()
+{
+    int count = 1;
+#ifdef USING_VS
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    count = int(sysinfo.dwNumberOfProcessors);
+#endif
+
+#ifdef LINUX
+    count = int(sysconf(_SC_NPROCESSORS_ONLN));
+#endif
+    return count;
+}
+
+}
+

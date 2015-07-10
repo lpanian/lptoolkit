@@ -6,6 +6,9 @@
 #include <iostream>
 #include "mathcommon.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
 class vec2
@@ -454,6 +457,8 @@ public:
 	vec4() {}
 	explicit vec4(T v) : x(v), y(v), z(v), w(v) {}
 	vec4(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
+        vec4(const vec3<T>& o) : x(o.x), y(o.y), z(o.z), w(0.f) {}
+        vec4(const vec2<T>& o) : x(o.x), y(o.y), z(0.f), w(0.f) {}
 	void Set(T x_, T y_, T z_, T w_) ;
 	vec4 operator+(const vec4& r) const;
 	vec4& operator+=(const vec4& r) ;
@@ -662,17 +667,23 @@ inline vec4<T> Max(const vec4<T>& l, const vec4<T>& r)
 	return vec4<T>(Max(l.x,r.x), Max(l.y,r.y), Max(l.z,r.z), Max(l.w, r.w));
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-typedef vec2<int> v2i;
+typedef vec2<int32_t> v2i;
+typedef vec3<int32_t> v3i;
+typedef vec4<int32_t> v4i;
+
+typedef vec2<uint32_t> v2ui;
+typedef vec3<uint32_t> v3ui;
+typedef vec4<uint32_t> v4ui;
+
 typedef vec2<float> v2f;
-typedef vec2<double> v2d;
-typedef vec3<int> v3i;
 typedef vec3<float> v3f;
-typedef vec3<double> v3d;
-typedef vec4<int> v4i;
 typedef vec4<float> v4f;
+
+typedef vec2<double> v2d;
+typedef vec3<double> v3d;
 typedef vec4<double> v4d;
+}
 
 #endif
 

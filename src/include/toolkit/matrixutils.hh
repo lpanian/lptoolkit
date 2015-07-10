@@ -3,6 +3,10 @@
 #define INCLUDED_toolkit_matrixutils_HH
 
 #include "matrix.hh"
+#include "quaternion.hh"
+
+namespace lptk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 // utilities
@@ -11,6 +15,9 @@ template<class T>
 vec3<T> TransformVec(const mat44<T>& m, const vec3<T>& v);
 template<class T>
 vec3<T> TransformPoint(const mat44<T>& m, const vec3<T>& v);
+template<class T>
+vec4<T> TransformPoint(const mat44<T>& m, const vec4<T>& v);
+
 template<class T>
 void TransformFloat4(T* out, const mat44<T>& m, const T *in);
 
@@ -42,13 +49,41 @@ mat44<T> MakeScale(const vec3<T>& v) ;
 template<class T>
 mat44<T> MakeScale(T sx, T sy, T sz);
 template<class T>
+mat44<T> MakeShear(T shXY, T shXZ, T shYZ);
+template<class T>
+mat44<T> MakeShear(const vec3<T>& v);
+template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans);
 template<class T>
 mat44<T> MakeCoordinateScale(T scale, T add);
-
+template<class T>
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up);
+template<class T>
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up);
 template<class T>
 inline mat44<T> TransposeOfInverse(const mat44<T>& m) {
 	return Transpose(TransformInverse(m));
+}
+
+// general inverse
+template<class T>
+mat44<T> GeneralInverse(const mat44<T>& m);
+
+template<class T>
+void RemovePerspectivePartition(const mat44<T>& m, mat44<T>& result);
+
+template<class T>
+void ExtractScaleAndShear(const mat44<T>& m, mat44<T>& result, vec3<T>& scale, vec3<T>& shear);
+
+template<class T>
+void ExtractSHRT(const mat44<T>& m, vec3<T>& scale, vec3<T>& shear, quaternion<T>& rot, vec3<T>& translate);
+
+template<class T>
+void MatrixDecompose(const mat44<T>& mat, vec3<T>* trans, quaternion<T>* rot, mat44<T>* scale);
+
+template<class T>
+T Det33(const mat44<T>& m);
+
 }
 
 #include "matrixutils.inl"

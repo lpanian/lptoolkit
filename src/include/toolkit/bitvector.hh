@@ -5,29 +5,33 @@
 #include "dynary.hh"
 #include <cstdint>
 
+namespace lptk {
+
 class BitVector
 {
 public:
-	BitVector(int initialSize = 0, bool initialVal = false);
+	BitVector(size_t initialSize = 0, bool initialVal = false);
 	BitVector(BitVector&& o);
 	BitVector(const BitVector& o);
 	BitVector& operator=(const BitVector& o);
 	BitVector& operator=(BitVector&& o);
 
-	void set(int index, bool value);
-	bool get(int index) const;
+	void set(size_t index, bool value);
+	bool get(size_t index) const;
 
-	int size() const { return m_numBits; }
-	void resize(int newSize, bool value = false);
+	size_t size() const { return m_numBits; }
+	void resize(size_t newSize, bool value = false);
 
 	void push_back(bool value);
 
-	bool operator[](int index) const;
+	bool operator[](size_t index) const;
 	void swap(BitVector& other);
 private:
-	int m_numBits;
+	size_t m_numBits;
 	DynAry<uint8_t> m_bytes;
 };
+
+}
 
 #endif
 

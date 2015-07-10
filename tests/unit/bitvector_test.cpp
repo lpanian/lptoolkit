@@ -1,16 +1,18 @@
 #include "toolkit/bitvector.hh"
 #include <gtest/gtest.h>
 
+using namespace lptk;
+
 TEST(BitVectorTest, Ctor)
 {
 	BitVector v(31);
 
-	EXPECT_EQ(v.size(), 31);
-	for(int i = 0; i < v.size(); ++i)
+	EXPECT_EQ(v.size(), 31ul);
+	for(size_t i = 0; i < v.size(); ++i)
 		EXPECT_EQ(v[i], false);
 
 	BitVector v2(11, true);
-	for(int i = 0; i < v2.size(); ++i)
+	for(size_t i = 0; i < v2.size(); ++i)
 		EXPECT_EQ(v2[i], true);
 }
 
@@ -21,14 +23,14 @@ TEST(BitVectorTest, MoveCtor)
 	v.push_back(false);
 	v.push_back(true);
 	
-	EXPECT_EQ(v.size(), 3);
+	EXPECT_EQ(v.size(), 3ul);
 	EXPECT_EQ(v[0], true);
 	EXPECT_EQ(v[1], false);
 	EXPECT_EQ(v[2], true);
 
 	BitVector v2 = std::move(v);
-	EXPECT_EQ(v.size(), 0);
-	EXPECT_EQ(v2.size(), 3);
+	EXPECT_EQ(v.size(), 0ul);
+	EXPECT_EQ(v2.size(), 3ul);
 	EXPECT_EQ(v2[0], true);
 	EXPECT_EQ(v2[1], false);
 	EXPECT_EQ(v2[2], true);
@@ -42,11 +44,11 @@ TEST(BitVectorTest, CopyCtor)
 	v.push_back(false);
 	v.push_back(true);
 	BitVector v2 = v;
-	EXPECT_EQ(v.size(), 3);
+	EXPECT_EQ(v.size(), 3ul);
 	EXPECT_EQ(v[0], true);
 	EXPECT_EQ(v[1], false);
 	EXPECT_EQ(v[2], true);
-	EXPECT_EQ(v2.size(), 3);
+	EXPECT_EQ(v2.size(), 3ul);
 	EXPECT_EQ(v2[0], true);
 	EXPECT_EQ(v2[1], false);
 	EXPECT_EQ(v2[2], true);
@@ -59,15 +61,15 @@ TEST(BitVectorTest, MoveAssign)
 	v.push_back(false);
 	v.push_back(true);
 	
-	EXPECT_EQ(v.size(), 3);
+	EXPECT_EQ(v.size(), 3ul);
 	EXPECT_EQ(v[0], true);
 	EXPECT_EQ(v[1], false);
 	EXPECT_EQ(v[2], true);
 
 	BitVector v2;
 	v2 = std::move(v);
-	EXPECT_EQ(v.size(), 0);
-	EXPECT_EQ(v2.size(), 3);
+	EXPECT_EQ(v.size(), 0ul);
+	EXPECT_EQ(v2.size(), 3ul);
 	EXPECT_EQ(v2[0], true);
 	EXPECT_EQ(v2[1], false);
 	EXPECT_EQ(v2[2], true);
@@ -83,7 +85,7 @@ TEST(BitVectorTest, Assign)
 	BitVector v2;
 
 	v2 = v;
-	EXPECT_EQ(v2.size(), 3);
+	EXPECT_EQ(v2.size(), 3ul);
 	EXPECT_EQ(v2[0], true);
 	EXPECT_EQ(v2[1], false);
 	EXPECT_EQ(v2[2], true);
@@ -101,7 +103,7 @@ TEST(BitVectorTest, SetGet)
 		true
 	};
 
-	for(int i = 0; i < v.size(); ++i) {
+	for(size_t i = 0; i < v.size(); ++i) {
 		EXPECT_EQ(v.get(i), expected[i]);
 	}
 }
@@ -117,17 +119,17 @@ TEST(BitVectorTest, Resize)
 		true, false, false, false
 	};
 
-	for(int i = 0; i < v.size(); ++i) {
+	for(size_t i = 0; i < v.size(); ++i) {
 		EXPECT_EQ(v.get(i), expected[i]);
 	}
 
 	v.resize(12);
-	for(int i = 0; i < v.size(); ++i) {
+	for(size_t i = 0; i < v.size(); ++i) {
 		EXPECT_EQ(v.get(i), expected[i]);
 	}
 
 	v.resize(4);
-	for(int i = 0; i < v.size(); ++i) {
+	for(size_t i = 0; i < v.size(); ++i) {
 		EXPECT_EQ(v.get(i), expected[i]);
 	}
 }
@@ -138,7 +140,7 @@ TEST(BitVectorTest, AtOperator)
 	v.set(8, true);
 	v.set(9, true);
 
-	for(int i = 0; i < v.size(); ++i)
+	for(size_t i = 0; i < v.size(); ++i)
 		EXPECT_EQ(v.get(i), v[i]);
 }
 
@@ -152,6 +154,6 @@ TEST(BitVectorTest, Swap)
 
 	v1.swap(v2);
 
-	EXPECT_EQ(v1.size(), 13);
-	EXPECT_EQ(v2.size(), 3);
+	EXPECT_EQ(v1.size(), 13ul);
+	EXPECT_EQ(v2.size(), 3ul);
 }

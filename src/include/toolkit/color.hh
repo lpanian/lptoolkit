@@ -2,11 +2,13 @@
 #ifndef INCLUDED_toolkit_color_HH
 #define INCLUDED_toolkit_color_HH
 
-class MemSerializer;
-
 #include "mathcommon.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace lptk
+{
+
+class MemSerializer;
 class ColorRGBA;
 class Color
 {
@@ -151,5 +153,6 @@ inline ColorRGBA& ColorRGBA::operator+=(const ColorRGBA& o)
 	return *this;
 }
 
+}
 
 #endif

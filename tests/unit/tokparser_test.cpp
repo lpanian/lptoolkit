@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include "toolkit/mathcommon.hh"
 
+using namespace lptk;
+
 TEST(TokParserTest, TokensWithoutSpaces)
 {
 	const char* testStr = 

@@ -6,6 +6,9 @@
 #include <type_traits>
 #include  "dynary.hh"
 
+namespace lptk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 enum TokenType {
 	T_NONE = -1,
@@ -21,17 +24,17 @@ enum TokenType {
 class Tokenizer
 {
 public:
-	Tokenizer(const char* data, int size) : m_data(data), m_size(size), m_pos(0), m_curLine(1) {}
+	Tokenizer(const char* data, size_t size) : m_data(data), m_size(size), m_pos(0), m_curLine(1) {}
 
 	void Reset() { m_pos = 0; m_curLine = 1; }
-	bool Next(char* tok, int &tokType, int maxLen);
+	bool Next(char* tok, int &tokType, size_t maxLen);
 
-	int CurrentLine() const { return m_curLine; }
+	size_t CurrentLine() const { return m_curLine; }
 private:
 	const char* m_data;
-	int m_size;
-	int m_pos;
-	int m_curLine;
+	size_t m_size;
+	size_t m_pos;
+	size_t m_curLine;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +51,7 @@ class TokParser
 {
 public:
     TokParser();
-	TokParser(const char* data, int size);
+	TokParser(const char* data, size_t size);
 	operator bool() const { return Ok(); }
 	bool Ok() const ;
 	bool Error() const ;
@@ -68,7 +71,7 @@ public:
     bool Skip();
 	bool SkipBlock();
 
-	int CurrentLine() const { return m_tokenizer.CurrentLine(); }
+	size_t CurrentLine() const { return m_tokenizer.CurrentLine(); }
 
 	// read either single values or values in the form of { v0 v1 v2 ...}
 	DynAry<float> GetFloatStream();
@@ -95,7 +98,7 @@ class ParserErrorCtx
 	bool m_ignored;			// call to ignore normal parsing errors (when you want to return false for
 							// a non-parsing/interpreting reason)
 	bool m_error;			// indicates interpretation error (not a parsing error)
-	int m_errorLine;
+	size_t m_errorLine;
 public:
 	ParserErrorCtx(TokParser& parser, const char* ctxString);
 	bool Error(const char* errString = nullptr);
@@ -136,6 +139,8 @@ private:
 	bool m_error;
 	bool m_emptyLine;
 } ;
+
+}
 
 #endif
 

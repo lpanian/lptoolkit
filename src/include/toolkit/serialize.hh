@@ -11,6 +11,9 @@
 #include <cstring>
 #include "toolkit/mathcommon.hh"
 
+namespace lptk
+{
+
 class Color;
 class ColorRGBA;
 
@@ -165,11 +168,11 @@ inline MemSerializer SerializeClass(const T& t)
 
 template<class T, bool IsPOD> struct SerializeClassOrPODHelper {
 	static inline void serialize(MemSerializer& serializer, const T& t) 
-		{ SerializeClass(t); }
+		{ unused_arg(serializer); SerializeClass(t); }
 };
 template<class T> struct SerializeClassOrPODHelper<T, true> {
 	static inline void serialize(MemSerializer& serializer, const T& t) 
-		{ serializer.Put<T>(t); }
+		{ unused_arg(serializer); serializer.Put<T>(t); }
 };	
 
 template<class T>
@@ -306,6 +309,8 @@ void MemSerializer::PutVec3(const vec3<T>& v)
 	Put<float>(v.x);
 	Put<float>(v.y);
 	Put<float>(v.z);
+}
+
 }
 
 #endif

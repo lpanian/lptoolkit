@@ -6,19 +6,29 @@
 
 bool StrCaseEqual(const char* str1, const char* str2)
 {
+	return 0 == StrCaseCmp(str1, str2);
+}
+
+int StrCaseCmp(const char* str1, const char* str2)
+{
 #ifdef USING_VS
-	return 0 == _stricmp(str1, str2);
+	return _stricmp(str1, str2);
 #else
-	return 0 == strcasecmp(str1, str2);
+	return strcasecmp(str1, str2);
 #endif
 }
 
 bool StrNCaseEqual(const char* str1, const char* str2, unsigned int len)
 {
+	return 0 == StrNCaseCmp(str1, str2, len);
+}
+
+int StrNCaseCmp(const char* str1, const char* str2, unsigned int len)
+{
 #ifdef USING_VS
-	return 0 == _strnicmp(str1, str2, len);
+	return _strnicmp(str1, str2, len);
 #else
-	return 0 == strncasecmp(str1, str2, len);
+	return strncasecmp(str1, str2, len);
 #endif
 }
 
@@ -30,3 +40,4 @@ void SleepMS(unsigned int ms)
 	usleep(ms*1000);
 #endif
 }
+
