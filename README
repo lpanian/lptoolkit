@@ -1,8 +1,6 @@
-Figured I'd throw random code I like into a place. This place seems alright!
+This project serves as a starting point for commonly needed code.
 
-Currently, it's just a template KdTree implementation & testbed, with
-supporting vec3 and bounding box classes.
-
-There's more stuff I want to put here... for real. I promise.
+It's a constant work in progress. I work on other stuff for a while, and then
+dump the changes back here every now and then.
 
 
