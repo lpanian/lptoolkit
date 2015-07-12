@@ -187,6 +187,7 @@ public:
 
             const size_t newSize = Min(m_size, newCapacity);
             if(__is_trivially_copyable(T))
+            //if(std::is_trivially_copyable<T>::value)
             {
                 m_array = reinterpret_cast<T*>(mem_reallocate(m_array, sizeof(T) * newCapacity, m_pool, ALIGN));
             }
@@ -235,6 +236,7 @@ public:
         if(newCapacity > m_capacity)
         {
             if(__is_trivially_copyable(T))
+            //if(std::is_trivially_copyable<T>::value)
             {
                 m_array = reinterpret_cast<T*>(mem_reallocate(m_array, sizeof(T) * newCapacity, m_pool, ALIGN));
             }
