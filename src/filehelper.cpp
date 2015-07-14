@@ -28,12 +28,13 @@ namespace lptk
 
     std::vector<char> ReadFile(const char* filename)
     {
+        auto const sysFilename = ToSystemFilename(filename);
         FILE* fp = nullptr;
 #ifdef USING_VS
-        if(0 != fopen_s(&fp, filename, "rb"))
+        if(0 != fopen_s(&fp, sysFilename.c_str(), "rb"))
             return std::vector<char>();
 #else
-        fp = fopen(filename, "rb");
+        fp = fopen(sysFIlename.c_str(), "rb");
 #endif
         if(!fp) return std::vector<char>();
         auto closeOnExit = at_scope_exit([&]{ fclose(fp); });
