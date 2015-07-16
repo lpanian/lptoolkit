@@ -24,24 +24,24 @@ public:
     Thread(Thread&&); // move
     Thread& operator=(Thread&&);
 
-#ifndef USING_VS
+//#ifndef USING_VS
     template<class Fn, class... ArgType>
         explicit Thread(Fn&& f, ArgType&&... args);
-#else
-    template<class Fn>
-        explicit Thread(Fn&& f);
-    template<class Fn, class A0>
-        explicit Thread(Fn&& f, A0&& a0);
-    template<class Fn, class A0, class A1>
-        explicit Thread(Fn&& f, A0&& a0, A1&& a1);
-    template<class Fn, class A0, class A1, class A2>
-        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2);
-    template<class Fn, class A0, class A1, class A2, class A3>
-        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3);
-    template<class Fn, class A0, class A1, class A2, class A3, class A4>
-        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3, A4&& a4);
+//#else
+//    template<class Fn>
+//        explicit Thread(Fn&& f);
+//    template<class Fn, class A0>
+//        explicit Thread(Fn&& f, A0&& a0);
+//    template<class Fn, class A0, class A1>
+//        explicit Thread(Fn&& f, A0&& a0, A1&& a1);
+//    template<class Fn, class A0, class A1, class A2>
+//        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2);
+//    template<class Fn, class A0, class A1, class A2, class A3>
+//        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3);
+//    template<class Fn, class A0, class A1, class A2, class A3, class A4>
+//        explicit Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3, A4&& a4);
 
-#endif
+//#endif
     ~Thread();
 
     void swap(Thread& other);
@@ -84,7 +84,7 @@ private:
 #endif
 };
 
-#ifndef USING_VS
+//#ifndef USING_VS
 template<class Fn, class... ArgType>
 Thread::Thread(Fn&& f, ArgType&&... args)
 {
@@ -92,71 +92,71 @@ Thread::Thread(Fn&& f, ArgType&&... args)
                     std::forward<ArgType>(args)...)));
 }
 
-#else
-    template<class Fn>
-Thread::Thread(Fn&& f)
-{
-    StartThread( MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f)
-                    )));
-}
+//#else
+//    template<class Fn>
+//Thread::Thread(Fn&& f)
+//{
+//    StartThread( MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f)
+//                    )));
+//}
 
-    template<class Fn, class A0>
-Thread::Thread(Fn&& f, A0&& a0)
-{
-    StartThread(MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f), 
-                    std::forward<A0>(a0) 
-                    )));
-}
+//    template<class Fn, class A0>
+//Thread::Thread(Fn&& f, A0&& a0)
+//{
+//    StartThread(MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f), 
+//                    std::forward<A0>(a0) 
+//                    )));
+//}
 
-    template<class Fn, class A0, class A1>
-Thread::Thread(Fn&& f, A0&& a0, A1&& a1)
-{
-    StartThread(MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f), 
-                    std::forward<A0>(a0),
-                    std::forward<A1>(a1) 
-                    )));
-}
+//    template<class Fn, class A0, class A1>
+//Thread::Thread(Fn&& f, A0&& a0, A1&& a1)
+//{
+//    StartThread(MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f), 
+//                    std::forward<A0>(a0),
+//                    std::forward<A1>(a1) 
+//                    )));
+//}
 
-    template<class Fn, class A0, class A1, class A2>
-Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2)
-{
-    StartThread(MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f), 
-                    std::forward<A0>(a0),
-                    std::forward<A1>(a1),
-                    std::forward<A2>(a2) 
-                    )));
-}
+//    template<class Fn, class A0, class A1, class A2>
+//Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2)
+//{
+//    StartThread(MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f), 
+//                    std::forward<A0>(a0),
+//                    std::forward<A1>(a1),
+//                    std::forward<A2>(a2) 
+//                    )));
+//}
 
-    template<class Fn, class A0, class A1, class A2, class A3>
-Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3)
-{
-    StartThread(MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f), 
-                    std::forward<A0>(a0),
-                    std::forward<A1>(a1),
-                    std::forward<A2>(a2),
-                    std::forward<A3>(a3) 
-                    )));
-}
+//    template<class Fn, class A0, class A1, class A2, class A3>
+//Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3)
+//{
+//    StartThread(MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f), 
+//                    std::forward<A0>(a0),
+//                    std::forward<A1>(a1),
+//                    std::forward<A2>(a2),
+//                    std::forward<A3>(a3) 
+//                    )));
+//}
 
-    template<class Fn, class A0, class A1, class A2, class A3, class A4>
-Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3, A4&& a4)
-{
-    StartThread(MakeThreadImpl(std::bind<void>(
-                    std::forward<Fn>(f), 
-                    std::forward<A0>(a0),
-                    std::forward<A1>(a1),
-                    std::forward<A2>(a2),
-                    std::forward<A3>(a3),
-                    std::forward<A4>(a4) 
-                    )));
-}
+//    template<class Fn, class A0, class A1, class A2, class A3, class A4>
+//Thread::Thread(Fn&& f, A0&& a0, A1&& a1, A2&& a2,  A3&& a3, A4&& a4)
+//{
+//    StartThread(MakeThreadImpl(std::bind<void>(
+//                    std::forward<Fn>(f), 
+//                    std::forward<A0>(a0),
+//                    std::forward<A1>(a1),
+//                    std::forward<A2>(a2),
+//                    std::forward<A3>(a3),
+//                    std::forward<A4>(a4) 
+//                    )));
+//}
 
-#endif
+//#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 class Mutex
