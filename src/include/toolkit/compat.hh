@@ -30,7 +30,7 @@ void SleepMS(unsigned int ms);
 // you get alignof, but no alignas. Anything requiring that level of control will probably
 // have to be aligned manually.
 #define alignof __alignof
-// constexpr isn't implemented in vs2010, so... this.
+// constexpr isn't implemented in vs2013, so... this. Which breaks constexpr ctors
 #define constexpr const
 
 inline void bzero(void* ptr, size_t n) {

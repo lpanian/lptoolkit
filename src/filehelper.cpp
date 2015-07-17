@@ -165,7 +165,7 @@ namespace lptk
 #endif
     }
 
-    unsigned int FileSize(const char* filename)
+    size_t FileSize(const char* filename)
     {
         struct stat s;
 

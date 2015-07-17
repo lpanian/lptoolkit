@@ -32,7 +32,7 @@ bool FileIsDirectory(const char* filename);
 bool FileIsWriteable(const char* filename);
 bool FileIsReadable(const char* filename);
 time_t FileModifiedTime(const char* filename);
-unsigned int FileSize(const char* filename);
+size_t FileSize(const char* filename);
 bool IsAbsolutePath(const char* filename);
 Str GetProgramPath();
 Str GetWorkingDirectory();
