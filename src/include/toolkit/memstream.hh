@@ -32,7 +32,7 @@ public:
 	MemWriter(); 
 	MemWriter(char* buffer, size_t size, int flags = 0);
 	
-	operator bool() const { return !Full() && !Error(); }
+	explicit operator bool() const { return !Full() && !Error(); }
 
 	void Put(const void* bytes, size_t size, bool swapEndian = true);
 	void Advance(size_t size);
@@ -65,7 +65,7 @@ class MemReader {
 public:
 	MemReader();
 	MemReader(const char* buffer, size_t size, int flags = 0);
-	operator bool() const { return !Empty() && !Error(); }
+	explicit operator bool() const { return !Empty() && !Error(); }
 
 	void Get(void* bytes, size_t size, bool swapEndian = true);
 	void Consume(size_t size);
