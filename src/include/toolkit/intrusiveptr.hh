@@ -11,9 +11,8 @@ namespace lptk
         std::atomic<uint32_t> m_refs;
 
     protected:
-        refcounted()
+        refcounted() : m_refs(0)
         {
-            std::atomic_init(&m_refs, 0);
         }
 
     public:
