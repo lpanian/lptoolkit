@@ -34,7 +34,7 @@ namespace lptk
         if(0 != fopen_s(&fp, sysFilename.c_str(), "rb"))
             return std::vector<char>();
 #else
-        fp = fopen(sysFIlename.c_str(), "rb");
+        fp = fopen(sysFilename.c_str(), "rb");
 #endif
         if(!fp) return std::vector<char>();
         auto closeOnExit = at_scope_exit([&]{ fclose(fp); });
