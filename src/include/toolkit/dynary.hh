@@ -393,13 +393,14 @@ private:
     // Compile time choice of contructor implementation based on whether or not T is integral.
     // this avoids the dynary<int>(10, 1) vs. dynary<int>(pIntAry, pIntAry+10) problem. Apparently std::vector
     // does this too. 
-    void internal_ctor_init(const T& init)
+    template<class U>
+    void internal_ctor_init(U&& init)
     {
         ASSERT(m_size <= m_capacity);
         if(m_capacity > 0)
             m_array = reinterpret_cast<T*>(mem_allocate(sizeof(T) * m_capacity, m_pool, ALIGN));
         for(size_type i = 0, c = m_size; i < c; ++i)
-            new (&m_array[i]) T(init);
+            new (&m_array[i]) T(std::forward<U>(init));
     }
 
     template<class Iter>
