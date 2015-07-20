@@ -64,6 +64,24 @@ public:
 
     struct Pair
     {
+        Pair() = default;
+        ~Pair() = default;
+        Pair(const Pair&) = default;
+        Pair& operator=(const Pair&) = default;
+        Pair(Pair&& other)
+            : key(std::move(other.key))
+            , value(std::move(other.value))
+        {}
+        Pair& operator=(Pair&& other)
+        {
+            if (&other != this)
+            {
+                key = std::move(other.key);
+                value = std::move(other.value);
+            }
+            return *this;
+        }
+
         K key;
         V value;
     };
