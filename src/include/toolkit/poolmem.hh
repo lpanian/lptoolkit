@@ -26,77 +26,6 @@ public:
 	void* Alloc();
 	void Free(void*);
 
-#ifdef USING_VS
-	// faked variadic templates
-	template< class T > 
-	T* Create() {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T() : nullptr;
-	}
-	template< class T, class A0 > 
-	T* Create(A0&& a0) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(std::forward<A0>(a0)) : nullptr;
-	}
-	template< class T, class A0, class A1 >
-	T* Create(A0&& a0, A1&& a1 ) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(
-				std::forward<A0>(a0),
-				std::forward<A1>(a1)
-				) : nullptr;
-	}
-	template< class T, class A0, class A1, class A2 >
-	T* Create(A0&& a0, A1&& a1, A2&& a2 ) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(
-				std::forward<A0>(a0),
-				std::forward<A1>(a1),
-				std::forward<A2>(a2)
-				) : nullptr;
-	}
-	template< class T, class A0, class A1, class A2, class A3 >
-	T* Create(A0&& a0, A1&& a1, A2&& a2, A3&& a3 ) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(
-				std::forward<A0>(a0),
-				std::forward<A1>(a1),
-				std::forward<A2>(a2),
-				std::forward<A3>(a3)
-				) : nullptr;
-	}
-	template< class T, class A0, class A1, class A2, class A3, class A4 >
-	T* Create(A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a4 ) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(
-				std::forward<A0>(a0),
-				std::forward<A1>(a1),
-				std::forward<A2>(a2),
-				std::forward<A3>(a3),
-				std::forward<A4>(a4)
-				) : nullptr;
-	}
-	template< class T, class A0, class A1, class A2, class A3, class A4, class A5 >
-	T* Create(A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5 ) {
-		ASSERT((int)sizeof(T) <= m_itemSize);
-		void* ptr = Alloc();
-		return ptr ? new (ptr) T(
-				std::forward<A0>(a0),
-				std::forward<A1>(a1),
-				std::forward<A2>(a2),
-				std::forward<A3>(a3),
-				std::forward<A4>(a4),
-				std::forward<A5>(a5)
-				) : nullptr;
-	}
-#else
-	// C++11 variadic templates!
 	template< class T, typename... ArgTypes> 
 	T* Create(ArgTypes&&... arguments) {
 		ASSERT((int)sizeof(T) <= m_itemSize);
@@ -104,7 +33,6 @@ public:
 		if(!ptr) return nullptr;
 		return new (ptr) T(std::forward<ArgTypes>(arguments)...);
 	}
-#endif
 
 	template<class T> void Destroy(T* obj) {
 		if(!obj) return;
