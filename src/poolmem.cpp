@@ -72,9 +72,9 @@ PoolAlloc::Block* PoolAlloc::AllocBlock()
 	bzero(block, blockSize + m_itemsPerBlock * m_itemSize);
 	for(int i = 0; i < m_itemsPerBlock-1; ++i)
 	{
-		int offset = + blockSize + i * m_itemSize;
-		BlockItem *item = reinterpret_cast<BlockItem*>(data + offset );
-		item->m_next = reinterpret_cast<BlockItem*>(data + offset + m_itemSize  );
+		int offset = blockSize + i * m_itemSize;
+		BlockItem *item = reinterpret_cast<BlockItem*>(data + offset);
+		item->m_next = reinterpret_cast<BlockItem*>(data + offset + m_itemSize);
 	}
 	return block;
 }
