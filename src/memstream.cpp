@@ -36,11 +36,13 @@ MemWriter::MemWriter(char* buffer, size_t size, int flags)
 	 m_flags(flags)
 {}
 	
-void MemWriter::Put(const void* bytes, size_t size, bool swapEndian) 
+char* MemWriter::Put(const void* bytes, size_t size, bool swapEndian) 
 {
 	using namespace MemFormatFlag;
-	if(m_s - m_pos >= size) {
-		memcpy(&m_b[m_pos],bytes,size);
+	if(m_s - m_pos >= size) 
+    {
+        auto resultVal = &m_b[m_pos];
+		memcpy(resultVal,bytes,size);
 		if(swapEndian)
 		{
 			// native is little endian and data is big
@@ -51,43 +53,57 @@ void MemWriter::Put(const void* bytes, size_t size, bool swapEndian)
 				SwapEndian(&m_b[m_pos], size);
 		}
 		m_pos += size;
+        return resultVal;
 	}
-	else
-		m_error = true;
+    else
+    {
+        m_error = true;
+        return nullptr;
+    }
 }
 
-void MemWriter::Advance(size_t size) 
+char* MemWriter::Advance(size_t size) 
 {
-	if(m_s - m_pos >= size) {
+	if(m_s - m_pos >= size) 
+    {
+        auto resultVal = &m_b[m_pos];
 		m_pos += size;
+        return resultVal;
 	} 
-	else
-		m_error = true;
+    else
+    {
+        m_error = true;
+        return nullptr;
+    }
 }
 
-void MemWriter::AlignedAdvance(size_t align)
+char* MemWriter::AlignedAdvance(size_t align)
 {
 	const size_t requiredAlignMask = align - 1;
 	const size_t alignedPos = (m_pos + requiredAlignMask) & ~requiredAlignMask;
 	const size_t padding = alignedPos - m_pos;
-	if(padding > 0)
-		Advance(padding);
+    if (padding > 0)
+        return Advance(padding);
+    else
+        return (!Full() && !Error()) ? &m_b[m_pos] : nullptr;
 }
 	
-void MemWriter::PutColor(const Color& c, bool swapEndian)
+char* MemWriter::PutColor(const Color& c, bool swapEndian)
 {
-	Put<float>(c.r, swapEndian);
+	auto start = Put<float>(c.r, swapEndian);
 	Put<float>(c.g, swapEndian);
 	Put<float>(c.b, swapEndian);
 	Put<float>(c.a, swapEndian);
+    return start;
 }
 
-void MemWriter::PutColorRGBA(ColorRGBA c)
+char* MemWriter::PutColorRGBA(ColorRGBA c)
 {
-	Put<uint8_t>(c.r, false);
+	auto start = Put<uint8_t>(c.r, false);
 	Put<uint8_t>(c.g, false);
 	Put<uint8_t>(c.b, false);
 	Put<uint8_t>(c.a, false);
+    return start;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -34,20 +34,20 @@ public:
 	
 	explicit operator bool() const { return !Full() && !Error(); }
 
-	void Put(const void* bytes, size_t size, bool swapEndian = true);
-	void Advance(size_t size);
-	void AlignedAdvance(size_t align);
+	char* Put(const void* bytes, size_t size, bool swapEndian = true);
+	char* Advance(size_t size);
+	char* AlignedAdvance(size_t align);
 
 	template<class T>
-	void Put(const T& t, bool swapEndian = true) {
+	char* Put(const T& t, bool swapEndian = true) {
 		ASSERT(std::is_arithmetic<T>::value || std::is_enum<T>::value);
 		AlignedAdvance(alignof(T));
-		Put(&t, sizeof(t), swapEndian);
+		return Put(&t, sizeof(t), swapEndian);
 	}
 	template<class T> 
-	void PutVec3(const vec3<T>&, bool swapEndian = true);
-	void PutColor(const Color&, bool swapEndian = true);
-	void PutColorRGBA(ColorRGBA);
+	char* PutVec3(const vec3<T>&, bool swapEndian = true);
+	char* PutColor(const Color&, bool swapEndian = true);
+	char* PutColorRGBA(ColorRGBA);
 
 	size_t GetPos() const { return m_pos; }
 
@@ -92,11 +92,12 @@ public:
 };
 
 template<class T> 
-void MemWriter::PutVec3(const vec3<T>& v, bool swapEndian)
+char* MemWriter::PutVec3(const vec3<T>& v, bool swapEndian)
 {
-	Put<T>(v.x, swapEndian);
+	auto start = Put<T>(v.x, swapEndian);
 	Put<T>(v.y, swapEndian);
 	Put<T>(v.z, swapEndian);
+    return start;
 }
 
 template<class T>
