@@ -62,6 +62,7 @@ namespace lptk
 	{
 		if(s_opts)
 		{
+            ASSERT(s_opts->m_prev == nullptr);
 			s_opts->m_prev = this;
 			m_next = s_opts;
 		}
@@ -74,6 +75,9 @@ namespace lptk
 			m_prev->m_next = m_next;
 		if(m_next)
 			m_next->m_prev = m_prev;
+
+        if (this == s_opts)
+            s_opts = this->m_next;
 	}
 		
 	CmdLineOpt* CmdLineOpt::FindByCommand(const char* name)
