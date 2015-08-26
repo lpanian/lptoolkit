@@ -295,7 +295,7 @@ public:
         return pos;
     }
 
-    StringImpl substr(int start, int end) const
+    StringImpl substr(int start, int end = -1) const
     {
         ASSERT(start >= 0);
         if(end < 0) end = length();
@@ -484,6 +484,8 @@ bool StartsWith( const StringType &str, const char *beginning)
 
 inline const char* GetExtension( const char* szStr )
 {
+    if (!szStr || !*szStr)
+        return nullptr;
     int extIdx = -1;
     int i = 0;
     while(szStr[i] != '\0')
