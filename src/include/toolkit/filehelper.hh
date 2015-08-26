@@ -37,6 +37,8 @@ bool IsAbsolutePath(const char* filename);
 Str GetProgramPath();
 Str GetWorkingDirectory();
 bool ChangeWorkingDirectory(const char* path);
+bool MakeDir(const char* path);
+bool MakeDirs(const char* path);
 
 Str FileBasename(const char* filename);
 Str FileBasename(const Str& filename);
@@ -47,6 +49,8 @@ Str PathJoin(const char* left, const char* right);
 
 Str ToSystemFilename(const char* filename);
 Str ToSystemFilename(const Str& filename);
+
+bool StartsWithPath(const Str& wholePath, const Str& partPath);
 
 class DirList
 {

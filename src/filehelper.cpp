@@ -127,6 +127,43 @@ namespace lptk
 #endif
     }
 
+    bool MakeDir(const char* path)
+    {
+        if (FileExists(path))
+        {
+            if (FileIsDirectory(path))
+                return true;
+            return false;
+        }
+#if defined(LINUX)
+        return 0 == mkdir(path, 0777);
+#elif defined(WINDOWS)
+        return 0 == _mkdir(path);
+#endif
+    }
+
+    bool MakeDirs(const char* path)
+    {
+        lptk::Str fullPath = path;
+        if (fullPath.empty())
+            return false;
+        
+        auto pos = fullPath.find(FILE_SEP);
+        while (pos >= 0)
+        {
+            const auto tmp = fullPath[pos];
+            fullPath[pos] = '\0';
+            if (!MakeDir(fullPath.c_str()))
+                return false;
+            fullPath[pos] = tmp;
+            pos = fullPath.find(pos + 1, FILE_SEP);
+        }
+        if (!MakeDir(fullPath.c_str()))
+            return false;
+
+        return true;
+    }
+
     bool FileIsDirectory(const char* filename)
     {
         struct stat s;
@@ -234,12 +271,18 @@ namespace lptk
 
     Str PathJoin(const Str& left, const Str& right)
     {
-        return left + FILE_SEP_STR + right;
+        Str l = left;
+        Str r = right;
+        while (!r.empty() && StartsWith(r, FILE_SEP_STR))
+            r = r.substr(strlen(FILE_SEP_STR));
+        while (!l.empty() && EndsWith(l, FILE_SEP_STR))
+            l = l.substr(0, l.length() - strlen(FILE_SEP_STR));
+        return l + FILE_SEP_STR + r;
     }
 
     Str PathJoin(const char* left, const char* right)
     {
-        return Str(left) + FILE_SEP_STR + right;
+        return PathJoin(Str(left), Str(right));
     }
 
     Str ToSystemFilename(const char* filename)
@@ -337,5 +380,15 @@ namespace lptk
     }
     
 
+    bool StartsWithPath(const Str& wholePath, const Str& partPath)
+    {
+        if (StrNCaseCmp(wholePath.c_str(), partPath.c_str(), partPath.length()) == 0)
+        {
+            auto const after = partPath.length();
+            if (wholePath[after] == FILE_SEP)
+                return true;
+        }
+        return false;
+    }
 }
 
