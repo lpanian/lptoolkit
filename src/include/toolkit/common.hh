@@ -46,10 +46,19 @@ char (&array_size_helper(T (&)[N]))[N];
 template<typename T>
 struct at_scope_exiter {
     at_scope_exiter(T&& fn) : m_fn(std::forward<T>(fn)) {}
-    ~at_scope_exiter() { m_fn(); }
+    ~at_scope_exiter() { if(!m_triggered) m_fn(); }
+
+    void trigger() {
+        if (!m_triggered)
+        {
+            m_fn();
+            m_triggered = true;
+        }
+    }
 private:
     at_scope_exiter operator=(const at_scope_exiter&) DELETED;
     T m_fn;
+    bool m_triggered = false;
 };
 
 template<typename T>
