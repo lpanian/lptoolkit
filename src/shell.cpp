@@ -132,7 +132,7 @@ namespace lptk
         LocalFree(msgBuf);
     }
 
-    bool RunProgram(const char* command, lptk::Str* programOutput)
+    int RunProgram(const char* command, lptk::Str* programOutput)
     {
         // Handles for piping output
         SECURITY_ATTRIBUTES sa;
@@ -219,7 +219,7 @@ namespace lptk
             *programOutput = lptk::Str(outChunks.begin(), outChunks.end());
         }
 
-        return exitCode == 0;
+        return static_cast<int>(exitCode);
     }
 #endif
 }

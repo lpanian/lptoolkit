@@ -12,7 +12,7 @@ namespace lptk
     bool LaunchProgram(const char* command);
 
     // Launch process, but don't return until the process has finished.
-    bool RunProgram(const char* command, lptk::Str* programOutput = nullptr);
+    int RunProgram(const char* command, lptk::Str* programOutput = nullptr);
 }
 
 #endif
