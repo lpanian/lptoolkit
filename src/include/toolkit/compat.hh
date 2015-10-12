@@ -36,6 +36,11 @@ void SleepMS(unsigned int ms);
 inline void bzero(void* ptr, size_t n) {
 	memset(ptr, 0, n);
 }
+
+#if _MSC_VER <= 1800
+#define thread_local __declspec(thread)
+#endif
+
 #endif
 
 #define DELETED =delete

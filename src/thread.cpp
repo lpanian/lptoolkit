@@ -186,5 +186,14 @@ int NumProcessors()
     return count;
 }
 
+void YieldThread()
+{
+#if defined(USING_VS)
+    SwitchToThread();
+#else if defined (LINUX)
+    pthread_yield();
+#endif
+}
+
 }
 

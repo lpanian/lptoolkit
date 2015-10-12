@@ -22,6 +22,8 @@ namespace lptk
 // Default operators
 void *operator new(size_t n) ;
 void *operator new[](size_t n) ;
+void *operator new(size_t n, const std::nothrow_t&) ;
+void *operator new[](size_t n, const std::nothrow_t&) ;
 
 // Pool operators
 void *operator new(size_t n, lptk::MemPoolId id, unsigned int align) ;
