@@ -14,7 +14,7 @@ static void EmptyJob(lptk::task::Task*, const void*)
 int main()
 {
     constexpr int numTasks = 4095;
-    lptk::task::Init(1);// std::max(1, lptk::NumProcessors() - 1));
+    lptk::task::Init(std::max(1, lptk::NumProcessors() - 1));
     {
         g_x = 0;
 
@@ -30,10 +30,9 @@ int main()
         }
         timer.Stop();
     
-        int x = g_x;
+        auto const x = g_x.load();
         ASSERT(x == numTasks);
-
-        std::cout << "Time sequential: " << timer.GetTime() << "\n";
+        std::cout << x << " tasks, sequential: " << timer.GetTime() << "\n";
     }
     {
         g_x = 0;
@@ -50,9 +49,9 @@ int main()
         lptk::task::Wait(root);
         timer.Stop();
   
-        int x = g_x;
+        auto const x = g_x.load();
         ASSERT(x == numTasks);
-        std::cout << "Time as jobs: " << timer.GetTime() << "\n";
+        std::cout << x << " tasks, jobs: " << timer.GetTime() << "\n";
     }
     lptk::task::Shutdown();
     return 0;

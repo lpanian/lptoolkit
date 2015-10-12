@@ -62,7 +62,7 @@ namespace lptk
 
         TaskHandle CreateTask(Task::TaskFn function);
         TaskHandle CreateChildTask(const TaskHandle& parent, Task::TaskFn function);
-        void Run(const TaskHandle& task);
+        bool Run(const TaskHandle& task);
         void Wait(const TaskHandle& task);
 
     }
