@@ -9,10 +9,6 @@
 
 namespace lptk
 {
-    // 1) Init thread local data
-    // 2) lock-free allocate/deallocate tasks
-    // 3) workqueue for each thread
-    // 4) run/wait
     namespace task
     {
         ////////////////////////////////////////////////////////////////////////////////
@@ -96,12 +92,14 @@ namespace lptk
 
             if (m_task)
             {
-                const auto unfinished = m_task->m_unfinished.load(std::memory_order_seq_cst);
+                //const auto unfinished = m_task->m_unfinished.load(std::memory_order_seq_cst);
+                const auto isFinished = (m_task->m_status.load(std::memory_order_seq_cst) == Task::Status::Finished);
                 const auto usersRemaining = m_task->m_users.fetch_sub(1, std::memory_order_seq_cst) - 1;
-                if (unfinished == 0 && usersRemaining == 0)
+                //if (unfinished == 0 && usersRemaining == 0)
+                if (isFinished && usersRemaining == 0)
                 {
-                    if (m_task->m_users.exchange(-1) == 0)
-                        FreeTask(m_task);
+                    ASSERT(m_task->m_users.exchange(-1) == 0);
+                    FreeTask(m_task);
                 }
                 m_task = nullptr;
             }
@@ -188,7 +186,9 @@ namespace lptk
         Task* WorkQueue::Pop()
         {
             // write this first because we're now using that index. 
-            const auto bottom = m_bottom.fetch_sub(1, std::memory_order_seq_cst) - 1;
+            const auto bottom = m_bottom.load(std::memory_order_seq_cst) - 1;
+            m_bottom.store(bottom, std::memory_order_seq_cst);
+
             const auto top = m_top.load(std::memory_order_seq_cst);
             const auto size = bottom - top;
 
@@ -207,8 +207,8 @@ namespace lptk
             // otherwise size was 0 and we're about to empty the queue. 
             // A stealing thread might be looking at the same top index.
             auto oldTop = top;
-            if (!m_top.compare_exchange_strong(oldTop, top + 1, 
-                std::memory_order_seq_cst, std::memory_order_relaxed))
+            if (!m_top.compare_exchange_strong(oldTop, top + 1))
+                //std::memory_order_seq_cst, std::memory_order_relaxed))
             {
                 item = &s_abortTask;
             }
@@ -232,8 +232,8 @@ namespace lptk
 
             Task* item = m_storage.Get(top);
             auto oldTop = top;
-            if (!m_top.compare_exchange_strong(oldTop, oldTop + 1,
-                std::memory_order_seq_cst, std::memory_order_relaxed))
+            if (!m_top.compare_exchange_strong(oldTop, top + 1))
+                //std::memory_order_seq_cst, std::memory_order_relaxed))
             {
                 return &s_abortTask;
             }
@@ -323,7 +323,6 @@ namespace lptk
 
         TaskMgr::~TaskMgr()
         {
-            // add null tasks until we shut down? how to deal with work stealing?
             m_done.store(true, std::memory_order_release);
             for (auto&& th : m_workers)
             {
@@ -351,26 +350,34 @@ namespace lptk
             
         void TaskMgr::Execute(Task* task)
         {
-            (task->m_function)(task, nullptr); // task->m_data);
+            ASSERT(task->m_users >= 1);
+            (task->m_function)(task, task->m_data);
+            auto const oldState = task->m_status.exchange(Task::Status::Executed, std::memory_order_seq_cst);
+            ASSERT(oldState == Task::Status::Running);
             Finish(task);
+            ASSERT(task->m_users >= 1);
         }
             
         void TaskMgr::Finish(Task* task)
         {
-            const auto unfinishedCount = 
-                task->m_unfinished.fetch_sub(1, std::memory_order_seq_cst) - 1;
+            ASSERT(task->m_users > 0);
+            auto taskParent = task->m_parent;
+            const auto unfinishedCount = task->m_unfinished.fetch_sub(1, std::memory_order_seq_cst) - 1;
+
             if (unfinishedCount == 0)
             {
-                if (task->m_parent)
-                {
-                    Finish(task->m_parent);
-                }
+                auto const oldState = task->m_status.exchange(Task::Status::Finished, std::memory_order_seq_cst);
+                ASSERT(oldState == Task::Status::Executed);
+
+                if (taskParent)
+                    Finish(taskParent);
             }
+            ASSERT(task->m_users > 0);
         }
             
         bool TaskMgr::IsTaskFinished(Task* task)
         {
-            return task->m_unfinished.load(std::memory_order_seq_cst) == 0;
+            return task->m_status.load(std::memory_order_seq_cst) == Task::Status::Finished;
         }
 
         TaskHandle TaskMgr::GetTask()
@@ -383,15 +390,16 @@ namespace lptk
                 if (!stealQueue)
                 {
                     lptk::YieldThread();
-                    return nullptr;
+                    return TaskHandle();
                 }
 
                 auto stolenTask = stealQueue->Steal();
                 if (IsEmptyTask(stolenTask))
                 {
                     lptk::YieldThread();
-                    return nullptr;
+                    return TaskHandle();
                 }
+            
                 return TaskHandle(stolenTask);
             }
             else
@@ -427,12 +435,21 @@ namespace lptk
         bool TaskMgr::Run(Task* task)
         {
             ASSERT(task != nullptr);
+            ASSERT(task->m_users >= 1);
             auto queue = GetWorkQueue();
             // The WorkQueue returns false if there's no room, but we 
             // should never hit that case, because we can only allocate 
             // as many tasks as we have size in the queue 
             // (we should hit a CreateTask failure first)
-            return queue->Push(task);
+            auto const oldState = task->m_status.exchange(Task::Status::Running, std::memory_order_seq_cst);
+            ASSERT(oldState == Task::Status::Created);
+            const auto ok = queue->Push(task);
+            if (!ok)
+            {
+                auto const oldState = task->m_status.exchange(Task::Status::Created, std::memory_order_seq_cst);
+                ASSERT(oldState == Task::Status::Running);
+            }
+            return ok;
         }
 
         void TaskMgr::Wait(Task* task)
@@ -452,24 +469,30 @@ namespace lptk
             ASSERT(task->m_users >= 1);
         }
 
+
         Task* TaskMgr::AllocateTask()
         {
             // free tasks that belong to this thread
             auto threadData = GetThreadData();
-            auto freeList = threadData->m_freeList.exchange(nullptr);
-            while (freeList)
             {
-                auto next = freeList->m_parent;
-                freeList->m_function = &FreedTask;
-                threadData->m_taskPool.Free(freeList);
-                freeList = next;
+                auto cur = threadData->m_freeList.exchange(nullptr, std::memory_order_acq_rel);
+                    
+                while (cur)
+                {
+                    ASSERT(cur->m_ownerIndex == s_ownerIndex);
+                    ASSERT(cur->m_unfinished == 0);
+                    ASSERT(cur->m_users == -1);
+                    auto next = cur->m_parent;
+                    cur->m_function = &FreedTask;
+                    threadData->m_taskPool.Free(cur);
+                    cur = next;
+                }
             }
 
             // allocate the new task from our pool
-            auto task = reinterpret_cast<Task*>(threadData->m_taskPool.Alloc());
+            auto task = new (threadData->m_taskPool.Alloc()) Task;
             if (task)
             {
-                memset(task, 0, sizeof(*task));
                 task->m_ownerIndex = s_ownerIndex;
             }
             return task;
@@ -482,26 +505,34 @@ namespace lptk
             ASSERT(task->m_users == -1);
             ASSERT(task->m_ownerIndex >= 0);
             ASSERT(static_cast<unsigned>(task->m_ownerIndex) < m_ownerData.size());
-            assert(task->m_function != &DeletedTask);
-            assert(task->m_function != &FreedTask);
-            assert(task->m_function != &EmptyTask);
-            assert(task->m_function != &AbortedTask);
+            ASSERT(task->m_function != &DeletedTask);
+            ASSERT(task->m_function != &FreedTask);
+            ASSERT(task->m_function != &EmptyTask);
+            ASSERT(task->m_function != &AbortedTask);
 
-            auto const ownerIndex = task->m_ownerIndex;
+            const auto ownerIndex = task->m_ownerIndex;
+            const auto ownerData = m_ownerData[ownerIndex].get();
+
+            auto const oldState = task->m_status.exchange(Task::Status::Deleted, std::memory_order_seq_cst);
+            ASSERT(oldState == Task::Status::Finished);
 
             if (ownerIndex == s_ownerIndex)
             {
-                auto threadData = GetThreadData();
                 task->m_function = &FreedTask;
-                threadData->m_taskPool.Free(task);
+                ownerData->m_taskPool.Free(task);
             }
             else
             {
                 task->m_function = &DeletedTask;
-
-                auto ownerData = m_ownerData[ownerIndex].get();
-                task->m_parent = ownerData->m_freeList.load(std::memory_order_seq_cst);
-                while (!ownerData->m_freeList.compare_exchange_weak(task->m_parent, task));
+                // The ideal code here would be:
+                //   task->m_parent = ownerData->m_freeList.load(std::memory_order_relaxed);
+                //   while (!ownerData->m_freeList.compare_exchange_weak(task->m_parent, task));
+                // but we do this instead because of a bug in vs2013. see bug: 819819 
+                auto oldHead = ownerData->m_freeList.load(std::memory_order_relaxed);
+                do {
+                    task->m_parent = oldHead;
+                } while (!ownerData->m_freeList.compare_exchange_weak(oldHead, task, 
+                    std::memory_order_release, std::memory_order_relaxed));
             }
         }
 
@@ -511,9 +542,8 @@ namespace lptk
             if (!task)
                 return task;
             task->m_function = function;
-            task->m_parent = nullptr;
-            task->m_unfinished = 1;
-            task->m_users = 0;
+            auto const oldState = task->m_status.exchange(Task::Status::Created, std::memory_order_seq_cst);
+            ASSERT(oldState == Task::Status::Invalid);
             return task;
         }
 
@@ -527,8 +557,8 @@ namespace lptk
 
             task->m_function = function;
             task->m_parent = parent;
-            task->m_unfinished = 1;
-            task->m_users = 0;
+            auto const oldState = task->m_status.exchange(Task::Status::Created, std::memory_order_seq_cst);
+            ASSERT(oldState == Task::Status::Invalid);
             return task;
         }
 

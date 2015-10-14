@@ -12,21 +12,34 @@ namespace lptk
         class Task
         {
         public:
+            enum class Status : int32_t {
+                Invalid = -1,
+                Created = 0,
+                Running,
+                Executed,
+                Finished,
+                Deleted,
+            };
+
             static constexpr int kCacheLine = 64;
             using TaskFn = void(*)(Task*, const void*);
 
-            TaskFn m_function;
-            Task* m_parent;
-            std::atomic<int32_t> m_unfinished;
-            std::atomic<int32_t> m_users;
-            int32_t m_ownerIndex;
+            TaskFn m_function = nullptr;
+            Task* m_parent = nullptr;
+            int32_t m_ownerIndex = -1;
+            void* m_data = nullptr;
+            std::atomic<int32_t> m_unfinished = 1;
+            std::atomic<int32_t> m_users = 0;
+            std::atomic<Status> m_status = Status::Invalid;
 
             char padding[kCacheLine
                 - sizeof(decltype(m_function))
                 - sizeof(decltype(m_parent))
+                - sizeof(decltype(m_ownerIndex))
+                - sizeof(decltype(m_data))
                 - sizeof(decltype(m_unfinished))
                 - sizeof(decltype(m_users))
-                - sizeof(decltype(m_ownerIndex))
+                - sizeof(decltype(m_status))
             ];
         };
         static_assert(sizeof(Task) == Task::kCacheLine, "Task should fit in kCacheLine");
@@ -39,7 +52,7 @@ namespace lptk
             Task* m_task = nullptr;
         public:
             TaskHandle();
-            TaskHandle(Task* task);
+            explicit TaskHandle(Task* task);
             TaskHandle(const TaskHandle& other);
             TaskHandle& operator=(const TaskHandle& other);
             TaskHandle(TaskHandle&& other);
