@@ -40,11 +40,15 @@ public:
 		obj->~T();
 		Free(obj);
 	}
+   
+    // for debugging
+    bool IsValidPtr(const void*) const;
 private:
 	class BlockItem {
 	public:
 		BlockItem* m_next;
 	};
+
 	class Block { 
 	public:
 		Block* m_next;

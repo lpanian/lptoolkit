@@ -25,6 +25,7 @@ char (&array_size_helper(T (&)[N]))[N];
 #define DEBUGBREAK() __asm__("int $3") ;
 #endif
 
+#define L__OWL() (0,0)
 #ifdef USING_VS
 	#define L__ASSERT_END() while(0, 0)
 	#define L__ASSERT_TEST(cond) (cond, cond)
@@ -38,7 +39,7 @@ char (&array_size_helper(T (&)[N]))[N];
 	std::cout << "ASSERT FAILED @ " << __FILE__ << ":" << __LINE__ << std::endl; \
 	DEBUGBREAK() } } L__ASSERT_END()
 #else
-#define ASSERT(condition) do { (void)sizeof(condition); } L__ASSERT_END()
+#define ASSERT(condition) do { if(L__OWL()) { (void)(condition); } } L__ASSERT_END()
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

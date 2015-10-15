@@ -66,13 +66,14 @@ PoolAlloc::~PoolAlloc()
 
 PoolAlloc::Block* PoolAlloc::AllocBlock()
 {
-	constexpr int blockSize = (sizeof(Block)+15) & ~15;
-	char* data = new (m_poolId, 16) char[blockSize + m_itemsPerBlock * m_itemSize];
-	Block* block = reinterpret_cast<Block*>(data);
-	bzero(block, blockSize + m_itemsPerBlock * m_itemSize);
-	for(int i = 0; i < m_itemsPerBlock-1; ++i)
+	constexpr unsigned int blockSize = (sizeof(Block)+15u) & ~15u;
+    const auto allocSize = blockSize + m_itemsPerBlock * m_itemSize;
+	char* data = new (m_poolId, 16) char[allocSize];
+	auto block = reinterpret_cast<Block*>(data);
+	bzero(block, allocSize);
+	for(int i = 0; i < m_itemsPerBlock - 1; ++i)
 	{
-		int offset = blockSize + i * m_itemSize;
+		const auto offset = blockSize + i * m_itemSize;
 		BlockItem *item = reinterpret_cast<BlockItem*>(data + offset);
 		item->m_next = reinterpret_cast<BlockItem*>(data + offset + m_itemSize);
 	}
@@ -96,11 +97,31 @@ void* PoolAlloc::Alloc()
 
 	void* result = reinterpret_cast<void*>(m_next);
 	m_next = m_next->m_next;
+    ASSERT(IsValidPtr(result));
 	return result;
 }
+    
+bool PoolAlloc::IsValidPtr(const void* p) const
+{
+    Block* cur = m_block;
+	while(cur) 
+    {
+        const auto blockStart = reinterpret_cast<size_t>(p);
+        const auto blockEnd = blockStart + m_itemSize;
+        const auto start = reinterpret_cast<size_t>(cur->First());
+        const auto end = reinterpret_cast<size_t>(cur->First()) + m_itemsPerBlock * m_itemSize;
+
+        if (blockStart >= start && blockEnd <= end)
+            return true;
+		cur = cur->m_next;
+	}
+    return false;
+}
+
 
 void PoolAlloc::Free(void* ptr)
 {
+    ASSERT(IsValidPtr(ptr));
 	if(!ptr) return;
 	BlockItem* item = reinterpret_cast<BlockItem*>(ptr);
 	item->m_next = m_next;

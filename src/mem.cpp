@@ -185,6 +185,16 @@ void *operator new[](size_t n)
     return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
 }
 
+void *operator new(size_t n, const std::nothrow_t&) 
+{
+    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
+}
+
+void *operator new[](size_t n, const std::nothrow_t&)
+{
+    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
+}
+
 void *operator new(size_t n, lptk::MemPoolId id, unsigned int align) 
 {
     return lptk::mem_allocate(n, id, align);
