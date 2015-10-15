@@ -12,15 +12,6 @@ namespace lptk
         class Task
         {
         public:
-            enum class Status : int32_t {
-                Invalid = -1,
-                Created = 0,
-                Running,
-                Executed,
-                Finished,
-                Deleted,
-            };
-
             static constexpr int kCacheLine = 64;
             using TaskFn = void(*)(Task*, const void*);
 
@@ -30,7 +21,6 @@ namespace lptk
             void* m_data = nullptr;
             std::atomic<int32_t> m_unfinished = 1;
             std::atomic<int32_t> m_users = 0;
-            std::atomic<Status> m_status = Status::Invalid;
 
             char padding[kCacheLine
                 - sizeof(decltype(m_function))
@@ -39,7 +29,6 @@ namespace lptk
                 - sizeof(decltype(m_data))
                 - sizeof(decltype(m_unfinished))
                 - sizeof(decltype(m_users))
-                - sizeof(decltype(m_status))
             ];
         };
         static_assert(sizeof(Task) == Task::kCacheLine, "Task should fit in kCacheLine");
