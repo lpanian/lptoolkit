@@ -4,6 +4,9 @@
 
 #include <atomic>
 
+#define LPTK_TASKMGR_INCLUDE_DEBUG_STATUS 0
+#define LPTK_TASKMGR_INCLUDE_DEBUG_TRACK_THIEF 0
+
 namespace lptk
 {
     namespace task
@@ -12,6 +15,7 @@ namespace lptk
         class Task
         {
         public:
+#if LPTK_TASKMGR_INCLUDE_DEBUG_STATUS
             enum class Status : int32_t {
                 Invalid = -1,
                 Created = 0,
@@ -20,6 +24,7 @@ namespace lptk
                 Finished,
                 Deleted,
             };
+#endif
 
             static constexpr int kCacheLine = 64;
             using TaskFn = void(*)(Task*, const void*, uint32_t dataSize);
@@ -41,8 +46,12 @@ namespace lptk
             int32_t m_ownerIndex = -1;
             std::atomic<int32_t> m_unfinished = 1;
             std::atomic<int32_t> m_users = 0;
-            std::atomic<Status> m_status = Status::Invalid;
+#if LPTK_TASKMGR_INCLUDE_DEBUG_TRACK_THIEF
             std::atomic<int32_t> m_thief = -1;
+#endif
+#if LPTK_TASKMGR_INCLUDE_DEBUG_STATUS
+            std::atomic<Status> m_status = Status::Invalid;
+#endif
             uint32_t m_dataSize = 0;
             
             char m_padding[kCacheLine
@@ -51,8 +60,12 @@ namespace lptk
                 - sizeof(decltype(m_ownerIndex))
                 - sizeof(decltype(m_unfinished))
                 - sizeof(decltype(m_users))
-                - sizeof(decltype(m_status))
+#if LPTK_TASKMGR_INCLUDE_DEBUG_TRACK_THIEF
                 - sizeof(decltype(m_thief))
+#endif
+#if LPTK_TASKMGR_INCLUDE_DEBUG_STATUS
+                - sizeof(decltype(m_status))
+#endif
                 - sizeof(decltype(m_dataSize))
             ];
             static_assert(sizeof(decltype(m_padding)) >= sizeof(void*), "need to store at least a pointer");
