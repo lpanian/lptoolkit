@@ -9,15 +9,19 @@ static constexpr int numTasks = 4095;
 static int finished[numTasks];
 
 
-static void EmptyJob(lptk::task::Task* task, const void*)
+static void EmptyJob(lptk::task::Task* task, const void* data, uint32_t dataSize)
 {
-    ++*reinterpret_cast<int*>(task->m_data);
+    lptk::unused_arg(task);
+
+    auto intPtr = reinterpret_cast<int* const*>(data);
+    ASSERT(dataSize >= sizeof(*intPtr));
+    ++(**intPtr);
     ++g_x;
 }
 
-static void RootJob(lptk::task::Task* task, const void*p)
+static void RootJob(lptk::task::Task* task, const void* data, uint32_t dataSize)
 {
-    EmptyJob(task, p);
+    EmptyJob(task, data, dataSize);
 }
 
 int main()
@@ -34,12 +38,15 @@ int main()
             lptk::Timer timer;
             timer.Start();
             auto root = lptk::task::CreateTask(RootJob);
-            root->m_data = &finished[numTasks - 1];
+
+            auto dataPtr = &finished[numTasks - 1];
+            root->SetData(&dataPtr, sizeof(dataPtr));
 
             for (int i = 0; i < numTasks - 1; ++i)
             {
                 auto child = lptk::task::CreateChildTask(root, EmptyJob);
-                child->m_data = &finished[i];
+                auto dataPtr = &finished[i];
+                child->SetData(&dataPtr, sizeof(dataPtr));
                 const auto ok = lptk::task::Run(child);
                 ASSERT(ok);
             }
@@ -65,7 +72,8 @@ int main()
             {
                 auto task = lptk::task::CreateTask(EmptyJob);
                 ASSERT(task.valid());
-                task->m_data = &finished[i];
+                auto dataPtr = &finished[i];
+                task->SetData(&dataPtr, sizeof(dataPtr));
                 lptk::task::Run(task);
                 lptk::task::Wait(task);
             }

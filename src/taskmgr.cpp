@@ -12,22 +12,22 @@ namespace lptk
     namespace task
     {
         ////////////////////////////////////////////////////////////////////////////////
-        static void DeletedTask(Task*, const void*)
+        static void DeletedTask(Task*, const void*, uint32_t)
         {
             ASSERT(false);
         }
         
-        static void FreedTask(Task*, const void*)
+        static void FreedTask(Task*, const void*, uint32_t)
         {
             ASSERT(false);
         }
 
-        static void EmptyTask(Task*, const void*)
+        static void EmptyTask(Task*, const void*, uint32_t)
         {
             ASSERT(false);
         }
 
-        static void AbortedTask(Task*, const void*)
+        static void AbortedTask(Task*, const void*, uint32_t)
         {
             ASSERT(false);
         }
@@ -41,6 +41,54 @@ namespace lptk
         }
 
         static void FreeTask(Task* task);
+        
+        
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        void Task::SetData(const void* data, uint32_t n)
+        {
+            if (n > sizeof(m_padding))
+            {
+                auto copy = lptk::mem_allocate(n, MEMPOOL_General, 16);
+                if (copy)
+                {
+                    *reinterpret_cast<void**>(m_padding) = copy;
+                    memcpy(copy, data, n);
+                    m_dataSize = n;
+                }
+            }
+            else
+            {
+                memcpy(m_padding, data, n);
+                m_dataSize = n;
+            }
+        }
+            
+        const void* Task::GetData() const
+        {
+            if (m_dataSize == 0)
+                return nullptr;
+
+            if (m_dataSize > sizeof(m_padding))
+            {
+                return *reinterpret_cast<const void* const*>(m_padding);
+            }
+            else
+            {
+                return &m_padding[0];
+            }
+        }
+
+        void Task::FreeData()
+        {
+            if (m_dataSize > sizeof(m_padding))
+            {
+                auto data = *reinterpret_cast<void**>(m_padding);
+                lptk::mem_free(data);
+            }
+            m_dataSize = 0;
+        }
+
 
         ////////////////////////////////////////////////////////////////////////////////
         TaskHandle::TaskHandle(){}
@@ -349,7 +397,7 @@ namespace lptk
         void TaskMgr::Execute(Task* task)
         {
             ASSERT(task->m_users >= 1);
-            (task->m_function)(task, task->m_data);
+            (task->m_function)(task, task->GetData(), task->m_dataSize);
             Finish(task);
             ASSERT(task->m_users >= 1);
         }
@@ -495,6 +543,8 @@ namespace lptk
             ASSERT(task->m_function != &FreedTask);
             ASSERT(task->m_function != &EmptyTask);
             ASSERT(task->m_function != &AbortedTask);
+
+            task->FreeData();
 
             const auto ownerIndex = task->m_ownerIndex;
             const auto ownerData = m_ownerData[ownerIndex].get();
