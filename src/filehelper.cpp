@@ -274,9 +274,9 @@ namespace lptk
         Str l = left;
         Str r = right;
         while (!r.empty() && StartsWith(r, FILE_SEP_STR))
-            r = r.substr(strlen(FILE_SEP_STR));
+            r = r.substr(static_cast<int>(strlen(FILE_SEP_STR)));
         while (!l.empty() && EndsWith(l, FILE_SEP_STR))
-            l = l.substr(0, l.length() - strlen(FILE_SEP_STR));
+            l = l.substr(0, static_cast<int>(l.length() - strlen(FILE_SEP_STR)));
         return l + FILE_SEP_STR + r;
     }
 

@@ -479,7 +479,7 @@ bool EndsWith( const StringType &str, const char *ending )
 template<class StringType>
 bool StartsWith( const StringType &str, const char *beginning)
 {
-    return StrNCaseEqual(str.c_str(), beginning, strlen(beginning));
+    return StrNCaseEqual(str.c_str(), beginning, static_cast<unsigned int>(strlen(beginning)));
 }
 
 inline const char* GetExtension( const char* szStr )

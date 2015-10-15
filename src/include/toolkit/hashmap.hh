@@ -17,9 +17,9 @@ namespace lptk
 
 // Default Hash
 template< class T >
-inline unsigned int MakeHash(const T& key) 
+inline size_t MakeHash(const T& key) 
 {
-    unsigned int result = 0;
+    size_t result = 0;
     int len = sizeof(T);
 
     // reinterpret the bytes as a string
@@ -31,9 +31,9 @@ inline unsigned int MakeHash(const T& key)
     return result;
 }
 
-inline unsigned int MakeHash(const char* key) 
+inline size_t MakeHash(const char* key) 
 {
-    unsigned int result = 0;
+    size_t result = 0;
     const char* p = key;
 
     while(*p) result += 261 * *p++;
@@ -41,12 +41,12 @@ inline unsigned int MakeHash(const char* key)
 }
 
 template<MemPoolId POOL>
-inline unsigned int MakeHash(const StringImpl<POOL>& str)
+inline size_t MakeHash(const StringImpl<POOL>& str)
 {
     return MakeHash(str.c_str());
 }
 
-inline unsigned int MakeHash(const std::string& str)
+inline size_t MakeHash(const std::string& str)
 {
     return MakeHash(str.c_str());
 }
@@ -86,7 +86,7 @@ public:
         V value;
     };
 
-    explicit HashMap(unsigned int size = 31) 
+    explicit HashMap(size_t size = 31) 
         : m_pairs(size, MEMPOOL_General)
         , m_used(size, false)
         , m_maxLoad(0.5f)
@@ -129,10 +129,10 @@ public:
     const V& operator[](const K& key) const { return get(key); }
     V& operator[](const K& key) ;
 
-    unsigned int capacity() const { return m_pairs.capacity(); }
-    unsigned int size() const { return m_numSetItems; }
+    size_t capacity() const { return m_pairs.capacity(); }
+    size_t size() const { return m_numSetItems; }
 
-    void resize(unsigned int newSize);
+    void resize(size_t newSize);
 
     void clear();
 
@@ -149,14 +149,14 @@ private:
     HashMap& operator=(const HashMap&);
 
     void Initialize();
-    unsigned int FindPair(const K& key) const;
+    size_t FindPair(const K& key) const;
     size_t Probe(const K &key) const;
 
     DynAry<Pair> m_pairs;
     BitVector m_used;
     float m_maxLoad;
     float m_grow;
-    unsigned int m_numSetItems;
+    size_t m_numSetItems;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ class HashMap<K,V>::iterator
 {
     friend class HashMap<K, V>;
 public:
-    iterator() : m_owner(0), m_index(static_cast<unsigned int>(-1)) {}
+    iterator() : m_owner(0), m_index(static_cast<decltype(m_index)>(-1)) {}
     iterator(const iterator& other) : m_owner(other.m_owner), m_index(other.m_index) {}
     iterator& operator=(const iterator& other)
     {
@@ -183,7 +183,7 @@ public:
     }
 
     iterator& operator++() {
-        unsigned int cur = m_index + 1;
+        auto cur = m_index + 1;
         while(cur < m_owner->m_pairs.size() && !m_owner->m_used[cur])
             ++cur;
         m_index = cur;
@@ -192,7 +192,7 @@ public:
 
     iterator operator++(int) {
         iterator temp = *this;
-        unsigned int cur = m_index + 1;
+        auto cur = m_index + 1;
         while(cur < m_owner->m_pairs.size() && !m_owner->m_used[cur])
             ++cur;
         m_index = cur;
@@ -209,10 +209,10 @@ public:
             m_index != o.m_index;
     }
 protected:
-    iterator(HashMap *owner, unsigned int idx) : m_owner(owner), m_index(idx) {}
+    iterator(HashMap *owner, size_t idx) : m_owner(owner), m_index(idx) {}
 private:
     HashMap* m_owner;
-    unsigned int m_index;
+    size_t m_index;
 };
 
 template< class K, class V>
@@ -220,7 +220,7 @@ class HashMap<K,V>::const_iterator
 {
     friend class HashMap<K, V>;
 public:
-    const_iterator() : m_owner(0), m_index(static_cast<unsigned int>(-1)) {}
+    const_iterator() : m_owner(0), m_index(static_cast<decltype(m_index)>(-1)) {}
     const_iterator(const const_iterator& other) : m_owner(other.m_owner), m_index(other.m_index) {}
     const_iterator& operator=(const const_iterator& other)
     {
@@ -238,7 +238,7 @@ public:
     }
 
     const_iterator& operator++() {
-        unsigned int cur = m_index + 1;
+        auto cur = m_index + 1;
         while(cur < m_owner->m_pairs.size() && !m_owner->m_used[cur])
             ++cur;
         m_index = cur;
@@ -247,7 +247,7 @@ public:
 
     const_iterator operator++(int) {
         const_iterator temp = *this;
-        unsigned int cur = m_index + 1;
+        auto cur = m_index + 1;
         while(cur < m_owner->m_pairs.size() && !m_owner->m_used[cur])
             ++cur;
         m_index = cur;
@@ -264,10 +264,10 @@ public:
             m_index != o.m_index;
     }
 protected:
-    const_iterator(const HashMap *owner, unsigned int idx) : m_owner(owner), m_index(idx) {}
+    const_iterator(const HashMap *owner, size_t idx) : m_owner(owner), m_index(idx) {}
 private:
     const HashMap* m_owner;
-    unsigned int m_index;
+    size_t m_index;
 };
 
 ////////////////////////////////////////////////////////////////////////////////	
@@ -276,9 +276,9 @@ template< class K, class V>
 typename HashMap<K,V>::Pair* HashMap<K,V>::set(const K& key, const V& value)
 {					
     // grow if we need to.
-    if( m_numSetItems > (unsigned int)(m_maxLoad * m_pairs.size()) )
+    if( m_numSetItems > (m_maxLoad * m_pairs.size()) )
     {
-        resize(static_cast<unsigned int>(m_pairs.size()*m_grow));
+        resize(static_cast<size_t>(m_pairs.size()*m_grow));
     }
 
     auto const index = Probe(key);
@@ -296,9 +296,9 @@ template< class K, class V>
 typename HashMap<K,V>::Pair* HashMap<K,V>::set(const K& key, V&& value)
 {					
     // grow if we need to.
-    if( m_numSetItems > (unsigned int)(m_maxLoad * m_pairs.size()) )
+    if( m_numSetItems > (m_maxLoad * m_pairs.size()) )
     {
-        resize(static_cast<unsigned int>(m_pairs.size()*m_grow));
+        resize(static_cast<size_t>(m_pairs.size()*m_grow));
     }
 
     auto const index = Probe(key);
@@ -391,7 +391,7 @@ void HashMap<K,V>::del(const K& key)
 }
 
 template< class K, class V>
-void HashMap<K,V>::resize(unsigned int newSize)
+void HashMap<K,V>::resize(size_t newSize)
 {
     ASSERT(newSize >= m_numSetItems);
 
@@ -409,8 +409,8 @@ void HashMap<K,V>::resize(unsigned int newSize)
 template< class K, class V>
 void HashMap<K,V>::clear()
 {
-    for(unsigned int i = 0, c = m_pairs.size(); i < c; ++i)
-        m_pairs[i] = Pair();
+    for (auto& pair : m_pairs)
+        pair = Pair();
     m_numSetItems = 0;
 }
 
@@ -428,7 +428,7 @@ void HashMap<K,V>::swap(HashMap &other)
 template< class K, class V>
 typename HashMap<K,V>::iterator HashMap<K,V>::begin()
 {
-    for(unsigned int i = 0, c = m_pairs.size(); i < c; ++i)
+    for(size_t i = 0, c = m_pairs.size(); i < c; ++i)
     {
         if(m_used[i])
             return iterator(this, i);
@@ -446,7 +446,7 @@ typename HashMap<K,V>::iterator HashMap<K,V>::end()
 template< class K, class V>
 typename HashMap<K,V>::const_iterator HashMap<K,V>::begin() const
 {
-    for(unsigned int i = 0, c = m_pairs.size(); i < c; ++i)
+    for(size_t i = 0, c = m_pairs.size(); i < c; ++i)
     {
         if(m_used[i])
             return const_iterator(this, i);
