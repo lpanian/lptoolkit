@@ -12,6 +12,15 @@ namespace lptk
         class Task
         {
         public:
+            enum class Status : int32_t {
+                Invalid = -1,
+                Created = 0,
+                Running,
+                Executed,
+                Finished,
+                Deleted,
+            };
+
             static constexpr int kCacheLine = 64;
             using TaskFn = void(*)(Task*, const void*, uint32_t dataSize);
 
@@ -32,14 +41,18 @@ namespace lptk
             int32_t m_ownerIndex = -1;
             std::atomic<int32_t> m_unfinished = 1;
             std::atomic<int32_t> m_users = 0;
+            std::atomic<Status> m_status = Status::Invalid;
+            std::atomic<int32_t> m_thief = -1;
             uint32_t m_dataSize = 0;
-
+            
             char m_padding[kCacheLine
                 - sizeof(decltype(m_function))
                 - sizeof(decltype(m_parent))
                 - sizeof(decltype(m_ownerIndex))
                 - sizeof(decltype(m_unfinished))
                 - sizeof(decltype(m_users))
+                - sizeof(decltype(m_status))
+                - sizeof(decltype(m_thief))
                 - sizeof(decltype(m_dataSize))
             ];
             static_assert(sizeof(decltype(m_padding)) >= sizeof(void*), "need to store at least a pointer");

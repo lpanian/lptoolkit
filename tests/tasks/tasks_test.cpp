@@ -15,8 +15,8 @@ static void EmptyJob(lptk::task::Task* task, const void* data, uint32_t dataSize
 
     auto intPtr = reinterpret_cast<int* const*>(data);
     ASSERT(dataSize >= sizeof(*intPtr));
-    ++(**intPtr);
     g_x.fetch_add(1, std::memory_order_acq_rel);
+    ++(**intPtr);
 }
 
 static void RootJob(lptk::task::Task* task, const void* data, uint32_t dataSize)
@@ -54,7 +54,7 @@ int main()
             lptk::task::Wait(root);
             timer.Stop();
 
-            auto const x = g_x.load();
+            auto const x = g_x.load(std::memory_order_acquire);
             ASSERT(x == numTasks);
             if (x != numTasks) DEBUGBREAK();
             for (auto x : finished){
@@ -64,8 +64,8 @@ int main()
             std::cout << x << " tasks, jobs: " << timer.GetTime() << "\n";
         }
         {
-            g_x.store(0, std::memory_order_release);
             memset(finished, 0, sizeof(finished));
+            g_x.store(0, std::memory_order_release);
 
             lptk::Timer timer;
             timer.Start();
@@ -81,7 +81,7 @@ int main()
             }
             timer.Stop();
 
-            auto const x = g_x.load();
+            auto const x = g_x.load(std::memory_order_acquire);
             ASSERT(x == numTasks);
             if (x != numTasks) DEBUGBREAK();
             for (auto x : finished)
