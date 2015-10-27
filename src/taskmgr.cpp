@@ -295,7 +295,7 @@ namespace lptk
         class TaskMgr
         {
         public:
-            TaskMgr(int numThreads);
+            TaskMgr(int numThreads, uint32_t logQueueSize);
             ~TaskMgr();
 
             Task* CreateTask(Task::TaskFn function);
@@ -313,10 +313,9 @@ namespace lptk
             //////////////////////////////////////////////////////////////////////////////// 
             struct ThreadLocalData
             {
-                static constexpr uint32_t kLogSize = 12u;
-                ThreadLocalData()
-                    : m_taskPool(1u << kLogSize, sizeof(Task), false)
-                    , m_workQueue(kLogSize)
+                ThreadLocalData(uint32_t logSize)
+                    : m_taskPool(1u << logSize, sizeof(Task), false)
+                    , m_workQueue(logSize)
                     , m_stealIndex(0)
                 {
                     m_freeList = nullptr;
@@ -347,17 +346,17 @@ namespace lptk
         
         
         ////////////////////////////////////////////////////////////////////////////////
-        TaskMgr::TaskMgr(int numThreads)
+        TaskMgr::TaskMgr(int numThreads, uint32_t logQueueSize)
         {
             m_done = false;
             m_workers.reserve(numThreads);
             m_ownerData.resize(numThreads + 1);
             s_ownerIndex = 0;
-            m_ownerData[0] = make_unique<ThreadLocalData>();
+            m_ownerData[0] = make_unique<ThreadLocalData>(logQueueSize);
             for (auto i = 0; i < numThreads; ++i)
             {
                 auto ownerIndex = 1u + i;
-                m_ownerData[ownerIndex] = make_unique<ThreadLocalData>();
+                m_ownerData[ownerIndex] = make_unique<ThreadLocalData>(logQueueSize);
             }
 
             for (auto i = 0; i < numThreads; ++i)
@@ -642,12 +641,12 @@ namespace lptk
         //////////////////////////////////////////////////////////////////////////////// 
         // public C-style interface functions
         static std::unique_ptr<TaskMgr> g_taskMgr;
-        void Init(int numWorkers)
+        void Init(int numWorkers, uint32_t logQueueSize)
         {
             ASSERT(g_taskMgr.get() == nullptr);
             s_abortTask.m_function = &AbortedTask;
             s_emptyTask.m_function = &EmptyTask;
-            g_taskMgr = make_unique<TaskMgr>(numWorkers);
+            g_taskMgr = make_unique<TaskMgr>(numWorkers, logQueueSize);
         }
 
         void Shutdown()

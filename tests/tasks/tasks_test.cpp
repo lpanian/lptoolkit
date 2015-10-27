@@ -5,7 +5,7 @@
 #include "toolkit/timer.hh"
 
 std::atomic<int32_t> g_x;
-static constexpr int numTasks = 4095;
+static constexpr int numTasks = 4096;
 static int finished[numTasks];
 
 
@@ -26,7 +26,7 @@ static void RootJob(lptk::task::Task* task, const void* data, uint32_t dataSize)
 
 int main()
 {
-    lptk::task::Init(std::max(1, lptk::NumProcessors() - 1));
+    lptk::task::Init(std::max(1, lptk::NumProcessors() - 1), 12u);
 
     for (int attemptNum = 0; attemptNum < 500; ++attemptNum)
     {

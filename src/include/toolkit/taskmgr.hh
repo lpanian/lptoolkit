@@ -36,7 +36,7 @@ namespace lptk
         private:
             friend class TaskMgr;
             friend class TaskHandle;
-            friend void Init(int);
+            friend void Init(int, uint32_t);
 
             const void* GetData() const;
             void FreeData();
@@ -100,7 +100,7 @@ namespace lptk
 
 
         ////////////////////////////////////////////////////////////////////////////////
-        void Init(int numWorkers);
+        void Init(int numWorkers, uint32_t logQueueSize);
         void Shutdown();
 
         TaskHandle CreateTask(Task::TaskFn function);
