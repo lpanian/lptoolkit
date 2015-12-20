@@ -68,7 +68,7 @@ struct SerializeFileHeader
 static_assert(sizeof(SerializeFileHeader) == 32, "expected SerializeFileHeader size is 32 bytes");
 
 ////////////////////////////////////////////////////////////////////////////////
-// MemSerializer - serialize classes into a continguous block of memory
+// MemSerializer - serialize classes into a contiguous block of memory
 class MemSerializer
 {
 public:

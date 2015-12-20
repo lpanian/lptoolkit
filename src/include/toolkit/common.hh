@@ -80,42 +80,6 @@ inline std::unique_ptr<T> make_unique(Args&&... args)
 namespace lptk 
 {
 
-//template<class T, MemPoolId POOL>
-//inline std::unique_ptr<T> make_unique() 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T());
-//}
-//
-//template<class T, MemPoolId POOL, class A0>
-//inline std::unique_ptr<T> make_unique(A0&& a0) 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0)));
-//}
-//
-//template<class T, MemPoolId POOL, class A0, class A1>
-//inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1) 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0), std::forward<A1>(a1)));
-//}
-//
-//template<class T, MemPoolId POOL, class A0, class A1, class A2>
-//inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2) 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2)));
-//}
-//
-//template<class T, MemPoolId POOL, class A0, class A1, class A2, class A3>
-//inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2, A3&& a3) 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3)));
-//}
-//
-//template<class T, MemPoolId POOL, class A0, class A1, class A2, class A3, class A4>
-//inline std::unique_ptr<T> make_unique(A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a4) 
-//{
-//	return std::unique_ptr<T>(new (POOL, alignof(T)) T(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4)));
-//}
-
 ////////////////////////////////////////////////////////////////////////////////
 // This probably isn't the right place for this. But I don't think I have enough
 // uses to create a core/grammarhelper.hh
@@ -157,6 +121,7 @@ bool IsNativeLittleEndian()
 }
 #endif
 
+// TODO: move this to a range helper header
 template<class T> struct ReversedType {
     T m_t;
     ReversedType (T& t) : m_t(t) {}
