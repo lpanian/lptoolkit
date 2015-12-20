@@ -383,6 +383,7 @@ public:
     T& back() { ASSERT(m_size > 0); return m_array[m_size-1]; }
     const T& back() const { ASSERT(m_size > 0); return m_array[m_size-1]; }
 
+    T* data() { return &(m_array[0]); }
     const T* data() const { return &(m_array[0]); }
 
     iterator begin() { return &(m_array[0]); }
