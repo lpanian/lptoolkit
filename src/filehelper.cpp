@@ -40,11 +40,11 @@ namespace lptk
         auto closeOnExit = at_scope_exit([&]{ fclose(fp); });
 
         fseek(fp, 0, SEEK_END);
-        size_t fileSize = ftell(fp);
+        const size_t fileSize = ftell(fp);
         rewind(fp);
 
         std::vector<char> buffer(fileSize);
-        size_t numRead = fread(&buffer[0], 1, fileSize, fp);
+        size_t numRead = fread(buffer.data(), 1, fileSize, fp);
         if(numRead != fileSize)
             return std::vector<char>();
         return buffer;
@@ -62,7 +62,7 @@ namespace lptk
         if(!fp) return false;
         auto closeOnExit = at_scope_exit([&]{fclose(fp);});
 
-        size_t numWritten = fwrite(&buffer[0], 1, buffer.size(), fp);
+        size_t numWritten = fwrite(buffer.data(), 1, buffer.size(), fp);
         if(numWritten != buffer.size())
             return false;
         return true;
