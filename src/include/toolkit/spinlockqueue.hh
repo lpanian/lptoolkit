@@ -2,6 +2,8 @@
 #ifndef INCLUDED_toolkit_spinlockqueue_HH
 #define INCLUDED_toolkit_spinlockqueue_HH
 
+#include <atomic>
+
 namespace lptk
 {
     template<class T>
@@ -11,6 +13,7 @@ namespace lptk
 
         struct Node
         {
+            Node(T&& data) : m_data(std::move(data)), m_next(nullptr) {}
             Node(const T& data) : m_data(data), m_next(nullptr) {}
             T m_data;
             std::atomic<Node*> m_next;
@@ -85,6 +88,31 @@ namespace lptk
             }
 
             return false;
+        }
+        
+        T pop()
+        {
+            while (m_headLock.exchange(true, std::memory_order::memory_order_acq_rel)) {}
+
+            Node* first = m_head;
+            Node* next = first->m_next;
+            T result;
+
+            if (next != nullptr)
+            {
+                result = std::move(next->m_data);
+                m_head = next;
+
+                m_headLock.store(false, std::memory_order::memory_order_release);
+
+                delete first;
+            }
+            else
+            {
+                m_headLock.store(false, std::memory_order::memory_order_release);
+            }
+
+            return result;
         }
     };
 }
