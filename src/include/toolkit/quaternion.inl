@@ -126,9 +126,16 @@ void GetAxisAngle(const quaternion<T>& q, vec3<T>& axis, T &rotation)
     rotation = Acos(q.r);
     T sin_a = Sin(rotation);
     rotation *= T(2);
-    axis.x = q.a/sin_a;
-    axis.y = q.b/sin_a;
-    axis.z = q.c/sin_a;
+    if (sin_a == 0)
+    {
+        axis.Set(1, 0, 0);
+    }
+    else
+    {
+        axis.x = q.a / sin_a;
+        axis.y = q.b / sin_a;
+        axis.z = q.c / sin_a;
+    }
 }
 
 }
