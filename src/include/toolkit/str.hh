@@ -347,7 +347,7 @@ private:
         str_head* head = reinterpret_cast<str_head*>(data);
         if(head->refCount == std::numeric_limits<uint16_t>::max())
         {
-            str_head* head = reinterpret_cast<str_head*>(m_data);
+            head = reinterpret_cast<str_head*>(m_data);
             const char* sz = m_data + sizeof(str_head);
             CopyString(sz, head->length);
         }

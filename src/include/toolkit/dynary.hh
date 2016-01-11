@@ -295,7 +295,7 @@ public:
         if(n == 0)
             return;
         const size_type insertIndex = uninitialized_insert_n(pos, n);
-        for(size_type i = insertIndex, last = insertIndex+n; i < last; ++first, ++i)
+        for(size_type i = insertIndex, lastIdx = insertIndex+n; i < lastIdx; ++first, ++i)
             new (&m_array[i]) T(*first);
     }
 

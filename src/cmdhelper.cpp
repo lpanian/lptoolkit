@@ -16,12 +16,14 @@ namespace lptk
 		bool Parse(int, char**) override
 		{
 			lptk::DynAry<const CmdLineOpt*> all;
-			const CmdLineOpt* opt = s_opts;
-			while(opt)
-			{
-				all.push_back(opt);
-				opt = opt->GetNext();
-			}
+            {
+                const CmdLineOpt* opt = s_opts;
+                while (opt)
+                {
+                    all.push_back(opt);
+                    opt = opt->GetNext();
+                }
+            }
 
 			std::sort(all.begin(), all.end(), [](const CmdLineOpt* left, const CmdLineOpt* right){
 					return StrCaseCmp(left->GetLong(), right->GetLong()) < 0;

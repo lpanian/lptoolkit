@@ -45,8 +45,8 @@ int main()
             for (int i = 0; i < numTasks - 1; ++i)
             {
                 auto child = lptk::task::CreateChildTask(root, EmptyJob);
-                auto dataPtr = &finished[i];
-                child->SetData(&dataPtr, sizeof(dataPtr));
+                auto childDataPtr = &finished[i];
+                child->SetData(&childDataPtr, sizeof(childDataPtr));
                 const auto ok = lptk::task::Run(child);
                 ASSERT(ok);
             }
@@ -57,9 +57,9 @@ int main()
             auto const x = g_x.load(std::memory_order_acquire);
             ASSERT(x == numTasks);
             if (x != numTasks) DEBUGBREAK();
-            for (auto x : finished){
-                if (x != 1) DEBUGBREAK();
-                ASSERT(x == 1);
+            for (auto finishedCount : finished){
+                if (finishedCount != 1) DEBUGBREAK();
+                ASSERT(finishedCount == 1);
             }
             std::cout << x << " tasks, jobs: " << timer.GetTime() << "\n";
         }
@@ -84,10 +84,10 @@ int main()
             auto const x = g_x.load(std::memory_order_acquire);
             ASSERT(x == numTasks);
             if (x != numTasks) DEBUGBREAK();
-            for (auto x : finished)
+            for (auto finishedCount : finished)
             {
-                if (x != 1) DEBUGBREAK();
-                ASSERT(x == 1);
+                if (finishedCount != 1) DEBUGBREAK();
+                ASSERT(finishedCount == 1);
             }
             std::cout << x << " tasks, sequential: " << timer.GetTime() << "\n";
         }

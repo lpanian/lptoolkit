@@ -31,7 +31,9 @@ void SleepMS(unsigned int ms);
 // have to be aligned manually.
 #define alignof __alignof
 // constexpr isn't implemented in vs2013, so... this. Which breaks constexpr ctors
+#if _MSC_VER < 1900
 #define constexpr const
+#endif
 
 inline void bzero(void* ptr, size_t n) {
 	memset(ptr, 0, n);
