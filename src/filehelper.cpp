@@ -44,7 +44,7 @@ namespace lptk
         rewind(fp);
 
         std::vector<char> buffer(fileSize);
-        size_t numRead = fread(buffer.data(), 1, fileSize, fp);
+        size_t numRead = fread(buffer.data(), 1, buffer.size(), fp);
         if(numRead != fileSize)
             return std::vector<char>();
         return buffer;
