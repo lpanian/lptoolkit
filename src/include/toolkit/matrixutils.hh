@@ -15,8 +15,6 @@ template<class T>
 vec3<T> TransformVec(const mat44<T>& m, const vec3<T>& v);
 template<class T>
 vec3<T> TransformPoint(const mat44<T>& m, const vec3<T>& v);
-template<class T>
-vec4<T> TransformPoint(const mat44<T>& m, const vec4<T>& v);
 
 template<class T>
 void TransformFloat4(T* out, const mat44<T>& m, const T *in);
