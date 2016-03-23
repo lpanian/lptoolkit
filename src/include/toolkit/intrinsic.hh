@@ -2,13 +2,13 @@
 #ifndef INCLUDED_LPTOOLKIT_INTRINSIC_HH
 #define INCLUDED_LPTOOLKIT_INTRINSIC_HH
 
-#ifdef _MSC_VER
+#ifdef _WINDOWS
 #include <intrin.h>
 #endif
 
 namespace lptk
 {
-#ifdef _MSC_VER
+#ifdef _WINDOWS
     inline unsigned int PopCount(unsigned int value)
     {
         return __popcnt(value);

@@ -2,29 +2,10 @@
 #include <type_traits>
 #include "toolkit/common.hh"
 #include "toolkit/memstream.hh"
+#include "toolkit/endian.hh"
 
 namespace lptk
 {
-
-////////////////////////////////////////////////////////////////////////////////
-inline void SwapEndian(void* memory, size_t size)
-{
-	char* bytes = reinterpret_cast<char*>(memory);
-	for(size_t i = 0; i < size/2; ++i)
-	{
-		char byte = bytes[i];
-		bytes[i] = bytes[size - i - 1];
-		bytes[size - i - 1] = byte;
-	}
-}
-
-template< class T >
-inline void SwapEndian(T& value)
-{
-	ASSERT(std::is_arithmetic<T>::value || std::is_enum<T>::value);
-	char* bytes = reinterpret_cast<char*>(&value);
-	SwapEndian(bytes, sizeof(value));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 MemWriter::MemWriter() 

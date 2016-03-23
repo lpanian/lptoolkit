@@ -3,7 +3,6 @@
 #define INCLUDED_toolkit_filehelper_hh
 
 #include <ctime>
-#include <vector>
 #include <sys/types.h>
 
 #if defined(LINUX)
@@ -25,8 +24,11 @@ namespace lptk
 	constexpr char kFileSep = FILE_SEP;
 	constexpr char kFileSepStr[] = FILE_SEP_STR;
 
-std::vector<char> ReadFile(const char* filename);
-bool WriteFile(const char* filename, const std::vector<char>& buffer);
+template<class Container>
+    Container ReadFile(const char* filename);
+template<class Container>
+    bool WriteFile(const char* filename, Container&& buffer);
+
 bool FileExists(const char* filename);
 bool FileIsDirectory(const char* filename);
 bool FileIsWriteable(const char* filename);
@@ -86,6 +88,8 @@ private:
 };
 
 }
+
+#include "filehelper.inl"
 
 #endif
 

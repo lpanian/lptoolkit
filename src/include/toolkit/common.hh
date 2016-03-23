@@ -1,6 +1,4 @@
 #pragma once
-#ifndef INCLUDED_toolkit_common_HH
-#define INCLUDED_toolkit_common_HH
 
 #include <utility>
 #include <iostream>
@@ -14,7 +12,7 @@
 #define CARRAY_SIZE(ary) (sizeof(ary)/sizeof(ary[0]))
 
 template<class T, int N>
-char (&array_size_helper(T (&)[N]))[N];
+char (&array_size_helper(T (&)[N]))[N] = delete;
 #define ARRAY_SIZE(ary) (sizeof(array_size_helper((ary))))
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,36 +88,6 @@ inline const char* ChoosePlural(T count, const char* singular, const char* plura
     if(count == T(1)) return singular;
     else return plural;
 }
-
-union EndianHelper {
-#ifndef USING_VS
-    constexpr 
-#endif
-    EndianHelper(int val) : i(val) {}
-    uint32_t i;
-    char c[4];
-};
-
-#ifndef USING_VS
-constexpr 
-#else
-inline
-#endif
-bool IsNativeBigEndian() 
-{
-    return EndianHelper(0x01020304).c[0] == 0x01;
-}
-
-#ifdef USING_VS
-inline
-#else
-constexpr 
-#endif
-bool IsNativeLittleEndian() 
-{ 
-    return !IsNativeBigEndian();
-}
-#endif
 
 // TODO: move this to a range helper header
 template<class T> struct ReversedType {

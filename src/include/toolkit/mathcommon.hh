@@ -5,6 +5,7 @@
 #ifdef _WINDOWS
 #include <intrin.h>
 #pragma intrinsic(_BitScanReverse)
+#pragma intrinsic(_BitScanForward)
 #endif
 
 #include <cmath>
@@ -154,6 +155,24 @@ inline unsigned long IntLog2(unsigned long num)
 #else
 	return 8*sizeof(num) - 1 - __builtin_clzl(num);
 #endif
+}
+
+inline unsigned long FirstBitIndex(unsigned long num)
+{
+#ifdef _WINDOWS
+	unsigned long index;
+    if (_BitScanForward(&index, num))
+    {
+        return index;
+    }
+    else
+    {
+        return 0;
+    }
+#else
+    return num ? __builtin_ctzl(num) : 0;
+#endif
+
 }
 
 inline unsigned long IntNearestPower2(unsigned long num)
