@@ -1,7 +1,4 @@
 #pragma once
-// Very generic image representation.
-//
-// The image uses linear color.
 
 #include <memory>
 
@@ -10,6 +7,12 @@ namespace lptk
     class Image
     {
     public:
+        Image() = default;
+        Image(const Image&) = delete;
+        Image& operator=(const Image&) = delete;
+        Image(Image&& other);
+        Image& operator=(Image&& other);
+
         void Init(unsigned width, unsigned height, unsigned numChannels);
         void Clear();
 
