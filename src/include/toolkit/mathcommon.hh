@@ -2,6 +2,8 @@
 #ifndef INCLUDED_toolkit_mathcommon_HH
 #define INCLUDED_toolkit_mathcommon_HH
 
+#include <type_traits>
+
 #ifdef _WINDOWS
 #include <intrin.h>
 #pragma intrinsic(_BitScanReverse)
@@ -87,48 +89,23 @@ template<class T>
 inline T Clamp(T v, T lo, T hi) { return Min(Max(v,lo), hi); }
 template<class T>
 inline T Lerp(float t, T a, T b) { return (1.f - t) * a + t * b; }
-template<class T>
-inline T Mod(T val, T limit)
-{
-    T result = val;
-    while(result >= limit)
-	result -= limit;
-    while(result < 0)
-	result += limit;
-    return result;
-}
 
-inline int32_t Mod(int32_t val, int32_t limit)
+template<typename T>
+inline std::enable_if_t<std::is_signed<T>::value, T> Mod(const T val, const T limit)
 {
-    if(val >= 0)
-	return val % limit;
+    if (val >= 0)
+        return val % limit;
     else
     {
-	int32_t result = val;
-	while(result < 0)
-	    result += limit;
-	return result;
+        T result = val;
+        while (result < 0)
+            result += limit;
+        return result;
     }
 }
 
-inline int64_t Mod(int64_t val, int64_t limit)
-{
-    if(val >= 0)
-	return val % limit;
-    else
-    {
-	int64_t result = val;
-	while(result < 0)
-	    result += limit;
-	return result;
-    }
-}
-
-inline uint32_t Mod(uint32_t val, uint32_t limit)
-{
-    return val % limit;
-}
-inline uint64_t Mod(uint64_t val, uint64_t limit)
+template<typename T>
+inline std::enable_if_t<std::is_unsigned<T>::value, T> Mod(T val, T limit)
 {
     return val % limit;
 }
@@ -194,9 +171,9 @@ inline float Log2(float x)
 
 template<class T>
 inline void Swap(T& l, T& r) {
-    T temp = l;
-    l = r;
-    r = temp;
+    T temp = std::move(l);
+    l = std::move(r);
+    r = std::move(temp);
 }
 
 inline float LanczosSinc(float x, float tau) 
