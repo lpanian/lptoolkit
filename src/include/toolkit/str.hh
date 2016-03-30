@@ -6,7 +6,9 @@
 #include <cstdio>
 #include <cstdarg>
 #include <ostream>
+
 #include "mathcommon.hh"
+#include "compat.hh"
 
 namespace lptk
 {
@@ -89,10 +91,10 @@ public:
     int cmp(const ArrayString& other) const { if(m_data == other.m_data) return 0; else return cmp(other.c_str()); }
     int ncmp(const char* other, int len) const { return strncmp(c_str(), other, len); }
     int ncmp(const ArrayString& other, int len) const { return strncmp(c_str(), other.c_str(), len); }
-    int icmp(const char* other) const { return strcasecmp(c_str(), other); }
+    int icmp(const char* other) const { return StrCaseCmp(c_str(), other); }
     int icmp(const ArrayString& other) const { if(m_data == other.m_data) return 0; else return icmp(other.c_str()); }
-    int incmp(const char* other, int len) const { return strncasecmp(c_str(), other, len); }
-    int incmp(const ArrayString& other, int len) const { return strncasecmp(c_str(), other.c_str(), len); }
+    int incmp(const char* other, int len) const { return StrNCaseCmp(c_str(), other, len); }
+    int incmp(const ArrayString& other, int len) const { return StrNCaseCmp(c_str(), other.c_str(), len); }
 
     int find(char c) const { 
         return find(0, c);
@@ -136,7 +138,7 @@ class StringImpl
     // data members
     mutable char* m_data;
 public:
-    StringImpl() : m_data(0) {}
+    StringImpl() : m_data(nullptr) {}
     ~StringImpl()
     {
         DecRef();
@@ -144,7 +146,7 @@ public:
 
     StringImpl(const char* sz) : m_data(0) 
     {
-        size_t len = strlen(sz);
+        const size_t len = strlen(sz);
         CopyString(sz, len);
     }
 
@@ -159,15 +161,22 @@ public:
     }
 
     StringImpl(const StringImpl& other)
-        : m_data(0)
+        : m_data(nullptr)
     {
         if(other.m_data) 
             CopyData(other.m_data);
     }
 
+    StringImpl(StringImpl&& other)
+        : m_data(nullptr)
+    {
+        m_data = other.m_data;
+        other.m_data = nullptr;
+    }
+
     template< int SIZE >
     StringImpl(const ArrayString<SIZE>& other)
-    : m_data(0)
+    : m_data(nullptr)
     {
         CopyString(other.m_data, other.m_length);
     }
@@ -184,9 +193,20 @@ public:
         return *this;
     }
 
+    StringImpl& operator=(StringImpl&& other)
+    {
+        if (this != &other)
+        {
+            if (m_data) DecRef();
+            m_data = other.m_data;
+            other.m_data = nullptr;
+        }
+        return *this;
+    }
+
     StringImpl operator+(const StringImpl& other) const
     {
-        uint16_t len = length() + other.length() ;
+        const uint16_t len = length() + other.length() ;
         // TODO handle overflow
         char* data = new (POOL, 4) char[sizeof(str_head) + len + 1];
         str_head* head = reinterpret_cast<str_head*>(data);
@@ -250,10 +270,10 @@ public:
     int cmp(const StringImpl& other) const { if(m_data == other.m_data) return 0; else return cmp(other.c_str()); }
     int ncmp(const char* other, int len) const { return strncmp(c_str(), other, len); }
     int ncmp(const StringImpl& other, int len) const { return strncmp(c_str(), other.c_str(), len); }
-    int icmp(const char* other) const { return strcasecmp(c_str(), other); }
+    int icmp(const char* other) const { return StrCaseCmp(c_str(), other); }
     int icmp(const StringImpl& other) const { if(m_data == other.m_data) return 0; else return icmp(other.c_str()); }
-    int incmp(const char* other, int len) const { return strncasecmp(c_str(), other, len); }
-    int incmp(const StringImpl& other, int len) const { return strncasecmp(c_str(), other.c_str(), len); }
+    int incmp(const char* other, int len) const { return StrNCaseCmp(c_str(), other, len); }
+    int incmp(const StringImpl& other, int len) const { return StrNCaseCmp(c_str(), other.c_str(), len); }
 
     char& operator[](int idx) { return write_str()[idx]; }
     const char& operator[](int idx) const { return c_str()[idx]; }
@@ -272,18 +292,18 @@ public:
         return pos >= length() ? -1 : pos;
     }
 
-    int find(const char* str) const 
+    int find(const char* str, int pos) const 
     { 
-        if(empty()) return -1;
-        const char* p = strstr(c_str(), str);
+        if(empty() || pos < 0 || pos >= length()) return -1;
+        const char* p = strstr(c_str() + pos, str);
         if(p) return p - c_str();
         else return -1;
     }
 
-    int find(const StringImpl& str) const 
+    int find(const StringImpl& str, int pos = 0) const 
     { 
         if(empty()) return -1;
-        return find(str.c_str()); 
+        return find(str.c_str(), pos); 
     }
 
     int rfind(char c) const 
@@ -307,21 +327,90 @@ public:
             return StringImpl(c_str() + start, len);
     }
 
-    void sub(char c, char replace)
+    unsigned sub(char c, char replace)
     {
+        unsigned count = 0;
         if(!m_data)
-            return;
+            return count;
 
-        // if this string is referenced by more than this object, make a copy of this string
-        // before doing a replace
-        const str_head* head = reinterpret_cast<str_head*>(m_data);
-        if(head->refCount > 1)
-            *this = StringImpl<POOL>(this->c_str(), this->length());
-
-        ASSERT(reinterpret_cast<str_head*>(m_data)->refCount == 1);
         char* str = m_data + sizeof(str_head);
-        for(int i = 0, len = length(); i < len; ++i)
-            if(str[i] == c) str[i] = replace;
+        for (int i = 0, len = length(); i < len; ++i)
+        {
+            if (str[i] == c)
+            {
+                // if this string is referenced by more than this object, make a copy of this string
+                // before doing a replace
+                const str_head* head = reinterpret_cast<str_head*>(m_data);
+                if (head->refCount > 1)
+                {
+                    *this = StringImpl<POOL>(this->c_str(), this->length());
+                    str = m_data + sizeof(str_head);
+                    ASSERT(reinterpret_cast<str_head*>(m_data)->refCount == 1);
+                }
+
+                ++count;
+                str[i] = replace;
+            }
+        }
+
+        return count;
+    }
+
+    unsigned sub(const StringImpl<POOL>& pattern, const char* replace)
+    {
+        unsigned count = 0;
+        if (!m_data)
+            return count;
+
+        const auto replaceLen = strlen(replace);
+        const str_head* head = reinterpret_cast<str_head*>(m_data);
+        auto newLen = size_t(head->length);
+
+        auto pos = int(0);
+        while (pos >= 0)
+        {
+            pos = find(pattern, pos);
+            if (pos >= 0)
+            {
+                ++count;
+                newLen += replaceLen;
+                newLen -= pattern.length();
+                ++pos;
+            }
+        }
+        
+
+        StringImpl<POOL> tmp("", newLen);
+
+        const char* srcStr = m_data + sizeof(str_head);
+        char* destStr = tmp.m_data + sizeof(str_head);
+        auto srcPos = int(0);
+        auto destPos = int(0);
+        while (srcPos < length())
+        {
+            const auto endPos = find(pattern, srcPos);
+            if (endPos < 0)
+            {
+                const auto curLen = length() - srcPos;
+                strncpy(&destStr[destPos], &srcStr[srcPos], curLen);
+                srcPos += curLen;
+                destPos += curLen;
+            }
+            else
+            {
+                const auto curLen = endPos - srcPos;
+                strncpy(&destStr[destPos], &srcStr[srcPos], curLen);
+                srcPos += curLen;
+                destPos += curLen;
+                
+                strncpy(&destStr[destPos], replace, replaceLen);
+                srcPos += pattern.length();
+                destPos += replaceLen;
+            }
+        }
+
+        *this = std::move(tmp);
+        return count;
     }
 
 private:

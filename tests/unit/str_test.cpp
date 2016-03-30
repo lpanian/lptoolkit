@@ -36,7 +36,15 @@ TEST(StringImplTest, BasicTests)
     EXPECT_STREQ("test", outerCopy.c_str());
 }
 
-#ifndef _MSC_VER
+TEST(StringImplTest, Replace)
+{
+    Str target = "replaceXXXXmeXXXX";
+    const auto count = target.sub("XXXX", "ABC");
+    EXPECT_EQ(2u, count);
+    EXPECT_STREQ("replaceABCmeABC", target.c_str());
+}
+
+#if !defined(_MSC_VER) || _MSC_VER > 1800
 TEST(StringImplTest, Literal)
 {
     Str s = "This is a test"_s;
