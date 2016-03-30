@@ -73,7 +73,7 @@ namespace lptk
                 }
                 else
                 {
-                    *m_target = strtoull(argv[0], NULL, 10);
+                    *m_target = strtoull(argv[0], nullptr, 10);
                 }
             }
             else
@@ -105,14 +105,14 @@ namespace lptk
     template<typename Fn>
     void MakeOption(const char* name, const char* desc, int numArgs, Fn&& fn)
     {
-        return CmdLineOpt::AppendCommand(
+        CmdLineOpt::AppendCommand(
             make_unique<GenericCmdLineOpt<Fn> >(name, desc, numArgs, std::move(fn)));
     }
 
     template<typename Fn>
     void MakeOption(const char* name, const char* desc, Fn&& fn)
     {
-        return CmdLineOpt::AppendCommand(
+        CmdLineOpt::AppendCommand(
             make_unique<GenericCmdLineOpt<Fn> >(name, desc, -1, std::move(fn)));
     }
 }
