@@ -40,7 +40,7 @@ public:
 
 	template<class T>
 	char* Put(const T& t, bool swapEndian = true) {
-		ASSERT(std::is_arithmetic<T>::value || std::is_enum<T>::value);
+		static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "type is not numeric");
 		AlignedAdvance(alignof(T));
 		return Put(&t, sizeof(t), swapEndian);
 	}
@@ -78,7 +78,7 @@ public:
 
 	template<class T>
 	T Get(bool swapEndian = true) {
-		ASSERT(std::is_arithmetic<T>::value || std::is_enum<T>::value);
+		static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "type is not numeric");
 		AlignedConsume(alignof(T));
 		T result;
 		Get(&result, sizeof(T), swapEndian);
@@ -86,6 +86,7 @@ public:
 	}
 
 	size_t GetPos() const { return m_pos; }
+    const char* GetPtr() const { return m_b + m_pos; }
 
 	bool Empty() const { return m_s == m_pos; }	   
 	bool Error() const { return m_error; }
