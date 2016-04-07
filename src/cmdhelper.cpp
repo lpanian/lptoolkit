@@ -165,9 +165,11 @@ namespace lptk
                 int j = i + 1;
                 while (j < argc && argv[j][0] != '-') ++j;
 
-                const int numArgs = j - i - 1;
+                int numArgs = j - i - 1;
                 if (cur->m_numArgs <= numArgs)
                 {
+                    if (cur->m_numArgs >= 0)
+                        numArgs = cur->m_numArgs;
                     if (cur == s_helpCmdLineOpt)
                     {
                         printf("usage: %s [options]", argv[0]);
@@ -187,7 +189,7 @@ namespace lptk
                     printf("Not enough arguments for option %s. It requires %d parameters.\n",
                         cur->m_long, cur->m_numArgs);
                 }
-                i = j - 1;
+                i += numArgs;
                 if (cur == s_helpCmdLineOpt)
                     return true;
                 remainingIndex = i + 1;
