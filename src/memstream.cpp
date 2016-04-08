@@ -89,12 +89,26 @@ char* MemWriter::PutColorRGBA(ColorRGBA c)
 
 ////////////////////////////////////////////////////////////////////////////////
 MemReader::MemReader() 
-	: m_b(0), m_s(0), m_pos(0), m_error(true) 
 {}
 
 MemReader::MemReader(const char* buffer, size_t size, int flags) 
-	: m_b(buffer),m_s(size),m_pos(0),m_error(false), m_flags(flags) 
+	: m_top(buffer)
+    , m_topSize(size)
+    , m_b(buffer)
+    , m_s(size)
+    , m_error(false)
+    , m_flags(flags) 
 {}
+    
+MemReader::MemReader(const char* top, size_t topSize, const char* buffer, size_t size, int flags)
+    : m_top(top)
+    , m_topSize(topSize)
+    , m_b(buffer)
+    , m_s(size)
+    , m_error(false)
+    , m_flags(flags)
+{
+}
 
 void MemReader::Get(void* bytes, size_t size, bool swapEndian) 
 {
@@ -154,6 +168,35 @@ ColorRGBA MemReader::GetColorRGBA()
 	result.a = Get<uint8_t>(false);
 	return result;
 }
+    
+MemReader MemReader::GetSubReader(int flags) const
+{
+    if (m_error)
+        return MemReader();
+    else
+        return MemReader(m_top, m_topSize, m_b + m_pos, m_s - m_pos, flags ? flags : m_flags);
+}
+
+MemReader MemReader::GetSubReader(size_t offset, size_t requestedSize, int flags) const
+{
+    if (m_error)
+        return MemReader();
+    else if (m_pos + offset + requestedSize <= m_topSize)
+        return MemReader(m_top, m_topSize, m_b + m_pos + offset, requestedSize, flags ? flags : m_flags);
+    else
+        return MemReader();
+}
+
+MemReader MemReader::GetTopReader(size_t offset, size_t requestedSize, int flags) const
+{
+    if (m_error)
+        return MemReader();
+    else if (offset + requestedSize <= m_topSize)
+        return MemReader(m_top, m_topSize, m_top + offset, requestedSize, flags ? flags : m_flags);
+    else
+        return MemReader();
+}
+    
 
 }
 

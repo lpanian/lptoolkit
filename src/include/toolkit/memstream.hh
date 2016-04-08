@@ -17,6 +17,7 @@ namespace MemFormatFlag
 	{
 		FLAG_BigEndianData = 0x1, // data being read is big-endian, convert to native.
 		FLAG_LittleEndianData = 0x2, // data being read is little-endian, convert to native
+        FLAG_AlignedConsume = 0x4, // align types when consumingm emory
 	};
 }
 
@@ -57,11 +58,14 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 class MemReader {
-	const char* m_b;
-	size_t m_s;
-	size_t m_pos;
-	bool m_error;
-	int m_flags;
+    const char* m_top = nullptr;
+    size_t m_topSize = 0;
+	const char* m_b = nullptr;
+	size_t m_s = 0;
+	size_t m_pos = 0;
+	bool m_error = true;
+	int m_flags = 0;
+    MemReader(const char* top, size_t topSize, const char* buffer, size_t size, int flags);
 public:
 	MemReader();
 	MemReader(const char* buffer, size_t size, int flags = 0);
@@ -79,7 +83,8 @@ public:
 	template<class T>
 	T Get(bool swapEndian = true) {
 		static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "type is not numeric");
-		AlignedConsume(alignof(T));
+		if(0 != (m_flags & MemFormatFlag::FLAG_AlignedConsume)) 
+            AlignedConsume(alignof(T));
 		T result;
 		Get(&result, sizeof(T), swapEndian);
 		return result;
@@ -90,6 +95,10 @@ public:
 
 	bool Empty() const { return m_s == m_pos; }	   
 	bool Error() const { return m_error; }
+
+    MemReader GetSubReader(int flags = 0) const;
+    MemReader GetSubReader(size_t offset, size_t requestedSize, int flags = 0) const;
+    MemReader GetTopReader(size_t offset, size_t requestedSize, int flags = 0) const;
 };
 
 template<class T> 
