@@ -1,6 +1,6 @@
 #pragma once
-#ifndef INCLUDED_toolkit_memstream_HH
-#define INCLUDED_toolkit_memstream_HH
+#ifndef INCLUDED_TOOLKIT_MEMSTREAM_HH
+#define INCLUDED_TOOLKIT_MEMSTREAM_HH
 
 #include <type_traits>
 #include "vec.hh"
@@ -17,18 +17,15 @@ namespace lptk
         {
             FLAG_BigEndianData = 0x1, // data being read is big-endian, convert to native.
             FLAG_LittleEndianData = 0x2, // data being read is little-endian, convert to native
-            FLAG_AlignedConsume = 0x4, // align types when consumingm emory
+            FLAG_AlignedAccess = 0x4, // align to alignof(T) when putting or getting.
         };
     }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////
     class MemWriter
     {
-        char* m_b;
-        size_t m_s;
-        size_t m_pos;
-        bool m_error;
-        int m_flags;
     public:
         MemWriter();
         MemWriter(char* buffer, size_t size, int flags = 0);
@@ -42,7 +39,8 @@ namespace lptk
         template<class T>
         char* Put(const T& t, bool swapEndian = true) {
             static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "type is not numeric");
-            AlignedAdvance(alignof(T));
+            if (0 != (m_flags & MemFormatFlag::FLAG_AlignedAccess))
+                AlignedAdvance(alignof(T));
             return Put(&t, sizeof(t), swapEndian);
         }
         template<class T>
@@ -54,19 +52,19 @@ namespace lptk
 
         bool Full() const { return m_s == m_pos; }
         bool Error() const { return m_error; }
-    };
-
-    ////////////////////////////////////////////////////////////////////////////////
-    class MemReader
-    {
-        const char* m_top = nullptr;
-        size_t m_topSize = 0;
-        const char* m_b = nullptr;
+    private:
+        char* m_b = nullptr;
         size_t m_s = 0;
         size_t m_pos = 0;
         bool m_error = true;
         int m_flags = 0;
-        MemReader(const char* top, size_t topSize, const char* buffer, size_t size, int flags);
+    };
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    class MemReader
+    {
     public:
         MemReader();
         MemReader(const char* buffer, size_t size, int flags = 0);
@@ -84,7 +82,7 @@ namespace lptk
         template<class T>
         T Get(bool swapEndian = true) {
             static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "type is not numeric");
-            if (0 != (m_flags & MemFormatFlag::FLAG_AlignedConsume))
+            if (0 != (m_flags & MemFormatFlag::FLAG_AlignedAccess))
                 AlignedConsume(alignof(T));
             T result;
             Get(&result, sizeof(T), swapEndian);
@@ -101,11 +99,32 @@ namespace lptk
         bool Empty() const { return m_s == m_pos; }
         bool Error() const { return m_error; }
 
+        // Get a subreader starting at the same offset we're currently at in this reader, with whatever
+        // the remaining size is.
         MemReader GetSubReader(int flags = 0) const;
+
+        // Get a subreader starting at the specified offset and requestedSize, if that size
+        // is less than or equal to the size in this reader after the offset.
         MemReader GetSubReader(size_t offset, size_t requestedSize, int flags = 0) const;
+
+        // Get a reader at the offset and requested size of the topmost reader. This is good
+        // for reading files that give offsets from the top of the file.
         MemReader GetTopReader(size_t offset, size_t requestedSize, int flags = 0) const;
+    private:
+        const char* m_top = nullptr;
+        size_t m_topSize = 0;
+        const char* m_b = nullptr;
+        size_t m_s = 0;
+        size_t m_pos = 0;
+        bool m_error = true;
+        int m_flags = 0;
+        MemReader(const char* top, size_t topSize, const char* buffer, size_t size, int flags);
     };
 
+
+
+    // Helpers specifically for vector.
+    // TODO: This seems out of place here and should probably be moved elsewhere.
     template<class T>
     char* MemWriter::PutVec3(const vec3<T>& v, bool swapEndian)
     {

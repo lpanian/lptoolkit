@@ -9,7 +9,6 @@ namespace lptk
 
 ////////////////////////////////////////////////////////////////////////////////
 MemWriter::MemWriter() 
-	: m_b(0), m_s(0), m_pos(0), m_error(true), m_flags(0)
 {}
 
 MemWriter::MemWriter(char* buffer, size_t size, int flags) 
@@ -87,6 +86,8 @@ char* MemWriter::PutColorRGBA(ColorRGBA c)
     return start;
 }
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 MemReader::MemReader() 
 {}
@@ -118,10 +119,8 @@ void MemReader::Get(void* bytes, size_t size, bool swapEndian)
 		memcpy(bytes,&m_b[m_pos],size);
 		if(swapEndian)
 		{
-			// native is little endian and data is big
 			if(IsNativeLittleEndian() && (m_flags & FLAG_BigEndianData) != 0)
 				SwapEndian(bytes, size);
-			// else if native is big and data is little
 			else if(IsNativeBigEndian() && (m_flags & FLAG_LittleEndianData) != 0)
 				SwapEndian(bytes, size);
 		}
