@@ -127,8 +127,11 @@ void MemReader::Get(void* bytes, size_t size, bool swapEndian)
 		}
 		m_pos += size;
 	}
-	else
-		m_error = true;
+    else
+    {
+        memset(bytes, 0, size);
+        m_error = true;
+    }
 }
 
 void MemReader::Consume(size_t size) 
