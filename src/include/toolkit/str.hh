@@ -553,7 +553,7 @@ inline StringType StripExtension( const StringType &str )
     if(i > 0) {
         return StringType(str.c_str(), i);
     } else {
-        return StringType();
+        return str;
     }
 }
 
