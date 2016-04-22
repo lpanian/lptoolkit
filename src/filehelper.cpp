@@ -234,7 +234,12 @@ namespace lptk
             r = r.substr(static_cast<int>(strlen(FILE_SEP_STR)));
         while (!l.empty() && EndsWith(l, FILE_SEP_STR))
             l = l.substr(0, static_cast<int>(l.length() - strlen(FILE_SEP_STR)));
-        return l + FILE_SEP_STR + r;
+        if (l.empty())
+            return r;
+        else if (r.empty())
+            return l;
+        else
+            return l + FILE_SEP_STR + r;
     }
 
     Str PathJoin(const char* left, const char* right)
