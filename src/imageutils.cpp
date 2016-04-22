@@ -295,16 +295,6 @@ namespace lptk
     }
 
     //////////////////////////////////////////////////////////////////////////////// 
-    bool LoadTIFF(Image& result, const char* filename)
-    {
-        const auto fileData = lptk::ReadFile<lptk::DynAry<char>>(filename);
-        if (fileData.empty())
-            return false;
-
-        return LoadTIFF(result, fileData.data(), fileData.size());
-    }
-
-
     namespace tiff
     {
         enum CompressionType
@@ -1053,6 +1043,18 @@ namespace lptk
     
     
     ////////////////////////////////////////////////////////////////////////////////
+    bool LoadTIFF(Image& result, const char* filename)
+    {
+        const auto fileData = lptk::ReadFile<lptk::DynAry<char>>(filename);
+        if (fileData.empty())
+            return false;
+
+        return LoadTIFF(result, fileData.data(), fileData.size());
+    }
+
+
+    
+    ////////////////////////////////////////////////////////////////////////////////
     bool LoadTIFF(Image& result, const char* memory, size_t n)
     {
         lptk::MemReader topReader(memory, n);
@@ -1085,4 +1087,108 @@ namespace lptk
             ifdReader);
     }
 
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    bool LoadPFM(Image& result, const char* filename)
+    {
+        const auto fileData = lptk::ReadFile<lptk::DynAry<char>>(filename);
+        if (fileData.empty())
+            return false;
+
+        return LoadPFM(result, fileData.data(), fileData.size());
+    }
+
+    bool LoadPFM(Image& result, const char* memory, size_t n)
+    {
+        lptk::MemReader reader(memory, n);
+        char typeBuf[2] = {};
+        typeBuf[0] = reader.Get<char>();
+        typeBuf[1] = reader.Get<char>();
+        while (reader && reader.Get<char>() != '\n') {}
+
+        if (typeBuf[0] != 'P') 
+        {
+            fprintf(stderr, "LoadPFM: Unrecognized PFM prefix\n");
+            return false;
+        }
+        const auto numChannels = typeBuf[1] == 'F' ?  3 :
+            typeBuf[1] == 'f' ?  1 :
+            0;
+
+        if (!numChannels)
+        {
+            fprintf(stderr, "LoadPFM: Unrecognized PFM prefix\n");
+            return false;
+        }
+             
+        char numBuf[64];
+        auto bufIdx = 0;
+        while (reader) {
+            const auto cur = reader.Get<char>();
+            if (cur == ' ')
+                break;
+            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf))
+            {
+                numBuf[bufIdx++] = cur;
+            }
+        }
+        numBuf[ARRAY_SIZE(numBuf) - 1] = '\0';
+        auto const xRes = unsigned(atoi(numBuf));
+       
+        bufIdx = 0;
+        while (reader) {
+            const auto cur = reader.Get<char>();
+            if (cur == '\n')
+                break;
+            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf))
+            {
+                numBuf[bufIdx++] = cur;
+            }
+        }
+        numBuf[ARRAY_SIZE(numBuf) - 1] = '\0';
+        auto const yRes = unsigned(atoi(numBuf));
+
+        if (!xRes || !yRes) 
+        {
+            fprintf(stderr, "LoadPFM: Invalid resolution: %u x %u\n", unsigned(xRes), unsigned(yRes));
+            return false;
+        }
+
+        bufIdx = 0;
+        while (reader) {
+            const auto cur = reader.Get<char>();
+            if (cur == '\n')
+                break;
+            if (bufIdx < ARRAY_SIZE(numBuf))
+            {
+                numBuf[bufIdx++] = cur;
+            }
+        }
+        numBuf[ARRAY_SIZE(numBuf) - 1] = '\0';
+
+        const auto littleEndian = atof(numBuf) < 0.f;
+
+        auto dataReader = reader.GetSubReader(littleEndian ? lptk::MemFormatFlag::FLAG_LittleEndianData : lptk::MemFormatFlag::FLAG_BigEndianData);
+
+        result.Init(xRes, yRes, numChannels);
+        for (auto y = 0u; y < yRes; ++y)
+        {
+            auto yDest = yRes - y - 1;
+            for (auto x = 0u; x < xRes; ++x)
+            {
+                for (auto ch = 0; ch < numChannels; ++ch)
+                {
+                    if (!dataReader)
+                    {
+                        fprintf(stderr, "LoadPFM: Ran out of data at %u x %u ch %u\n", x, y, ch);
+                        return false;
+                    }
+
+                    result.Set(x, yDest, ch, dataReader.Get<float>());
+                }
+            }
+        }
+        return true;
+    }
 }

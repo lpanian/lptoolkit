@@ -12,4 +12,7 @@ namespace lptk
 
     bool LoadTIFF(Image& result, const char* filename);
     bool LoadTIFF(Image& result, const char* memory, size_t n);
+
+    bool LoadPFM(Image& result, const char* filename);
+    bool LoadPFM(Image& result, const char* memory, size_t n);
 }
