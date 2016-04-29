@@ -131,6 +131,7 @@ public:
 
     size_t capacity() const { return m_pairs.capacity(); }
     size_t size() const { return m_numSetItems; }
+    bool empty() const { return size() == 0; }
 
     void resize(size_t newSize);
 
