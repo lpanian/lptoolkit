@@ -1,6 +1,6 @@
 #pragma once
-#ifndef INCLUDED_lptk_binsearch_HH
-#define INCLUDED_lptk_binsearch_HH
+#ifndef INCLUDED_LPTK_BINSEARCH_HH
+#define INCLUDED_LPTK_BINSEARCH_HH
 
 #include <cstdint>
 
