@@ -9,10 +9,54 @@
 
 namespace lptk
 {
+    
+template<class T>
+quaternion<T>::quaternion(const mat33<T>& m)
+{
+    // 0 3 6 
+    // 1 4 7
+    // 2 5 8
+    T x,y,z,w;
+    T trace = T(1.0) + m.m[0] + m.m[4] + m.m[8];
+
+    if(trace > T(1e-6)) {
+        T s = Sqrt(trace) * T(2);
+        x = (m.m[5] - m.m[7]) / s;
+        y = (m.m[6] - m.m[2]) / s;
+        z = (m.m[1] - m.m[3]) / s;
+        w = T(0.25) * s;
+    } else if(m.m[0] > m.m[4] && m.m[0] > m.m[8]) {
+        T s = Sqrt(T(1.0) + m.m[0] - m.m[4] - m.m[8] ) * T(2);
+        x = T(0.25) * s;
+        y = (m.m[1] + m.m[3]) / s;
+        z = (m.m[6] + m.m[2]) / s;
+        w = (m.m[5] - m.m[7]) / s;
+    } else if(m.m[4] > m.m[8]) {
+        T s = Sqrt(T(1.0) + m.m[4] - m.m[0] - m.m[8] ) * T(2);
+        x = (m.m[1] + m.m[3]) / s;
+        y = T(0.25) * s;
+        z = (m.m[5] + m.m[7]) / s;
+        w = (m.m[6] - m.m[2]) / s;
+    } else {
+        T s = Sqrt(T(1.0) + m.m[8] - m.m[0] - m.m[4]) * T(2);
+        x = (m.m[6] + m.m[2]) / s;
+        y = (m.m[5] + m.m[7]) / s;
+        z = T(0.25) * s;
+        w = (m.m[1] - m.m[3]) / s;
+    }
+    a = x;
+    b = y;
+    c = z;
+    r = w;
+}
 
 template<class T>
 quaternion<T>::quaternion(const mat44<T> &m)
 {
+    // 0 4 8  12
+    // 1 5 9  13
+    // 2 6 10 14
+    // 3 7 11 15
     T x,y,z,w;
     T trace = T(1.0) + m.m[0] + m.m[5] + m.m[10];
     if(trace > T(1e-6)) {
@@ -47,7 +91,7 @@ quaternion<T>::quaternion(const mat44<T> &m)
 }
 
 template<class T>
-mat44<T> quaternion<T>::ToMatrix() const 
+mat44<T> quaternion<T>::ToMatrix44() const 
 {			
     T aa = a*a;
     T ab = a*b;
@@ -82,6 +126,38 @@ mat44<T> quaternion<T>::ToMatrix() const
     result.m[13] = T(0);
     result.m[14] = T(0);
     result.m[15] = T(1);
+
+    return result;
+}
+    
+template<class T>
+mat33<T> quaternion<T>::ToMatrix33() const
+{
+    T aa = a*a;
+    T ab = a*b;
+    T ac = a*c;
+    T ar = a*r;
+
+    T bb = b*b;
+    T bc = b*c;
+    T br = b*r;
+
+    T cc = c*c;
+    T cr = c*r;
+
+    mat33<T> result;
+
+    result.m[0] = T(1) - T(2) * (bb + cc);
+    result.m[1] = T(2) * (ab + cr);
+    result.m[2] = T(2) * (ac - br);
+
+    result.m[3] = T(2) * (ab - cr);
+    result.m[4] = T(1) - T(2) * (aa + cc);
+    result.m[5] = T(2) * (bc + ar);
+
+    result.m[6] =  T(2) * (ac + br);
+    result.m[7] =  T(2) * (bc - ar);
+    result.m[8] = T(1) - T(2) * (aa + bb);
 
     return result;
 }

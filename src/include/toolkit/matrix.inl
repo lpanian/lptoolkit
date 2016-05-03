@@ -15,6 +15,203 @@
 
 namespace lptk
 {
+////////////////////////////////////////////////////////////////////////////////
+template<class T>
+mat33<T>::mat33(const T* m_)
+{ 
+	std::copy(m_, m_+9, m);
+}
+	
+template<class T>
+inline mat33<T>::mat33() {}
+
+template<class T>
+mat33<T>::mat33(IdentityType) { 
+	bzero(m, sizeof(m));
+	m[8] = m[4] = m[0] = 1.f;
+}
+
+template<class T>
+    mat33<T>::mat33(
+        T m0, T m1, T m2,
+        T m3, T m4, T m5,
+        T m6, T m7, T m8)
+	{
+		m[0] = m0;
+		m[1] = m1;
+		m[2] = m2;
+
+		m[3] = m3;
+		m[4] = m4;
+		m[5] = m5;
+
+		m[6] = m6;
+		m[7] = m7;
+		m[8] = m8;
+	}
+
+template<class T>
+inline void mat33<T>::Copy(const mat33<T>& r)
+{
+	memcpy(m, r.m, sizeof(m));
+}
+
+template<class T>
+inline mat33<T>& mat33<T>::operator=(const mat33<T>& r) 
+{
+	if(this != &r)
+		Copy(r);
+	return *this;
+}
+	
+template<class T>
+inline mat33<T> mat33<T>::operator*(const mat33<T>& r) const
+{
+	mat33<T> result;
+	for(int off = 0; off < 9; off+=3)
+	{
+		result.m[off] = 0.f; result.m[off+1] = 0.f; result.m[off+2] = 0.f; 
+		for(int i = 0, j = 0; j < 3; ++j)
+		{
+			const auto bval = r.m[off+j];
+			result.m[off]   += bval * m[i]; ++i;
+			result.m[off+1] += bval * m[i]; ++i;
+			result.m[off+2] += bval * m[i]; ++i;
+		}
+	}
+	return result;
+}
+
+template<class T>
+mat33<T> mat33<T>::operator*(T r) const
+{
+    mat33<T> result = *this;
+    for(int i = 0; i < 9; ++i)
+        result.m[i] *= r;
+    return result;
+}
+
+template<class T>
+mat33<T>& mat33<T>::operator*=(T r) 
+{
+    for(int i = 0; i < 9; ++i)
+        m[i] *= r;
+    return *this;
+}
+
+template<class T>
+inline mat33<T>& mat33<T>::operator*=(const mat33<T>& r) 
+{
+	mat33<T> cur = *this;
+	for(int off = 0; off < 9; off+=3)
+	{
+		m[off] = 0.f; m[off+1] = 0.f; m[off+2] = 0.f; 
+		for(int i = 0, j = 0; j < 3; ++j)
+		{
+			const auto bval = r.m[off+j];
+			m[off]   += bval * cur.m[i]; ++i;
+			m[off+1] += bval * cur.m[i]; ++i;
+			m[off+2] += bval * cur.m[i]; ++i;
+		}
+	}
+	return *this;
+}
+
+template<class T>
+mat33<T> mat33<T>::operator+(const mat33<T>& r) const
+{
+    mat33<T> result = *this;
+    for(int i = 0; i < 9; ++i) {
+        result.m[i] += r.m[i];
+    }
+    return result;
+}
+
+template<class T>
+mat33<T>& mat33<T>::operator+=(const mat33<T>& r) 
+{
+    for(int i = 0; i < 9; ++i) {
+        this->m[i] += r.m[i];
+    }
+    return *this;
+}
+
+template<class T>
+mat33<T> mat33<T>::operator-(const mat33<T>& r) const
+{
+    mat33<T> result = *this;
+    for(int i = 0; i < 9; ++i) {
+        result.m[i] -= r.m[i];
+    }
+    return result;
+    
+}
+
+template<class T>
+mat33<T>& mat33<T>::operator-=(const mat33<T>& r) 
+{
+    for(int i = 0; i < 9; ++i) {
+        this->m[i] -= r.m[i];
+    }
+    return *this;
+}
+
+template<class T>
+inline vec3<T> mat33<T>::Col(int idx) const
+{
+	const int off = idx * 3;
+	return vec3<T>(m[off], m[off+1], m[off+2]);
+}
+
+template<class T>
+inline vec3<T> mat33<T>::Row(int idx) const
+{
+	return vec3<T>(m[idx], m[idx+3], m[idx+6]);	
+}
+	
+template<class T>
+bool mat33<T>::Equal(const mat33<T>& other, T eps) const
+{
+    return NormDiffSq(*this, other) <= eps;
+}
+
+template<class T>
+inline std::ostream& operator<<(std::ostream& s, const mat33<T>& mat)
+{
+	for(int i = 0; i < 3; ++i)
+	{
+		std::cout << "[ " << mat.m[i] << ", " << mat.m[i+3] << 
+			", " << mat.m[i+6] << " ]" << std::endl;
+	}
+	return s;
+}
+
+template<class T>
+inline T NormDiffSq(const mat33<T>& a, const mat33<T>& b)
+{
+    T result = T(0);
+    for(int i = 0; i < 9; i+=3) {
+        const vec3<T> leftCol(a[i], a[i+1], a[i+2]);
+        const vec3<T> rightCol(b[i], b[i+1], b[i+2]);
+        const vec3<T> diff = leftCol - rightCol;
+        const auto diffSq = LengthSq(diff);
+        if(diffSq > result) {
+            result = diffSq;
+        }
+    }
+    return result;
+}
+
+template<class T>
+inline T NormDiff(const mat33<T>& a, const mat33<T>& b) {
+    return Sqrt(NormDiffSq(a, b));
+}
+
+template<class T>
+inline mat33<T> operator*(T l, const mat33<T>& r)
+{
+    return r * l;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
@@ -34,30 +231,54 @@ mat44<T>::mat44(IdentityType) {
 
 template<class T>
 mat44<T>::mat44(T m0, T m1, T m2, T m3,
-		T m4, T m5, T m6, T m7,
-		T m8, T m9, T m10, T m11,
-		T m12, T m13, T m14, T m15)
-	{
-		m[0] = m0;
-		m[1] = m1;
-		m[2] = m2;
-		m[3] = m3;
-		
-		m[4] = m4;
-		m[5] = m5;
-		m[6] = m6;
-		m[7] = m7;
-		
-		m[8] = m8;
-		m[9] = m9;
-		m[10] = m10;
-		m[11] = m11;
-		
-		m[12] = m12;
-		m[13] = m13;
-		m[14] = m14;
-		m[15] = m15;
-	}
+    T m4, T m5, T m6, T m7,
+    T m8, T m9, T m10, T m11,
+    T m12, T m13, T m14, T m15)
+{
+    m[0] = m0;
+    m[1] = m1;
+    m[2] = m2;
+    m[3] = m3;
+
+    m[4] = m4;
+    m[5] = m5;
+    m[6] = m6;
+    m[7] = m7;
+
+    m[8] = m8;
+    m[9] = m9;
+    m[10] = m10;
+    m[11] = m11;
+
+    m[12] = m12;
+    m[13] = m13;
+    m[14] = m14;
+    m[15] = m15;
+}
+    
+template<class T>
+mat44<T>::mat44(const mat33<T>& m33)
+{
+    m[0] = m33.m[0];
+    m[1] = m33.m[1];
+    m[2] = m33.m[2];
+    m[3] = 0;
+    
+    m[4] = m33.m[3];
+    m[5] = m33.m[4];
+    m[6] = m33.m[5];
+    m[7] = 0;
+    
+    m[8] = m33.m[6];
+    m[9] = m33.m[7];
+    m[10] = m33.m[8];
+    m[11] = 0;
+
+    m[12] = 0;
+    m[13] = 0;
+    m[14] = 0;
+    m[15] = 1;
+}
 
 template<class T>
 inline void mat44<T>::Copy(const mat44<T>& r)
@@ -226,7 +447,6 @@ inline mat44<T> operator*(T l, const mat44<T>& r)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
 }
 
 #endif

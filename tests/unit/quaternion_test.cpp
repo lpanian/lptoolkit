@@ -280,7 +280,7 @@ TEST(QuaternionTest, Dot)
 TEST(QuaternionTest, MatrixConversion)
 {
     const quatf q = MakeRotation(RadFromDeg(45.f), v3f(0.f, 0.f, 1.f));
-    m44f m = q.ToMatrix();
+    m44f m = q.ToMatrix44();
 
     const quatf q2 = quatf(m);
     const v3f testPt(0,1,0);
@@ -288,6 +288,20 @@ TEST(QuaternionTest, MatrixConversion)
     const v3f result2 = Rotate(testPt, q2);
 
     EXPECT_TRUE(result1.Equal(result2));
+    
+    m33f m33 = q.ToMatrix33();
+
+    EXPECT_TRUE(m33.m[0] == m.m[0]);
+    EXPECT_TRUE(m33.m[1] == m.m[1]);
+    EXPECT_TRUE(m33.m[2] == m.m[2]);
+    
+    EXPECT_TRUE(m33.m[3] == m.m[4]);
+    EXPECT_TRUE(m33.m[4] == m.m[5]);
+    EXPECT_TRUE(m33.m[5] == m.m[6]);
+    
+    EXPECT_TRUE(m33.m[6] == m.m[8]);
+    EXPECT_TRUE(m33.m[7] == m.m[9]);
+    EXPECT_TRUE(m33.m[8] == m.m[10]);
 }
 
 

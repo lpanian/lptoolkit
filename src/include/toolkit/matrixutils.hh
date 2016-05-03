@@ -55,9 +55,17 @@ mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>&
 template<class T>
 mat44<T> MakeCoordinateScale(T scale, T add);
 template<class T>
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& xAxis, const vec3<T>& yAxis, const vec3<T>& zAxis);
+template<class T>
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& xAxis, const vec3<T>& yAxis, const vec3<T>& zAxis);
+template<class T>
 mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up);
 template<class T>
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& axis, float angle);
+template<class T>
 mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up);
+template<class T>
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& axis, float angle);
 template<class T>
 inline mat44<T> TransposeOfInverse(const mat44<T>& m) {
 	return Transpose(TransformInverse(m));

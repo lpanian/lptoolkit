@@ -3,6 +3,7 @@
 #define INCLUDED_toolkit_matrixutils_INL
 
 #include "mathcommon.hh"
+#include "quaternion.hh"
 
 namespace lptk
 {
@@ -565,12 +566,10 @@ mat44<T> GeneralInverse(const mat44<T>& m)
 //}
 
 template<class T>
-mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up)
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& xAxis,
+    const vec3<T>& yAxis,
+    const vec3<T>& zAxis)
 {
-    const vec3<T> zAxis = Normalize(eyePos - target); // -(target - eyePos)
-    const vec3<T> xAxis = Normalize(Cross(up, zAxis));
-    const vec3<T> yAxis = Cross(zAxis, xAxis);
-
     mat44<T> result;
     result.m[0] = xAxis.x;
     result.m[4] = xAxis.y;
@@ -589,17 +588,14 @@ mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& target, con
 
     result.m[3] = result.m[7] = result.m[11] = 0.f;
     result.m[15] = 1.f;
-    
     return result;
 }
 
 template<class T>
-mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up)
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& xAxis,
+    const vec3<T>& yAxis,
+    const vec3<T>& zAxis)
 {
-    const vec3<T> zAxis = Normalize(eyePos - target); // -(target - eyePos)
-    const vec3<T> xAxis = Normalize(Cross(up, zAxis));
-    const vec3<T> yAxis = Cross(zAxis, xAxis);
-
     mat44<T> result;
     result.m[0] = xAxis.x;
     result.m[1] = xAxis.y;
@@ -622,6 +618,46 @@ mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, cons
     result.m[15] = 1.f;
     
     return result;
+}
+
+template<class T>
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up)
+{
+    const vec3<T> zAxis = Normalize(eyePos - target); // -(target - eyePos)
+    const vec3<T> xAxis = Normalize(Cross(up, zAxis));
+    const vec3<T> yAxis = Cross(zAxis, xAxis);
+
+    return MatLookAt_CameraSpace(eyePos, xAxis, yAxis, zAxis);
+}
+
+template<class T>
+mat44<T> MatLookAt_CameraSpace(const vec3<T>& eyePos, const vec3<T>& axis, float angle)
+{
+    const auto zAxis = Rotate(lptk::v3f{ 0,0,1 }, lptk::MakeRotation(angle, axis));
+    const auto yAxis = axis;
+    const auto xAxis = Cross(yAxis, zAxis);
+
+    return MatLookAt_CameraSpace(eyePos, xAxis, yAxis, zAxis);
+}
+
+template<class T>
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, const vec3<T>& up)
+{
+    const vec3<T> zAxis = Normalize(eyePos - target); // -(target - eyePos)
+    const vec3<T> xAxis = Normalize(Cross(up, zAxis));
+    const vec3<T> yAxis = Cross(zAxis, xAxis);
+
+    return MatLookAt_WorldSpace(eyePos, xAxis, yAxis, zAxis);
+}
+
+template<class T>
+mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& axis, float angle)
+{
+    const auto zAxis = Rotate(lptk::v3f{ 0,0,1 }, lptk::MakeRotation(angle, axis)) ;
+    const auto yAxis = axis;
+    const auto xAxis = Cross(yAxis, zAxis);
+
+    return MatLookAt_WorldSpace(eyePos, xAxis, yAxis, zAxis);
 }
 
 template<class T>

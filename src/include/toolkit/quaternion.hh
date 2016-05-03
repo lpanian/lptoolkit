@@ -3,6 +3,8 @@
 #define INCLUDED_toolkit_quaternion_HH
 
 #include <cmath>
+#include <ostream>
+
 #include "vec.hh"
 #include "matrix.hh"
 #include "mathcommon.hh"
@@ -20,13 +22,14 @@ public:
 
     inline quaternion() {}
     inline quaternion(NoRotationType) 
-            : a(0), b(0), c(0), r(1.f) {}
+            : a(0), b(0), c(0), r(1) {}
     inline quaternion( T a, T b, T c, T r ) :
             a(a),b(b),c(c),r(r) {}
     inline quaternion( const vec3<T>& v, T r) :
             a(v.x),b(v.y),c(v.z),r(r) { }
     inline quaternion( const quaternion& q ) : a(q.a), b(q.b), c(q.c), r(q.r) { }
     quaternion(const mat44<T>& m);
+    quaternion(const mat33<T>& m);
 
     inline bool AllNumeric() const { return !isnan(a) && !isnan(b) && !isnan(c) && !isnan(r); }
 
@@ -88,7 +91,8 @@ public:
             return *this;
     }
             
-    mat44<T> ToMatrix() const ;
+    mat44<T> ToMatrix44() const ;
+    mat33<T> ToMatrix33() const ;
 
     inline bool operator==(const quaternion& o) const {
             return r == o.r &&
@@ -210,6 +214,12 @@ inline bool Equal(const quaternion<T>& lhs, const quaternion<T>& rhs, T eps = T(
 		Equal(lhs.a, rhs.a, eps) &&
 		Equal(lhs.b, rhs.b, eps) &&
 		Equal(lhs.c, rhs.c, eps);
+}
+
+template<class T>
+inline std::ostream& operator<<(std::ostream& s, const quaternion<T>& q) {
+	s << '<' << q.a << ',' << q.b << ',' << q.c << ',' << q.r << '>';
+	return s;
 }
 
 typedef quaternion<float> quatf;
