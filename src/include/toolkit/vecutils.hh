@@ -47,6 +47,21 @@ inline std::tuple<vec3<T>, vec3<T> > CreateArbitraryBasis(const vec3<T>& dir)
 		return std::make_tuple(Normalize(side), Normalize(up));
 }
 
+template<typename VecT>
+inline VecT Project(const VecT& v, int index) {
+    auto result = v;
+    result[index] = T(); 
+    return result;
+}
+
+template<typename VecT>
+inline VecT Project(const VecT& v, const VecT& axis)
+{
+    auto result = v;
+    result -= axis * lptk::Dot(v, axis);
+    return result;
+}
+
 }
 
 #endif

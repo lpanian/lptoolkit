@@ -130,12 +130,14 @@ inline std::ostream& operator<<(std::ostream& s, const vec2<T>& v) {
 template<class T>
 T vec2<T>::operator[](int i) const
 {
+    ASSERT(i < 2);
 	return (&x)[i];
 }
 
 template<class T>
 T& vec2<T>::operator[](int i) 
 {
+    ASSERT(i < 2);
 	return (&x)[i];
 }
 
@@ -344,12 +346,14 @@ inline std::ostream& operator<<(std::ostream& s, const vec3<T>& v) {
 template<class T>
 T vec3<T>::operator[](int i) const
 {
+    ASSERT(i < 3);
 	return (&x)[i];
 }
 
 template<class T>
 T& vec3<T>::operator[](int i) 
 {
+    ASSERT(i < 3);
 	return (&x)[i];
 }
 
@@ -573,12 +577,14 @@ inline std::ostream& operator<<(std::ostream& s, const vec4<T>& v) {
 template<class T>
 T vec4<T>::operator[](int i) const
 {
+    ASSERT(i < 4);
 	return (&x)[i];
 }
 
 template<class T>
 T& vec4<T>::operator[](int i) 
 {
+    ASSERT(i < 4);
 	return (&x)[i];
 }
 
