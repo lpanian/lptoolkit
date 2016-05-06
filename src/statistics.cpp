@@ -44,10 +44,10 @@ namespace lptk
     float Distribution1D::SampleContinuous(float u, float* pdf) const
     {
         // binary search cdf values, return lower index
-        const int lowerIndex = static_cast<int>(Clamp(
-            binSearchLower(m_cdf.begin(), m_cdf.end(), u), 
-            int64_t(0), 
-            static_cast<int64_t>(m_vals.size() - 1)));
+        const auto lowerIndex = Clamp(
+            binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin(), 
+            0, 
+            int(m_vals.size() - 1));
         const auto upperIndex = Min(lowerIndex + 1, int(m_vals.size()) - 1);
         
         const auto cdfLo = m_cdf[lowerIndex];
@@ -65,10 +65,10 @@ namespace lptk
         
     int Distribution1D::SampleDiscrete(float u, float* pdf) const
     {
-        const int lowerIndex = static_cast<int>(Clamp(
-            binSearchLower(m_cdf.begin(), m_cdf.end(), u), 
-            int64_t(0), 
-            static_cast<int64_t>(m_vals.size() - 1)));
+        const auto lowerIndex = Clamp(
+            binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin(), 
+            0, 
+            int(m_vals.size() - 1));
 
         // probability is the same as for continuous, but over a bucket of size 1/N
         // sum of all pdf values should sum to 1

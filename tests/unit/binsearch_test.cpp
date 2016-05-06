@@ -11,11 +11,12 @@ TEST(BinSearchTest, BasicTest)
     };
 
     const size_t initialIndex = 5;
-    const auto lowerIndex = lptk::binSearchLower(&vals[0], &vals[0]+ARRAY_SIZE(vals), 6.f, initialIndex);
+    const auto lowerIt = lptk::binSearchLower(&vals[0], &vals[0]+ARRAY_SIZE(vals), 6.f, initialIndex);
+    const auto lowerIndex = lowerIt - &vals[0];
     EXPECT_EQ(4, lowerIndex);
-    const auto index = lptk::binSearch(&vals[0], &vals[0]+ARRAY_SIZE(vals), 6.f, initialIndex);
-    ASSERT(index >= 0);
-    EXPECT_EQ(6.f, vals[index]);
+    const auto it = lptk::binSearch(&vals[0], &vals[0]+ARRAY_SIZE(vals), 6.f, initialIndex);
+    ASSERT(it != &vals[0] + ARRAY_SIZE(vals));
+    EXPECT_EQ(6.f, *it);
 }
 
 TEST(BinSearchTest, ImperfectCompareTest)
@@ -24,9 +25,10 @@ TEST(BinSearchTest, ImperfectCompareTest)
         0.f, 1.f, 3.f, 4.f, 6.f, 6.f, 6.f, 7.f
     };
 
-    const auto index = lptk::binSearchLower(&vals[0], &vals[0]+ARRAY_SIZE(vals), 4.5f);
+    const auto lowerIt = lptk::binSearchLower(&vals[0], &vals[0]+ARRAY_SIZE(vals), 4.5f);
+    const auto index = lowerIt - &vals[0];
     EXPECT_EQ(3, index);
-    const auto exactIndex = lptk::binSearch(&vals[0], &vals[0]+ARRAY_SIZE(vals), 4.5f);
-    EXPECT_EQ(-1, exactIndex);
+    const auto it = lptk::binSearch(&vals[0], &vals[0]+ARRAY_SIZE(vals), 4.5f);
+    EXPECT_EQ(it, &vals[0]+ARRAY_SIZE(vals));
 }
 

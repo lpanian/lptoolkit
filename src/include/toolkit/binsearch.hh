@@ -3,29 +3,30 @@
 #define INCLUDED_LPTK_BINSEARCH_HH
 
 #include <cstdint>
+#include <functional>
 
 namespace lptk
 {
     namespace details
     {
-        template<typename T, typename Iter>
-            int64_t binSearch(const Iter& begin, const Iter& end, const T& val, size_t initialMid)
+        template<typename T, typename Iter, typename Cmp>
+        Iter binSearch(Iter begin, Iter end, const T& val, Iter initialMid, Cmp&& cmp)
         {
-            const size_t count = end - begin;
+            const auto count = end - begin;
             if(count < 1)
-                return 0;
+                return end;
 
-            size_t lo = 0,
-                hi = count - 1,
-                mid = initialMid;
+            auto lo = begin;
+            auto hi = end - 1;
+            auto mid = initialMid;
         
             ASSERT(initialMid >= lo);
             ASSERT(initialMid <= hi);
 
             while(lo < hi)
             {
-                const T& midVal = *(begin + mid);
-                if(val <= midVal)
+                const auto& midVal = *mid;
+                if(!cmp(midVal, val))
                     hi = mid;
                 else
                     lo = mid + 1;
@@ -33,30 +34,30 @@ namespace lptk
                 mid = lo + (hi - lo) / 2;
             }
 
-            if(lo == hi && *(begin + lo) == val)
+            if(lo == hi && !cmp(*lo, val) && !cmp(val, *lo))
                 return lo;
             else
-                return -1;
+                return end;
         }
-        
-        template<typename T, typename Iter>
-            int64_t binSearchLower(const Iter& begin, const Iter& end, const T& val, size_t initialMid)
-        {
-            const size_t count = end - begin;
-            if(count < 1)
-                return 0;
 
-            size_t lo = 0,
-                hi = count - 1,
-                mid = initialMid;
+        template<typename T, typename Iter, typename Cmp>
+        Iter binSearchLower(Iter begin, Iter end, const T& val, Iter initialMid, Cmp&& cmp)
+        {
+            const auto count = end - begin;
+            if(count < 1)
+                return end;
+
+            auto lo = begin;
+            auto hi = end - 1;
+            auto mid = initialMid;
         
             ASSERT(initialMid >= lo);
             ASSERT(initialMid <= hi);
 
             while(lo < hi)
             {
-                const T& midVal = *(begin + mid);
-                if(val <= midVal)
+                const auto& midVal = *mid;
+                if(!cmp(midVal, val))
                     hi = mid;
                 else
                     lo = mid + 1;
@@ -64,39 +65,39 @@ namespace lptk
                 mid = lo + (hi - lo) / 2;
             }
 
-            while(lo > 0 && *(begin + lo) > val)
+            while (lo != begin && cmp(val, *lo)) 
                 --lo;
 
-            if(*(begin + lo) > val)
-                return -1;
+            if(cmp(val, *lo))
+                return end;
             return lo;
         }
     }
 
-    template<typename T, typename Iter>
-    int64_t binSearch(const Iter& begin, const Iter& end, const T& val) 
+    template<typename T, typename Iter, typename Cmp = std::less<T>>
+    Iter binSearch(Iter begin, Iter end, const T& val, Cmp&& cmp = Cmp()) 
     {
-        const size_t count = end - begin;
-        return details::binSearch(begin, end, val, count / 2);
+        const auto count = end - begin;
+        return details::binSearch(begin, end, val, begin + count / 2, std::forward<Cmp>(cmp));
     }
     
-    template<typename T, typename Iter>
-    int64_t binSearch(const Iter& begin, const Iter& end, const T& val, size_t mid) 
+    template<typename T, typename Iter, typename Cmp = std::less<T>>
+    Iter binSearch(Iter begin, Iter end, const T& val, size_t mid, Cmp&& cmp = Cmp()) 
     {
-        return details::binSearch(begin, end, val, mid);
+        return details::binSearch(begin, end, val, begin + mid, std::forward<Cmp>(cmp));
     }
 
-    template<typename T, typename Iter>
-    int64_t binSearchLower(const Iter& begin, const Iter& end, const T& val) 
+    template<typename T, typename Iter, typename Cmp = std::less<T>>
+    Iter binSearchLower(Iter begin, Iter end, const T& val, Cmp&& cmp = Cmp()) 
     {
         const size_t count = end - begin;
-        return details::binSearchLower(begin, end, val, count / 2);
+        return details::binSearchLower(begin, end, val, begin + count / 2, std::forward<Cmp>(cmp));
     }
     
-    template<typename T, typename Iter>
-    int64_t binSearchLower(const Iter& begin, const Iter& end, const T& val, size_t mid) 
+    template<typename T, typename Iter, typename Cmp = std::less<T>>
+    Iter binSearchLower(Iter begin, Iter end, const T& val, size_t mid, Cmp&& cmp = Cmp()) 
     {
-        return details::binSearchLower(begin, end, val, mid);
+        return details::binSearchLower(begin, end, val, begin + mid, std::forward<Cmp>(cmp));
     }
 
 }
