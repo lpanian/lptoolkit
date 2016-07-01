@@ -115,11 +115,13 @@ inline std::enable_if_t<std::is_unsigned<T>::value, T> Mod(T val, T limit)
 template<class TO, class FROM>
 inline TO ClampCast(const FROM& value)
 {
-	FROM temp = value;
-	if(temp > std::numeric_limits<TO>::max())
-		temp = std::numeric_limits<TO>::max();
-	else if(temp < std::numeric_limits<TO>::min())
-		temp = std::numeric_limits<TO>::min();
+	auto temp = value;
+    constexpr auto hi = std::numeric_limits<TO>::max();
+    constexpr auto lo = std::numeric_limits<TO>::lowest();
+    if (temp > hi)
+        temp = hi;
+    if (temp < lo)
+        temp = lo;
 	return static_cast<TO>(temp);
 }
 
