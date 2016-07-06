@@ -65,11 +65,13 @@ namespace lptk
         private:
             void next()
             {
-                if (m_pos.second)
+                if (m_pos.second && *m_pos.second)
                 {
                     m_pos = utf8_decode(m_pos.second);
-                    if (!m_pos.second || !*m_pos.second)
-                        m_pos = std::make_pair(0, nullptr);
+                }
+                else
+                {
+                    m_pos = std::make_pair(0, nullptr);
                 }
             }
         };

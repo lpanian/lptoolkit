@@ -79,6 +79,7 @@ TEST(UTF8, DecodeSequence)
         ++i;
         cur = pair.second;
     }
+    EXPECT_EQ(4, i);
 }
 
 TEST(UTF8, RangeIter)
@@ -94,4 +95,5 @@ TEST(UTF8, RangeIter)
         EXPECT_EQ(expected[i], cp);
         ++i;
     }
+    EXPECT_EQ(4, i);
 }
