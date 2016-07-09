@@ -45,7 +45,7 @@ namespace lptk
     {
         // binary search cdf values, return lower index
         const auto lowerIndex = Clamp(
-            binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin(), 
+            int(binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin()), 
             0, 
             int(m_vals.size() - 1));
         const auto upperIndex = Min(lowerIndex + 1, int(m_vals.size()) - 1);
@@ -66,7 +66,7 @@ namespace lptk
     int Distribution1D::SampleDiscrete(float u, float* pdf) const
     {
         const auto lowerIndex = Clamp(
-            binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin(), 
+            int(binSearchLower(m_cdf.begin(), m_cdf.end(), u) - m_cdf.begin()), 
             0, 
             int(m_vals.size() - 1));
 

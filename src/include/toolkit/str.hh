@@ -296,7 +296,7 @@ public:
     { 
         if(empty() || pos < 0 || pos >= length()) return -1;
         const char* p = strstr(c_str() + pos, str);
-        if(p) return p - c_str();
+        if(p) return int(p - c_str());
         else return -1;
     }
 
@@ -405,7 +405,7 @@ public:
                 
                 strncpy(&destStr[destPos], replace, replaceLen);
                 srcPos += pattern.length();
-                destPos += replaceLen;
+                destPos += int(replaceLen);
             }
         }
 
