@@ -129,7 +129,7 @@ namespace lptk
 
         // if realp isn't aligned as we'd like, then make sure we realloc.
         const size_t realpBits = reinterpret_cast<size_t>(realp);
-        const size_t alignResult = (realpBits & ~(align-1));
+        const size_t alignResult = (realpBits & ~(size_t(align)-1));
 
         const size_t totalSize = computeTotalSize(n, align);
         void* newp = alignResult == 0 ? realloc(realp, totalSize) : malloc(totalSize);

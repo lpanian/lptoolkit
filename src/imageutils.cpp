@@ -847,7 +847,7 @@ namespace lptk
                 return false;
 
             const auto colorMapReader = settings.colorMapReader;
-            const auto stride = (1 << bitsPerSample) * sizeof(uint16_t);
+            const auto stride = (size_t(1) << bitsPerSample) * sizeof(uint16_t);
             if (bitsPerSample == 8)
             {
                 return UnpackImage(result, 3, settings, [&colorMapReader, &stride](
