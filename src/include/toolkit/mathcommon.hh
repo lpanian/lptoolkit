@@ -91,7 +91,19 @@ template<class T>
 inline T Lerp(float t, T a, T b) { return (1.f - t) * a + t * b; }
 
 template<typename T>
-inline std::enable_if_t<std::is_signed<T>::value, T> Mod(const T val, const T limit)
+inline std::enable_if_t<std::is_floating_point<T>::value, T> Mod(const T val, const T limit)
+{
+    T result = val;
+    while (result >= limit)
+        result -= limit;
+    while (result < 0)
+        result += limit;
+    return result;
+}
+
+template<typename T>
+inline std::enable_if_t<std::is_integral<T>::value &&
+    std::is_signed<T>::value, T> Mod(const T val, const T limit)
 {
     if (val >= 0)
         return val % limit;
@@ -105,7 +117,8 @@ inline std::enable_if_t<std::is_signed<T>::value, T> Mod(const T val, const T li
 }
 
 template<typename T>
-inline std::enable_if_t<std::is_unsigned<T>::value, T> Mod(T val, T limit)
+inline std::enable_if_t<std::is_integral<T>::value &&
+    std::is_unsigned<T>::value, T> Mod(T val, T limit)
 {
     return val % limit;
 }
