@@ -96,7 +96,7 @@ namespace lptk
 
             Node* first = m_head;
             Node* next = first->m_next;
-            T result;
+            auto result = T();
 
             if (next != nullptr)
             {
