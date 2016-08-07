@@ -146,7 +146,7 @@ namespace lptk
         {
             std::cerr << "Failed to create stdout pipes for child process: \"" << command << "\"\n";
             PrintLastError();
-            return false;
+            return 1;
         }
         auto closePipeRead = at_scope_exit([&hOutRead]{
             CloseHandle(hOutRead);
@@ -184,7 +184,7 @@ namespace lptk
         {
             std::cerr << "CreateProcess failed for \"" << command << "\"\n";
             PrintLastError();
-            return false;
+            return 1;
         }
 
         auto closeProcess = at_scope_exit([&pi]
