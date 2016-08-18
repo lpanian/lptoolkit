@@ -9,6 +9,46 @@ namespace lptk
 {
 
 template<class T>
+vec3<T> TransformVec(const mat33<T>& m, const vec3<T>& v)
+{
+    T x, y, z;
+
+    x = v.x * m.m[0];
+    y = v.x * m.m[1];
+    z = v.x * m.m[2];
+
+    x += v.y * m.m[3];
+    y += v.y * m.m[4];
+    z += v.y * m.m[5];
+
+    x += v.z * m.m[6];
+    y += v.z * m.m[7];
+    z += v.z * m.m[8];
+
+    return lptk::vec3<T>(x, y, z);
+}
+
+template<class T>
+vec3<T> TransformPoint(const mat33<T>& m, const vec3<T>& v)
+{
+    T x, y, z;
+
+    x = v.x * m.m[0];
+    y = v.x * m.m[1];
+    z = v.x * m.m[2];
+
+    x += v.y * m.m[3];
+    y += v.y * m.m[4];
+    z += v.y * m.m[5];
+
+    x += v.z * m.m[6];
+    y += v.z * m.m[7];
+    z += v.z * m.m[8];
+
+    return lptk::vec3<T>(x, y, z);
+}
+
+template<class T>
 vec3<T> TransformVec(const mat44<T>& m, const vec3<T>& v)
 {
     T x,y,z,w;
@@ -262,12 +302,26 @@ mat44<T> TransformInverse(const mat44<T>& m)
 }
 
 template<class T>
+mat33<T> Transpose(const mat33<T>& m)
+{
+    mat33<T> dest;
+    for (int c = 0; c < 3; ++c)
+    {
+        const int c3 = c * 3;
+        for (int r = 0; r < 3; ++r)
+            dest.m[r * 3 + c] = m.m[c3 + r];
+    }
+
+    return dest;
+}
+
+template<class T>
 mat44<T> Transpose(const mat44<T>& m)
 {
     mat44<T> dest;
     for(int c = 0; c < 4; ++c)
     {
-        int c4 = c*4;
+        const int c4 = c*4;
         for(int r = 0; r < 4; ++r)
             dest.m[r*4 + c] = m.m[c4 + r];
     }
@@ -320,6 +374,164 @@ mat44<T> MakeShear(T shXY, T shXZ, T shYZ)
 
 template<class T>
 inline mat44<T> MakeShear(const vec3<T>& v) { return MakeShear(v.x, v.y, v.z); }
+
+template<class T>
+mat33<T> MakeM33RotationX(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat33<T> result;
+    result.m[0] = T(1);
+    result.m[1] = T(0);
+    result.m[2] = T(0);
+
+    result.m[3] = T(0);
+    result.m[4] = cost;
+    result.m[5] = sint;
+    
+    result.m[6] = T(0);
+    result.m[7] = -sint;
+    result.m[8] = cost;
+
+    return result;
+}
+
+template<class T>
+mat44<T> MakeM44RotationX(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat44<T> result;
+    result.m[0] = T(1);
+    result.m[1] = T(0);
+    result.m[2] = T(0);
+    result.m[3] = T(0);
+
+    result.m[4] = T(0);
+    result.m[5] = cost;
+    result.m[6] = sint;
+    result.m[7] = T(0);
+    
+    result.m[8] = T(0);
+    result.m[9] = -sint;
+    result.m[10] = cost;
+    result.m[11] = T(0);
+    
+    result.m[12] = T(0);
+    result.m[13] = T(0);
+    result.m[14] = T(0);
+    result.m[15] = T(1);
+
+    return result;
+}
+
+
+template<class T>
+mat33<T> MakeM33RotationY(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat33<T> result;
+    result.m[0] = cost;
+    result.m[1] = T(0);
+    result.m[2] = -sint;
+
+    result.m[3] = T(0);
+    result.m[4] = T(1);
+    result.m[5] = T(0);
+    
+    result.m[6] = sint;
+    result.m[7] = T(0);
+    result.m[8] = cost;
+
+    return result;
+}
+
+template<class T>
+mat44<T> MakeM44RotationY(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat44<T> result;
+    result.m[0] = cost;
+    result.m[1] = T(0);
+    result.m[2] = -sint;
+    result.m[3] = T(0);
+
+    result.m[4] = T(0);
+    result.m[5] = T(1);
+    result.m[6] = T(0);
+    result.m[7] = T(0);
+    
+    result.m[8] = sint;
+    result.m[9] = T(0);
+    result.m[10] = cost;
+    result.m[11] = T(0);
+    
+    result.m[12] = T(0);
+    result.m[13] = T(0);
+    result.m[14] = T(0);
+    result.m[15] = T(1);
+
+    return result;
+}
+
+template<class T>
+mat33<T> MakeM33RotationZ(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat33<T> result;
+    result.m[0] = cost;
+    result.m[1] = sint;
+    result.m[2] = T(0);
+
+    result.m[3] = -sint;
+    result.m[4] = cost;
+    result.m[5] = T(0);
+    
+    result.m[6] = T(0);
+    result.m[7] = T(0);
+    result.m[8] = T(1);
+
+    return result;
+}
+
+
+template<class T>
+mat44<T> MakeM44RotationZ(T rad)
+{
+    const auto cost = lptk::Cos(rad);
+    const auto sint = lptk::Sin(rad);
+
+    mat44<T> result;
+    result.m[0] = cost;
+    result.m[1] = sint;
+    result.m[2] = T(0);
+    result.m[3] = T(0);
+
+    result.m[4] = -sint;
+    result.m[5] = cost;
+    result.m[6] = T(0);
+    result.m[7] = T(0);
+    
+    result.m[8] = T(0);
+    result.m[9] = T(0);
+    result.m[10] = T(1);
+    result.m[11] = T(0);
+    
+    result.m[12] = T(0);
+    result.m[13] = T(0);
+    result.m[14] = T(0);
+    result.m[15] = T(1);
+
+    return result;
+}
 
 template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans)

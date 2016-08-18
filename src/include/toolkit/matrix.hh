@@ -5,10 +5,18 @@
 #include <cstring>
 #include "vec.hh"
 
+////////////////////////////////////////////////////////////////////////////////
+// Matrix classes are both in column order (OpenGL) and all operations are 
+// usually considered to be left multiplying the matrix, eg:
+// v' = M * v
+
 namespace lptk
 {
-
 ////////////////////////////////////////////////////////////////////////////////
+// Matrix class stored in column order:
+// 0 3 6
+// 1 4 7
+// 2 5 8
 template<class T>
 class mat33
 {
@@ -61,6 +69,11 @@ T NormDiffSq(const mat33<T>& a, const mat33<T>& b);
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Matrix class stored in column order:
+// 0 4 8  12
+// 1 5 9  13
+// 2 6 10 14
+// 3 7 11 15
 template<class T>
 class mat44
 {

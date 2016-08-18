@@ -12,6 +12,10 @@ namespace lptk
 // utilities
 
 template<class T>
+vec3<T> TransformVec(const mat33<T>& m, const vec3<T>& v);
+template<class T>
+vec3<T> TransformPoint(const mat33<T>& m, const vec3<T>& v);
+template<class T>
 vec3<T> TransformVec(const mat44<T>& m, const vec3<T>& v);
 template<class T>
 vec3<T> TransformPoint(const mat44<T>& m, const vec3<T>& v);
@@ -37,6 +41,8 @@ mat44<T> RotateAround(const vec3<T>& axis, T rads);
 template<class T>
 mat44<T> TransformInverse(const mat44<T>& m);
 template<class T>
+mat33<T> Transpose(const mat33<T>& m);
+template<class T>
 mat44<T> Transpose(const mat44<T>& m);
 template<class T>
 mat44<T> MakeTranslation(T tx, T ty, T tz);
@@ -50,6 +56,19 @@ template<class T>
 mat44<T> MakeShear(T shXY, T shXZ, T shYZ);
 template<class T>
 mat44<T> MakeShear(const vec3<T>& v);
+template<class T>
+mat33<T> MakeM33RotationX(T rad);
+template<class T>
+mat44<T> MakeM44RotationX(T rad);
+template<class T>
+mat33<T> MakeM33RotationY(T rad);
+template<class T>
+mat44<T> MakeM44RotationY(T rad);
+template<class T>
+mat33<T> MakeM33RotationZ(T rad);
+template<class T>
+mat44<T> MakeM44RotationZ(T rad);
+
 template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans);
 template<class T>
