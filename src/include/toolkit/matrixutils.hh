@@ -27,8 +27,11 @@ void TransformFloat4(T* out, const mat44<T>& m, const T *in);
 template<class T>
 mat44<T> Compute2DProj(T w, T h, T znear, T zfar);
 // normal ortho projection
+// Note that znear and zfar are distances, not actual plane interesctions. They should be positive and zfar > znear
 template<class T>
 mat44<T> ComputeOrthoProj(T w, T h, T znear, T zfar);
+template<class T>
+mat44<T> ComputeOrthoProj(T left, T right, T top, T bottom, T znear, T zfar);
 template<class T>
 mat44<T> Compute3DProj(T degfov, T aspect, T znear, T zfar);
 template<class T>

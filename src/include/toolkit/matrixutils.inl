@@ -171,6 +171,23 @@ mat44<T> ComputeOrthoProj(T w, T h, T znear, T zfar)
 }
 
 template<class T>
+mat44<T> ComputeOrthoProj(T left, T right, T top, T bottom, T znear, T zfar)
+{
+    mat44<T> result;
+    const auto zlen = zfar - znear;
+    const auto inv_zlen = T(1) / zlen;
+    bzero(result.m, sizeof(T)*16);
+    result.m[0] = T(2) / (right - left);
+    result.m[5] = T(2) / (top - bottom);
+    result.m[10] = T(-2) * inv_zlen;
+    result.m[12] = -(right + left) / (right - left);
+    result.m[13] = -(top + bottom) / (top - bottom);
+    result.m[14] = -(zfar + znear) * inv_zlen;
+    result.m[15] = T(1);
+    return result;
+}
+
+template<class T>
 mat44<T> Compute3DProj(T degfov, T aspect, T znear, T zfar)
 {
     const T fov2 = T(0.5) * degfov * T(kDegToRadD);
