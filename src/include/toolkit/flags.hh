@@ -40,6 +40,24 @@ namespace lptk
 
         return result;
     }
+
+    template<class EnumType, class PairType, size_t N>
+    EnumType ParseEnumFromPairs(const PairType(&pairs)[N], const char* const spec, EnumType def=EnumType(-1))
+    {
+        EnumType result{ def };
+        if (spec == nullptr)
+            return result;
+
+        for (const auto& pair : pairs)
+        {
+            if (StrCaseEqual(pair.m_name, spec)) 
+            {
+                result = pair.m_value;
+                break;
+            }
+        }
+        return result;
+    }
 }
 
 #endif
