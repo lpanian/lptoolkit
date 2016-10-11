@@ -106,15 +106,31 @@ namespace lptk
     void MakeOption(const char* name, const char* desc, int numArgs, Fn&& fn)
     {
         CmdLineOpt::AppendCommand(
-            make_unique<GenericCmdLineOpt<Fn> >(name, desc, numArgs, std::move(fn)));
+            make_unique<GenericCmdLineOpt<Fn> >(name, desc, numArgs, std::forward<Fn>(fn)));
     }
 
     template<typename Fn>
     void MakeOption(const char* name, const char* desc, Fn&& fn)
     {
         CmdLineOpt::AppendCommand(
-            make_unique<GenericCmdLineOpt<Fn> >(name, desc, -1, std::move(fn)));
+            make_unique<GenericCmdLineOpt<Fn> >(name, desc, -1, std::forward<Fn>(fn)));
     }
+
+    class CommandLineOptionRegistry
+    {
+    public:
+        template<typename Fn>
+        CommandLineOptionRegistry(const char* name, const char* desc, int numArgs, Fn&& fn)
+        {
+            MakeOption(name, desc, numArgs, std::forward<Fn>(fn));
+        }
+        
+        template<typename Fn>
+        CommandLineOptionRegistry(const char* name, const char* desc, Fn&& fn)
+        {
+            MakeOption(name, desc, -1, std::forward<Fn>(fn));
+        }
+    };
 }
 
 #endif
