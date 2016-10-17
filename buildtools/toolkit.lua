@@ -21,16 +21,16 @@ function declareToolkit(baseFolder)
 	project "lptoolkit"
 	kind "StaticLib"
 	language "C++"
-	
+
 	flags { "NoExceptions", "NoRTTI" }
 	defines { "NO_EXCEPTIONS", "_HAS_EXCEPTIONS=0" }
-	
+
 	addToolkitIncludes(baseFolder)
 
-	files { 
+	files {
 		"src/*.cpp",
-		"src/include/**.hh", 
-		"src/include/**.inl" 
+		"src/include/**.hh",
+		"src/include/**.inl"
 	}
 end
 
