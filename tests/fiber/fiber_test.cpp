@@ -36,32 +36,9 @@ int main(int, char**)
         }, testCounter));
     }
 
-    //fibers.push_back(make_unique<lptk::fiber::Fiber>(&counter, [](void*) 
-    //{
-    //    printf("Fiber 1, part A\n");
-    //    lptk::fiber::YieldFiber();
-    //    printf("Fiber 1, part B\n");
-    //    lptk::fiber::YieldFiber();
-    //    printf("Fiber 1, part C\n");
-    //}, nullptr));
-    //fibers.push_back(make_unique<lptk::fiber::Fiber>(&counter, [](void*) 
-    //{
-    //    printf("Fiber 2, part A\n");
-    //    lptk::fiber::YieldFiber();
-    //    printf("Fiber 2, part B\n");
-
-    //    lptk::fiber::Counter counter;
-    //    lptk::fiber::Fiber tmp{ &counter, [](void*) {
-    //        printf("Fiber 3!\n");
-    //    }, nullptr };
-    //    lptk::fiber::WaitForCounter(&counter);
-    //    printf("Fiber 2, part C\n");
-
-    //}, nullptr));
-
     lptk::fiber::WaitForCounter(&counter);
 
-    printf("Finished both fibers.\n");
+    printf("Finished all fibers.\n");
 
     lptk::fiber::Purge();
     return 0;
