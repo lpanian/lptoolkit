@@ -3,6 +3,9 @@
 #define INCLUDED_LPTK_FIBER_HH
 
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
+#include "toolkit/thread.hh"
 
 namespace lptk
 {
@@ -38,6 +41,7 @@ namespace lptk
         class Fiber 
         {
             friend class FiberManager;
+            friend class FiberService;
         public:
             Fiber(Counter* counter, FiberFunc fn, void* userData);
 
@@ -47,6 +51,8 @@ namespace lptk
             Fiber& operator=(Fiber&& other) = delete;
 
             ~Fiber();
+
+            void* GetServiceData() const { return m_serviceData; }
         protected:
             void Run();
 
@@ -54,6 +60,8 @@ namespace lptk
             FiberFunc m_fn = nullptr;
             void* m_userData = nullptr;
             Fiber* m_next = nullptr;
+            void* m_serviceData = nullptr;
+            int m_serviceThreadIndex = -1;
 
 #if defined(WINDOWS)
             static void CALLBACK FiberMain(void* param);
@@ -64,6 +72,58 @@ namespace lptk
 #endif
         };
 
+
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Fiber services handle 'async' calls that would normally block. When a fiber
+        // calls a service, it is put in a special state indicating that it is waiting
+        // for the results of the service, and is ignored by the scheduler until 
+        // the service wakes up. Periodically when scheduling, if there are fibers in this
+        // state, we wake up relevant services and see if they have results available. 
+        //
+        // FiberServices do not need to return futures, because the entry point call 
+        // yields the current fiber. The fiber will not regain control until some result
+        // has been computed by the FiberService.
+        // 
+        // FiberServices get their own thread, so their update function can freely make 
+        // blocking calls.
+        class FiberService
+        {
+            friend class FiberManager;
+        public:
+            FiberService() = default;
+            virtual ~FiberService() = default;
+
+            FiberService(const FiberService&) = delete;
+            FiberService& operator=(const FiberService&) = delete;
+            FiberService(FiberService&&) = delete;
+            FiberService& operator=(FiberService&&) = delete;
+
+            void Start();
+            void Stop();
+            
+        protected:
+            virtual bool Update() = 0;
+            virtual void CancelRequest(Fiber*) {}
+
+            bool EnqueueRequest(void* requestData);
+            Fiber* PopServiceFiber();
+            void PushServiceFiber(Fiber* fiber);
+            void CompleteRequest(Fiber* fiber);
+        private:
+            static void RunThread(FiberService* service);
+            void Notify();
+            void WaitForUpdate();
+
+            std::atomic<Fiber*> m_waiting = nullptr;
+            std::atomic<Fiber*> m_queue = nullptr;
+            std::atomic<bool> m_finished = false;
+            lptk::Thread m_thread;
+
+            std::condition_variable m_isWaiting;
+            std::mutex m_updateMutex;
+            bool m_updateRequested = false;
+        };
 
 
         ////////////////////////////////////////////////////////////////////////////////
