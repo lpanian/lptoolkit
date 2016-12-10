@@ -22,6 +22,7 @@ namespace lptk
 
             static void Reserve(int numThreads);
             static FiberManager* Get();
+            static FiberManager* Get(int index);
 
             static void InitThread();
 
@@ -31,7 +32,11 @@ namespace lptk
             Fiber* Pop();
             Fiber* Steal();
             void YieldFiber();
+            bool YieldFiberToService(FiberService* service, void* requestData);
 
+            Fiber* CurrentFiber();
+
+            int GetIndex();
         private:
             Fiber* StealPop();
             std::atomic<Fiber*> m_fiberWaiting = nullptr;
@@ -60,11 +65,19 @@ namespace lptk
         FiberManager* FiberManager::Get()
         {
             ASSERT(unsigned(s_managerIndex) < s_managers.size());
-            if (s_managerIndex < 0 || unsigned(s_managerIndex) > s_managers.size())
+            if (s_managerIndex < 0 || unsigned(s_managerIndex) >= s_managers.size())
                 return nullptr;
             return s_managers[s_managerIndex].get();
         }
-
+            
+        FiberManager* FiberManager::Get(int index)
+        {
+            ASSERT(unsigned(index) < s_managers.size());
+            if (index < 0 || unsigned(index) >= s_managers.size())
+                return nullptr;
+            return s_managers[index].get();
+        }
+            
         FiberManager::FiberManager()
         {
 
@@ -118,6 +131,7 @@ namespace lptk
 
                     m_curFiber = fiber;
                     ASSERT(fiber->m_fiber != GetCurrentFiber());
+                    ASSERT(fiber->m_fiber != nullptr);
                     SwitchToFiber(fiber->m_fiber);
                 }
             }
@@ -244,6 +258,39 @@ namespace lptk
         {
             ScheduleFiber();
         }
+            
+        bool FiberManager::YieldFiberToService(FiberService* service, void* requestData)
+        {
+            auto curFiber = m_curFiber;
+
+            // no current fiber means we are in the 'scheduler' thread, so this request
+            // is invalid. 
+            if (!curFiber)
+                return false;
+
+            // we set this before pushing the service fiber so it has all the data it needs to begin
+            ASSERT(curFiber->m_serviceData == nullptr);
+            curFiber->m_serviceData = requestData;
+            curFiber->m_serviceThreadIndex = FiberManager::Get()->GetIndex();
+
+            service->PushServiceFiber(curFiber);
+            
+            // At this point we cannot wake up until we return to the main fiber pool.
+            // Usually this means that this FiberService calls 'CompleteRequest'.
+            m_curFiber = nullptr;
+            ScheduleFiber();
+            return true;
+        }
+            
+        Fiber* FiberManager::CurrentFiber()
+        {
+            return m_curFiber;
+        }
+        
+        int FiberManager::GetIndex()
+        {
+            return s_managerIndex;
+        }
 
 
 
@@ -281,6 +328,123 @@ namespace lptk
             reinterpret_cast<Fiber*>(param)->Run();
         }
 #endif
+
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // this is the only function that gets called from a 'client' fiber, the rest
+        // are used to implement the service 'update' function.
+        bool FiberService::EnqueueRequest(void* requestData)
+        {
+            return FiberManager::Get()->YieldFiberToService(this, requestData);
+        }
+
+        Fiber* FiberService::PopServiceFiber()
+        {
+            // see if there is fiber ready in the queue
+            auto fiber = m_queue.load(std::memory_order_acquire);
+            while (!m_queue.compare_exchange_weak(fiber, fiber ? fiber->m_next : nullptr, std::memory_order_acq_rel)) {}
+
+            // if not, move the waiting list and keep the top result 
+            if(!fiber)
+            {
+                // we didn't get a fiber in the ready queue, so enqueue all waiting fibers
+                auto nextFiber = m_waiting.exchange(nullptr, std::memory_order_acq_rel);
+                while (nextFiber)
+                {
+                    fiber = nextFiber;
+                    nextFiber = fiber->m_next;
+
+                    // only enqueue if we're not the very last waiting one (meaning the first that was queued), 
+                    // because that fiber would be the first result we want to run.
+                    if (fiber->m_next)
+                    {
+                        fiber->m_next = m_queue.load(std::memory_order_acquire);
+                        while (!m_queue.compare_exchange_weak(fiber->m_next, fiber, std::memory_order_acq_rel)) {}
+                    }
+                }
+            }
+
+            if (fiber)
+            {
+                fiber->m_next = nullptr;
+            }
+            return fiber;
+        }
+
+        void FiberService::PushServiceFiber(Fiber* fiber)
+        {
+            // add fiber to waiting list, but do not change it's state
+            fiber->m_next = m_waiting.load(std::memory_order_acquire);
+            while (!m_waiting.compare_exchange_weak(fiber->m_next, fiber, std::memory_order_acq_rel)) {}
+
+            Notify();
+        }
+
+        void FiberService::CompleteRequest(Fiber* fiber)
+        {
+            const auto serviceThreadIndex = fiber->m_serviceThreadIndex;
+            fiber->m_serviceData = nullptr;
+            fiber->m_serviceThreadIndex = -1;
+            FiberManager::Get(serviceThreadIndex)->Push(fiber);
+        }
+            
+        void FiberService::Notify()
+        {
+            {
+                std::lock_guard<std::mutex> lock(m_updateMutex);
+                m_updateRequested = true;
+            }
+            m_isWaiting.notify_all();
+        }
+
+        void FiberService::WaitForUpdate()
+        {
+            std::unique_lock<std::mutex> lock(m_updateMutex);
+            m_isWaiting.wait(lock, [this] {
+                if (m_updateRequested) 
+                {
+                    m_updateRequested = false;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
+        }
+
+        void FiberService::Start()
+        {
+            m_thread = lptk::Thread(RunThread, this);
+        }
+            
+        void FiberService::RunThread(FiberService* service)
+        {
+            while (!service->m_finished.load(std::memory_order_acquire))
+            {
+                if (!service->Update())
+                {
+                    service->WaitForUpdate();
+                }
+            }
+
+            auto fiber = service->PopServiceFiber();
+            while (fiber)
+            {
+                service->CancelRequest(fiber);
+                service->CompleteRequest(fiber);
+                fiber = service->PopServiceFiber();
+            }
+        }
+
+        void FiberService::Stop()
+        {
+            m_finished.exchange(true);
+            Notify();
+
+            if(m_thread.joinable())
+                m_thread.join();
+        }
 
 
         ////////////////////////////////////////////////////////////////////////////////     
