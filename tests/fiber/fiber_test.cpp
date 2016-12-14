@@ -127,7 +127,7 @@ int main(int, char**)
         std::uniform_real_distribution<float>* dist;
     };
     
-    for (size_t i = 0; i < 100; ++i)
+    for (size_t i = 0; i < 10000; ++i)
     {
         ServiceData* serviceData = new ServiceData;
         serviceData->id = int(i);
