@@ -115,6 +115,136 @@ namespace lptk
             return result;
         }
     };
+
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    class Spinlock
+    {
+    public:
+        void lock()
+        {
+            while (m_lock.exchange(true, std::memory_order_acq_rel)) {}
+        }
+        void unlock()
+        {
+            m_lock.store(false, std::memory_order_release);
+        }
+    private:
+        static constexpr unsigned kCacheLine = 64;
+        std::atomic<bool> m_lock = false;
+        char padding[kCacheLine - sizeof(decltype(m_lock))];
+
+    };
+
+   
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // helper to specify which trait functions the default trait struct (T::NodeTraits)
+    // should have.
+    template<typename T>
+    struct IntrusiveSpinLockQueueNodeTraits {
+        using NodeTraits = typename T::NodeTraits;
+        static T* GetNext(T* ptr) { return NodeTraits::GetNext(ptr); }
+        static void SetNext(T* ptr, T* next) { NodeTraits::SetNext(ptr, next); }
+    };
+
+
+
+    //////////////////////////////////////////////////////////////////////////////// 
+    // intrusive queue with single lock for both push and pop
+    template<class T, class NodeTraits = IntrusiveSpinLockQueueNodeTraits<T> >
+    class IntrusiveSpinLockQueue
+    {
+    public:
+        static constexpr unsigned kCacheLine = 64;
+    private:
+        using NodeType = T;
+
+        NodeType* m_head = nullptr;
+        NodeType* m_tail = nullptr;
+
+        Spinlock m_lock;
+    public:
+        void push(NodeType* node);
+        void push_range(NodeType* begin, size_t count);
+        NodeType* pop();
+    };
+
+
+    ////////////////////////////////////////
+    template<typename T, typename NodeTraits>
+    void IntrusiveSpinLockQueue<T, NodeTraits>::push(NodeType* node)
+    {
+        NodeTraits::SetNext(node, nullptr);
+
+        m_lock.lock();
+        if (m_tail)
+        {
+            NodeTraits::SetNext(m_tail, node);
+            m_tail = node;
+        }
+        else
+        {
+            m_head = m_tail = node;
+        }
+        m_lock.unlock();
+    }
+        
+    template<typename T, typename NodeTraits>
+    void IntrusiveSpinLockQueue<T, NodeTraits>::push_range(NodeType* begin, size_t count)
+    {
+        if (count == 0)
+            return;
+
+        NodeType* first = begin;
+        NodeType* end = begin + count;
+        NodeType* last = nullptr;
+        for (auto cur = begin; cur != end; ++cur)
+        {
+            auto curPtr = &(*cur);
+            NodeTraits::SetNext(curPtr, nullptr);
+            if (last)
+            {
+                NodeTraits::SetNext(last, curPtr);
+            }
+            last = curPtr;
+        }
+
+
+        m_lock.lock();
+        if (m_tail)
+        {
+            NodeTraits::SetNext(m_tail, first);
+            m_tail = last;
+        }
+        else
+        {
+            m_head = first;
+            m_tail = last;
+        }
+        m_lock.unlock();
+    }
+        
+    template<typename T, typename NodeTraits>
+    typename IntrusiveSpinLockQueue<T, NodeTraits>::NodeType* IntrusiveSpinLockQueue<T, NodeTraits>::pop()
+    {
+        m_lock.lock();
+        NodeType* result = m_head;
+        if (result)
+        {
+            m_head = NodeTraits::GetNext(result);
+            if (!m_head)
+            {
+                m_tail = nullptr;
+            }
+        }
+        m_lock.unlock();
+
+        if (result)
+            NodeTraits::SetNext(result, nullptr);
+        return result;
+    }
 }
 
 #endif
