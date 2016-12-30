@@ -684,30 +684,14 @@ namespace lptk
             
         void FiberService::Notify()
         {
-            {
-                std::lock_guard<std::mutex> lock(m_updateMutex);
-                m_updateRequested = true;
-            }
-            m_isWaiting.notify_all();
+            if(!m_notified.exchange(true, std::memory_order_acq_rel))
+                m_semNotify.Release();
         }
 
         void FiberService::WaitForUpdate()
         {
-            if (!m_updateRequested)
-            {
-                std::unique_lock<std::mutex> lock(m_updateMutex);
-                m_isWaiting.wait(lock, [this] {
-                    if (m_updateRequested)
-                    {
-                        m_updateRequested = false;
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                });
-            }
+            if (!m_notified.exchange(false, std::memory_order_acq_rel))
+                m_semNotify.Acquire();
         }
 
         void FiberService::Start()

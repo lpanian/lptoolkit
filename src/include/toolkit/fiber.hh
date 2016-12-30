@@ -7,6 +7,7 @@
 #include <mutex>
 #include "toolkit/thread.hh"
 #include "toolkit/spinlockqueue.hh"
+#include "toolkit/parallel.hh"
         
 //////////////////////////////////////////////////////////////////////////////// 
 /*
@@ -126,9 +127,8 @@ namespace lptk
             lptk::Thread m_thread;
 
             std::atomic<bool> m_finished = false;
-            std::condition_variable m_isWaiting;
-            std::mutex m_updateMutex;
-            bool m_updateRequested = false;
+            std::atomic<bool> m_notified = false;
+            Semaphore m_semNotify;
         };
         
         using TaskFunc = void(*)(void* userData);
