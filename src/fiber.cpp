@@ -5,6 +5,7 @@
 
 #include "toolkit/spinlockqueue.hh"
 #include "toolkit/circularqueue.hh"
+#include "toolkit/parallel.hh"
 
 /*
 
@@ -129,6 +130,9 @@ namespace lptk
             void Release(Fiber* fiber);
 
             bool Empty() const { return m_availableFibers.empty(); }
+            bool Full() const { return m_availableFibers.size() == m_allFibers.size(); }
+
+            size_t GetMaxSize() const { return m_allFibers.size(); }
         private:
             lptk::DynAry< std::unique_ptr<Fiber> > m_allFibers;
             lptk::DynAry< Fiber* > m_availableFibers;
@@ -209,9 +213,10 @@ namespace lptk
 
             bool IsExitRequested() const;
             
-            void ScheduleOneFiber();
+            bool ScheduleOneFiber();
         private:
             bool InitMain(const FiberInitStruct& init);
+            void NotifyWorkerThreadsOfTasks();
 
             static void WorkerMain(FiberManager* fiberMgr, unsigned threadIndex);
 
@@ -224,11 +229,19 @@ namespace lptk
                 Fiber* m_currentFiber = nullptr;
                 FiberPool m_smallStackPool;
                 FiberPool m_largeStackPool;
+
+                Spinlock m_executingLock;
                 std::unique_ptr<CircularQueue<Fiber*>> m_executing;
+                
+                std::atomic<unsigned> m_numWaiting = 0;
+                Semaphore m_waitingSem;
+
+                std::atomic<bool> m_tasksPosted = false;
+                Semaphore m_tasksSem;
             };
             
             lptk::DynAry<lptk::Thread> m_workerThreads;
-            lptk::DynAry<ThreadData> m_threadData;
+            lptk::DynAry<std::unique_ptr<ThreadData>> m_threadData;
 
             lptk::IntrusiveSpinLockQueue<Task> m_lowPriorityTaskQueue;
             lptk::IntrusiveSpinLockQueue<Task> m_highPriorityTaskQueue;
@@ -272,26 +285,30 @@ namespace lptk
 
             // initial set up
 #if defined(WINDOWS)
-            threadData.m_mainFiber = ConvertThreadToFiber(nullptr);
+            threadData->m_mainFiber = ConvertThreadToFiber(nullptr);
 #elif defined(LINUX)
 #error linux version of FiberManager::InitThread not yet implemented
 #endif
 
             // main scheduling loop
-            while (!fiberMgr->m_exitRequested.load(std::memory_order_relaxed))
+            while (!fiberMgr->m_exitRequested.load(std::memory_order_acquire))
             {
-                // TODO: this thread can sleep if there are no executing fibers and no 
-                // tasks available. Do a lazy check followed by a cv block here in those cases
-                // and notify when executing list changes or tasks are pushed
-
-                fiberMgr->ScheduleOneFiber();
+                if (!fiberMgr->ScheduleOneFiber())
+                {
+                    if (!threadData->m_tasksPosted.exchange(false, std::memory_order_acq_rel))
+                    {
+                        threadData->m_tasksSem.Acquire();
+                    }
+                }
             }
 
         }
             
-        void FiberManager::ScheduleOneFiber()
+        bool FiberManager::ScheduleOneFiber()
         {
-            auto& threadData = m_threadData[s_currentThread];
+            bool keepSpinning = true;
+
+            auto& threadData = *m_threadData[s_currentThread];
             // attempt to schedule a new task
             if (!threadData.m_largeStackPool.Empty() || !threadData.m_smallStackPool.Empty())
             {
@@ -330,17 +347,28 @@ namespace lptk
                     else
                     {
                         fiber->SetTask(task);
+                        threadData.m_executingLock.lock();
                         const auto result = threadData.m_executing->push(fiber);
+                        threadData.m_executingLock.unlock();
                         ASSERT(result);
                     }
                 }
-
+                else
+                {
+                    keepSpinning = false;
+                }
             }
+
+            if (!threadData.m_largeStackPool.Full() || !threadData.m_smallStackPool.Full())
+                keepSpinning = true;
 
             // choose a fiber to execute/resume based on what is available in executing fibers.
             Fiber* fiber = nullptr;
+
+            threadData.m_executingLock.lock();
             if (threadData.m_executing->pop(fiber))
             {
+                threadData.m_executingLock.unlock();
                 threadData.m_currentFiber = fiber;
                 fiber->Continue();
                 threadData.m_currentFiber = nullptr;
@@ -354,15 +382,28 @@ namespace lptk
                 {
                     // the fiber has yielded but is not finished with its task, and is not currently
                     // waiting on a blocking fiber service. So, return it to the executing list.
-                    threadData.m_executing->push(fiber);
+                    threadData.m_executingLock.lock();
+                    const auto pushed = threadData.m_executing->push(fiber);
+                    threadData.m_executingLock.unlock();
+                    ASSERT(pushed);
                 }
                 else
                 {
                     // do nothing - if we need to keep track of fibers that are waiting
                     // on a fiber service, do that here
+                    if (threadData.m_numWaiting.fetch_add(1u, std::memory_order_acq_rel) + 1u ==
+                        threadData.m_largeStackPool.GetMaxSize() + threadData.m_smallStackPool.GetMaxSize())
+                    {
+                        threadData.m_waitingSem.Acquire();
+                    }
                 }
             }
+            else 
+            {
+                threadData.m_executingLock.unlock();
+            }
 
+            return keepSpinning;
         }
             
         bool FiberManager::InitMain(const FiberInitStruct& init)
@@ -371,11 +412,12 @@ namespace lptk
             const unsigned numHighPriorityWorkers = init.numHighPriorityWorkerThreads;
             const unsigned numWorkers = numLowPriorityWorkers + numHighPriorityWorkers;
 
-            m_workerThreads.reserve(numWorkers-1);
+            m_workerThreads.reserve(numWorkers - 1);
             m_threadData.resize(numWorkers);
             for (unsigned i = 0; i < numWorkers; ++i)
             {
-                auto& threadData = m_threadData[i];
+                m_threadData[i] = make_unique<ThreadData>();
+                auto& threadData = *m_threadData[i];
                 threadData.m_priority = i < numLowPriorityWorkers ? 0 : 1;
                 const auto numSmallFibers = lptk::Max(1u, threadData.m_priority == 0 ?
                     init.numSmallFibersPerThread :
@@ -418,6 +460,7 @@ namespace lptk
         FiberManager::~FiberManager()
         { 
             m_exitRequested = true;
+            NotifyWorkerThreadsOfTasks();
             for (auto&& thread : m_workerThreads)
             {
                 if (thread.joinable())
@@ -430,7 +473,7 @@ namespace lptk
             ASSERT(s_currentThread >= 0 && s_currentThread < int(m_threadData.size()));
             auto& threadData = m_threadData[s_currentThread];
 
-            return threadData.m_currentFiber;
+            return threadData->m_currentFiber;
         }
             
         void FiberManager::RunTasks(Task* tasks, size_t numTasks, Counter* counter)
@@ -442,6 +485,8 @@ namespace lptk
             for (size_t i = 0; i < numTasks; ++i)
                 tasks[i].SetCounter(counter);
             m_lowPriorityTaskQueue.push_range(tasks, numTasks);
+            
+            NotifyWorkerThreadsOfTasks();
         }
 
         void FiberManager::RunHighPriorityTasks(Task* tasks, size_t numTasks, Counter* counter)
@@ -453,6 +498,21 @@ namespace lptk
             for (size_t i = 0; i < numTasks; ++i)
                 tasks->SetCounter(counter);
             m_highPriorityTaskQueue.push_range(tasks, numTasks);
+
+            NotifyWorkerThreadsOfTasks();
+        }
+
+        void FiberManager::NotifyWorkerThreadsOfTasks()
+        {
+            unsigned count = 0;
+            for (auto& threadData : m_threadData)
+            {
+                if (!threadData->m_tasksPosted.exchange(true, std::memory_order_acq_rel))
+                {
+                    threadData->m_tasksSem.Release();
+                }
+                ++count;
+            }
         }
             
         void FiberManager::YieldFiber()
@@ -462,7 +522,7 @@ namespace lptk
 
             const auto threadIndex = fiber->m_threadIndex;
             ASSERT(threadIndex >= 0 && threadIndex < int(m_threadData.size()));
-            auto&& threadData = m_threadData[threadIndex];
+            auto&& threadData = *m_threadData[threadIndex];
 
 #if defined (WINDOWS)
             SwitchToFiber(threadData.m_mainFiber);
@@ -478,7 +538,7 @@ namespace lptk
 
             const auto threadIndex = fiber->m_threadIndex;
             ASSERT(threadIndex >= 0 && threadIndex < int(m_threadData.size()));
-            auto&& threadData = m_threadData[threadIndex];
+            auto&& threadData = *m_threadData[threadIndex];
 
             // we set this before pushing the service fiber so it has all the data it needs to begin
             ASSERT(fiber->m_serviceData == nullptr);
@@ -499,9 +559,18 @@ namespace lptk
             
             const auto threadIndex = fiber->m_threadIndex;
             ASSERT(threadIndex >= 0 && threadIndex < int(m_threadData.size()));
-            auto&& threadData = m_threadData[threadIndex];
+            auto&& threadData = *m_threadData[threadIndex];
 
-            threadData.m_executing->push(fiber);
+            threadData.m_executingLock.lock();
+            const auto pushed = threadData.m_executing->push(fiber);
+            threadData.m_executingLock.unlock();
+            ASSERT(pushed);
+
+            if (threadData.m_numWaiting.fetch_sub(1u) ==
+                threadData.m_largeStackPool.GetMaxSize() + threadData.m_smallStackPool.GetMaxSize())
+            {
+                threadData.m_waitingSem.Release();
+            }
         }
             
         bool FiberManager::IsExitRequested() const

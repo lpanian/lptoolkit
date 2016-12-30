@@ -1,8 +1,11 @@
 #pragma once
-#ifndef INCLUDED_lptoolkit_parallel_HH
-#define INCLUDED_lptoolkit_parallel_HH
+#ifndef INCLUDED_LPTOOLKIT_PARALLEL_HH
+#define INCLUDED_LPTOOLKIT_PARALLEL_HH
 
 #include <cstdint>
+#include <condition_variable>
+#include <mutex>
+#include <atomic>
 
 #ifdef WINDOWS
 #include <intrin.h>
@@ -12,6 +15,48 @@
 
 namespace lptk
 {
+    ////////////////////////////////////////////////////////////////////////////////
+    // 'Semaphore' using condition variables.
+    class Semaphore
+    {
+    public:
+        Semaphore() = default;
+        ~Semaphore() = default;
+
+        Semaphore(const Semaphore&) = default;
+        Semaphore& operator=(const Semaphore&) = default;
+        
+        Semaphore(Semaphore&&) = default;
+        Semaphore& operator=(Semaphore&&) = default;
+
+        void Acquire();
+        void Release();
+    private:
+        std::condition_variable m_cv;
+        std::mutex m_mutex;
+        unsigned long m_count = 0;
+    };
+
+    void Semaphore::Acquire()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv.wait(lock, [this] { return m_count > 0; });
+        --m_count;
+    }
+
+    void Semaphore::Release()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        auto old = m_count++;
+        lock.unlock();
+
+        if (old == 0)
+            m_cv.notify_all();
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // TODO: Replace these functions with std::atomic stuff where it's used, and delete these.
 
 template<class T>
 inline bool AtomicCompareAndSwap(volatile T* target, T oldval, T newval)

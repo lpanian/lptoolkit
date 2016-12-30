@@ -73,6 +73,7 @@ int main(int, char**)
     lptk::fiber::FiberInitStruct fiberInit;
     fiberInit.numWorkerThreads = 4;
     fiberInit.numSmallFibersPerThread = 64;
+    fiberInit.numLargeFibersPerThread = 0;
     lptk::fiber::Init(fiberInit);
 
     lptk::fiber::Counter counter;
