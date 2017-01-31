@@ -68,26 +68,9 @@ namespace lptk
         }
         size_type max_size() const { return std::numeric_limits<size_type>::max(); }
 
-#ifdef USING_VS
-        template< class U >
-            void construct(U* p) { new ((void*)p) U; }
-        template< class U, class A0 >
-            void construct(U* p, A0&& a0) { new ((void*)p) U(std::forward<A0>(a0)); }
-        template< class U, class A0, class A1 >
-            void construct(U* p, A0&& a0, A1&& a1) { new ((void*)p) U(std::forward<A0>(a0), std::forward<A1>(a1)); }
-        template< class U, class A0, class A1, class A2 >
-            void construct(U* p, A0&& a0, A1&& a1, A2&& a2) { new ((void*)p) U(std::forward<A0>(a0), std::forward<A1>(a1),
-                    std::forward<A2>(a2)); }
-        template< class U, class A0, class A1, class A2, class A3 >
-            void construct(U* p, A0&& a0, A1&& a1, A2&& a2, A3&& a3) { new ((void*)p) U(std::forward<A0>(a0), std::forward<A1>(a1),
-                    std::forward<A2>(a2), std::forward<A3>(a3)); }
-        template< class U, class A0, class A1, class A2, class A3, class A4 >
-            void construct(U* p, A0&& a0, A1&& a1, A2&& a2, A3&& a3, A4&& a4) { new ((void*)p) U(std::forward<A0>(a0), std::forward<A1>(a1),
-                    std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4)); }
-#else
         template< class U, class... Args >
             void construct(U* p, Args&&... args) { new ((void*)p) U(std::forward<Args>(args)...); }
-#endif
+
         void destroy(pointer p) { (void)p; reinterpret_cast<T*>(p)->~T(); }
 
         template<class U>
