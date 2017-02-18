@@ -632,6 +632,15 @@ inline T Dot(const vec4<T>& l, const vec4<T>& r) {
 }
 
 template<class T>
+inline vec4<T> Cross(const vec4<T>& l, const vec4<T>& r) {
+	return vec4<T>(
+        l.y*r.z - l.z*r.y,
+        l.z*r.x - l.x*r.z,
+        l.x*r.y - l.y*r.x,
+        0);
+}
+
+template<class T>
 inline T LengthSq(const vec4<T>& l) {
 	return (l.x * l.x + l.y * l.y + l.z * l.z + l.w * l.w);
 }
