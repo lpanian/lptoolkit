@@ -43,7 +43,7 @@ namespace lptk
         {
         }
 
-        explicit intrusive_ptr(T* p = nullptr)
+        intrusive_ptr(T* p = nullptr)
             : m_p(p)
         {
             if (m_p) m_p->addRef();

@@ -6,6 +6,7 @@
 
 namespace lptk
 {
+    ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     class LockedQueue
     {
@@ -81,6 +82,62 @@ namespace lptk
             return false;
         }
     };
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    template<typename T>
+    struct IntrusiveLockQueueNodeTraits {
+        using NodeTraits = typename T::NodeTraits;
+        static T* GetNext(T* ptr) { return NodeTraits::GetNext(ptr); }
+        static void SetNext(T* ptr, T* next) { NodeTraits::SetNext(ptr, next); }
+    };
+
+    template<typename T, typename NodeTraits = IntrusiveLockQueueNodeTraits<T> >
+    class IntrusiveLockedQueue
+    {
+        using NodeType = T;
+        NodeType* m_head = nullptr;
+        NodeType* m_tail = nullptr;
+        std::mutex m_mutex;
+    public:
+        void push(NodeType* node);
+        NodeType* pop();
+    };
+   
+    template<typename T, typename NT>
+    auto IntrusiveLockedQueue<T, NT>::push(NodeType* node) -> void
+    {
+        NT::SetNext(node, nullptr);
+
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (m_tail)
+        {
+            NT::SetNext(m_tail, node);
+            m_tail = node;
+        }
+        else
+        {
+            m_head = m_tail = node;
+        }
+    }
+
+    template<typename T, typename NT>
+    auto IntrusiveLockedQueue<T, NT>::pop() -> NodeType*
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        auto result = m_head;
+        if (result)
+        {
+            m_head = NT::GetNext(m_head);
+            if (!m_head)
+                m_tail = nullptr;
+        }
+        lock.unlock();
+
+        if (result)
+            NT::SetNext(result, nullptr);
+        return result;
+    }
 }
 
 #endif
