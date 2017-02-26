@@ -47,7 +47,21 @@ namespace lptk
     }
 
     template<class T>
+    void LittleToNativeEndian(T& value)
+    {
+        if (IsNativeBigEndian())
+            SwapEndian(value);
+    }
+
+    template<class T>
     void NativeToBigEndian(T& value)
+    {
+        if (IsNativeLittleEndian())
+            SwapEndian(value);
+    }
+
+    template<class T>
+    void BigToNativeEndian(T& value)
     {
         if (IsNativeLittleEndian())
             SwapEndian(value);
