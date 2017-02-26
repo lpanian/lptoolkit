@@ -214,6 +214,7 @@ namespace lptk
             bool IsExitRequested() const;
             
             bool ScheduleOneFiber();
+            bool IsInFiberThread();
         private:
             bool InitMain(const FiberInitStruct& init);
             void NotifyWorkerThreadsOfTasks();
@@ -404,6 +405,11 @@ namespace lptk
             }
 
             return keepSpinning;
+        }
+            
+        bool FiberManager::IsInFiberThread()
+        {
+            return s_currentThread >= 0;
         }
             
         bool FiberManager::InitMain(const FiberInitStruct& init)
@@ -760,6 +766,11 @@ namespace lptk
         void YieldFiber()
         {
             FiberManager::Get()->YieldFiber();
+        }
+        
+        bool IsInFiberThread()
+        {
+            return FiberManager::Get()->IsInFiberThread();
         }
     }
 }

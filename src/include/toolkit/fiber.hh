@@ -106,17 +106,42 @@ namespace lptk
             FiberService(FiberService&&) = delete;
             FiberService& operator=(FiberService&&) = delete;
 
+            // These must be explicitly called to start and stop the service. They
+            // should be called before any fibers make use of the service (somewhere in
+            // your init and shutdown).
             void Start();
             void Stop();
             
         protected:
+            // Override this function to process requests. The basic loop should
+            // pop a fiber, get the fiber request data, process it, and either
+            // complete the request or return it to the queue.
+            // Return true to keep the thread alive, and false to sleep until there is
+            // at least one fiber in the queue.
             virtual bool Update() = 0;
+            
+            // This callback can be overridden to change the service data when a
+            // request has been cancelled by the fiber system - for example, if
+            // Stop is called before all fibers have completed. 
             virtual void CancelRequest(Fiber*) {}
 
+            // Enqueues the current fiber with the given request data. 
+            // Used to implement the service function.
             void EnqueueRequest(void* requestData);
+
+            // Pops a service fiber from the service queue. 
             Fiber* PopServiceFiber();
+
+            // Returns a service fiber to the service queue, possibly for doing further
+            // service work on it.
             void PushServiceFiber(Fiber* fiber);
+
+            // Used to 'wake' the fiber - returns the task back to the main queue and
+            // allows it to resume. This will return execution to just after the EnqueueRequest
+            // function.
             void CompleteRequest(Fiber* fiber);
+
+            // Gets the user data that corresponds with the fiber.
             void* GetFiberServiceData(Fiber* fiber);
         private:
             static void RunThread(FiberService* service);
@@ -210,6 +235,10 @@ namespace lptk
         
         // cooperative yield - allow us to switch to another fiber.
         void YieldFiber();
+
+        // Returns true if the current thread can execute fibers, and false otherwise.
+        // This wil only true for the main thread that Init() was called on and any worker threads.
+        bool IsInFiberThread();
 
         // yield current fiber and keep doing so anytime we are rescheduled until the counter has reached zero.
         // This must not be called in a task! For long-running tasks that need 'child' tasks, the best way
