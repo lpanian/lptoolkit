@@ -75,6 +75,10 @@ namespace lptk
                 m_counter.fetch_sub(1u, std::memory_order_acq_rel);
             }
 
+            size_t GetCount() const {
+                return m_counter.load(std::memory_order_relaxed);
+            }
+
         private:
             std::atomic<size_t> m_counter;
         };
