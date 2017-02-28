@@ -26,11 +26,12 @@ char* MemWriter::Put(const void* bytes, size_t size, bool swapEndian)
 		if(swapEndian)
 		{
 			// native is little endian and data is big
-			if(IsNativeLittleEndian() && (m_flags & FLAG_BigEndianData) != 0)
+            if ((m_flags & FLAG_SwapEndian) != 0 ||
+                (IsNativeLittleEndian() && (m_flags & FLAG_BigEndianData) != 0) ||
+                (IsNativeBigEndian() && (m_flags & FLAG_LittleEndianData) != 0))
+            {
 				SwapEndian(&m_b[m_pos], size);
-			// else if native is big and data is little
-			else if(IsNativeBigEndian() && (m_flags & FLAG_LittleEndianData) != 0)
-				SwapEndian(&m_b[m_pos], size);
+            }
 		}
 		m_pos += size;
         return resultVal;
@@ -119,9 +120,9 @@ void MemReader::Get(void* bytes, size_t size, bool swapEndian)
 		memcpy(bytes,&m_b[m_pos],size);
 		if(swapEndian)
 		{
-			if(IsNativeLittleEndian() && (m_flags & FLAG_BigEndianData) != 0)
-				SwapEndian(bytes, size);
-			else if(IsNativeBigEndian() && (m_flags & FLAG_LittleEndianData) != 0)
+            if((m_flags & FLAG_SwapEndian) != 0 ||
+                (IsNativeLittleEndian() && (m_flags & FLAG_BigEndianData) != 0) ||
+                (IsNativeBigEndian() && (m_flags & FLAG_LittleEndianData) != 0))
 				SwapEndian(bytes, size);
 		}
 		m_pos += size;

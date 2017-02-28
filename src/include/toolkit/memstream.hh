@@ -15,9 +15,10 @@ namespace lptk
     {
         enum Type : uint32_t
         {
-            FLAG_BigEndianData = 0x1, // data being read is big-endian, convert to native.
-            FLAG_LittleEndianData = 0x2, // data being read is little-endian, convert to native
+            FLAG_BigEndianData = 0x1, // data being read or written is big-endian
+            FLAG_LittleEndianData = 0x2, // data being read or written is little-endian
             FLAG_AlignedAccess = 0x4, // align to alignof(T) when putting or getting.
+            FLAG_SwapEndian = 0x8, // force swap endianness 
         };
     }
 
@@ -72,7 +73,7 @@ namespace lptk
 
         void Get(void* bytes, size_t size, bool swapEndian = true);
         void Consume(size_t size);
-        void AlignedConsume(size_t align); // consume bytes so the next value to bread has the given alignment.
+        void AlignedConsume(size_t align); // consume bytes so the next value to be read has the given alignment.
 
         template<class T>
         vec3<T> GetVec3(bool swapEndian = true);
