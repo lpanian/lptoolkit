@@ -81,7 +81,6 @@ namespace lptk
 
         private:
             std::atomic<size_t> m_counter;
-            //lptk::IntrusiveSpinLockQueue<Fiber, FiberNodeTraits> m_waitQueue;
         };
 
 
