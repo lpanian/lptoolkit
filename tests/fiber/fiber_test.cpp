@@ -39,20 +39,20 @@ protected:
     {
         auto minLeft = std::numeric_limits<float>::infinity();
 
-        while(auto fiber = PopServiceFiber())
+        while(auto request = PopServiceRequest())
         { 
-            auto sleepData = reinterpret_cast<const SleepData*>(GetFiberServiceData(fiber));
+            auto sleepData = reinterpret_cast<const SleepData*>(request->GetData());
             const auto now = Clock::now();
             const auto timeSince = std::chrono::duration<float>{ now - sleepData->m_start }.count();
             if (timeSince >= sleepData->m_duration)
             {
-                // wake that fiber
-                CompleteRequest(fiber);
+                // wake that request
+                CompleteRequest(request);
             }
             else
             {
                 minLeft = lptk::Min(minLeft, sleepData->m_duration - timeSince);
-                PushServiceFiber(fiber);
+                PushServiceFiber(request);
             }
         }
 
@@ -72,8 +72,7 @@ int main(int, char**)
 {
     lptk::fiber::FiberInitStruct fiberInit;
     fiberInit.numWorkerThreads = 4;
-    fiberInit.numSmallFibersPerThread = 64;
-    fiberInit.numLargeFibersPerThread = 4;
+    fiberInit.numFibers = 64;
     lptk::fiber::Init(fiberInit);
 
     lptk::fiber::Counter counter;
@@ -88,26 +87,24 @@ int main(int, char**)
             task.Set([](void* p)
             {
                 const auto num = int(reinterpret_cast<size_t>(p));
-                printf("Fiber %d, part A\n", num);
+                printf("Fiber %d, part A, thread %d\n", num, lptk::fiber::GetFiberThreadId());
                 lptk::fiber::YieldFiber();
-                printf("Fiber %d, part B\n", num);
+                printf("Fiber %d, part B, thread %d\n", num, lptk::fiber::GetFiberThreadId());
                 lptk::fiber::YieldFiber();
-                printf("Fiber %d, part C\n", num);
+                printf("Fiber %d, part C, thread %d\n", num, lptk::fiber::GetFiberThreadId());
 
-                // TODO: the current implementation can't handle subtasks- they end up locking things up because
-                // we can't allocate more fibers.
-                //lptk::fiber::Counter subcounter;
-                //lptk::fiber::Task subtask([](void* p) {
-                //    const auto subNum = int(reinterpret_cast<size_t>(p));
-                //    printf("Fiber %d, %d, part A\n", subNum / 1000, subNum);
-                //    lptk::fiber::YieldFiber();
-                //    printf("Fiber %d, %d, part B\n", subNum / 1000, subNum);
-                //    lptk::fiber::YieldFiber();
-                //    printf("Fiber %d, %d, part C\n", subNum / 1000, subNum);
-                //}, reinterpret_cast<void*>(reinterpret_cast<size_t>(p) * 1000));
+                lptk::fiber::Counter subcounter;
+                lptk::fiber::Task subtask([](void* p) {
+                    const auto subNum = int(reinterpret_cast<size_t>(p));
+                    printf("Fiber %d, %d, part A, thread %d\n", subNum / 1000, subNum, lptk::fiber::GetFiberThreadId());
+                    lptk::fiber::YieldFiber();
+                    printf("Fiber %d, %d, part B, thread %d\n", subNum / 1000, subNum, lptk::fiber::GetFiberThreadId());
+                    lptk::fiber::YieldFiber();
+                    printf("Fiber %d, %d, part C, thread %d\n", subNum / 1000, subNum, lptk::fiber::GetFiberThreadId());
+                }, reinterpret_cast<void*>(reinterpret_cast<size_t>(p) * 1000));
 
-                //lptk::fiber::RunTasks(&subtask, 1, &subcounter);
-                //lptk::fiber::WaitForCounter(&subcounter);
+                lptk::fiber::RunTasks(&subtask, 1, &subcounter);
+                lptk::fiber::WaitForCounter(&subcounter);
             }, testCounter);
         }
         lptk::fiber::RunTasks(tasks, N, &counter);

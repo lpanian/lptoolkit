@@ -29,8 +29,8 @@ namespace lptk
         Semaphore(Semaphore&&) = default;
         Semaphore& operator=(Semaphore&&) = default;
 
-        void Acquire();
-        void Release();
+        void Acquire(unsigned long val=1);
+        void Release(unsigned long val=1);
     private:
         std::condition_variable m_cv;
         std::mutex m_mutex;

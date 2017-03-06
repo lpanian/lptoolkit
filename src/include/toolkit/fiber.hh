@@ -3,8 +3,6 @@
 #define INCLUDED_LPTK_FIBER_HH
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 #include "toolkit/thread.hh"
 #include "toolkit/spinlockqueue.hh"
 #include "toolkit/parallel.hh"
@@ -18,10 +16,9 @@ and their related resources (stack) to allocate:
 
     lptk::fiber::FiberInitStruct fiberInit;
     fiberInit.numWorkerThreads = 4;
-    fiberInit.numHighPriorityWorkerThreads = 1;
-    fiberInit.numFibersPerThread = 32;
+    fiberInit.numFibers = 32;
 
-    lptk::fiber::Init(4, 128);
+    lptk::fiber::Init(fiberInit);
 
 define a TaskFunc function, which is a void (*)(void*), eg:
 
@@ -59,6 +56,7 @@ namespace lptk
         ////////////////////////////////////////////////////////////////////////////////
         class Counter final
         {
+            friend class FiberManager;
         public:
             Counter() : m_counter(0u) {}
 
@@ -71,16 +69,19 @@ namespace lptk
             void IncRef(size_t count = 1) {
                 m_counter.fetch_add(count, std::memory_order_relaxed);
             }
+
             void DecRef() {
+                // If we're subtracting from 0, we just hit 0, so we need to notify our wait queue.
                 m_counter.fetch_sub(1u, std::memory_order_acq_rel);
             }
 
             size_t GetCount() const {
-                return m_counter.load(std::memory_order_relaxed);
+                return m_counter.load(std::memory_order_acquire);
             }
 
         private:
             std::atomic<size_t> m_counter;
+            //lptk::IntrusiveSpinLockQueue<Fiber, FiberNodeTraits> m_waitQueue;
         };
 
 
@@ -117,6 +118,25 @@ namespace lptk
             void Stop();
             
         protected:
+            // tuple struct containing service request data
+            struct ServiceRequest
+            {
+                struct NodeTraits {
+                    static ServiceRequest* GetNext(ServiceRequest* ptr) { return ptr->next; }
+                    static void SetNext(ServiceRequest* ptr, ServiceRequest* next) { ptr->next = next; }
+                };
+                void* GetData() { return requestData; }
+                ServiceRequest(Fiber* fiber, void* requestData, Counter* counter) :
+                    fiber(fiber), requestData(requestData), counter(counter), next(nullptr)
+                {}
+            private:
+                friend class FiberService;
+                Fiber* fiber;
+                void* requestData;
+                Counter* counter;
+                ServiceRequest* next;
+            };
+            
             // Override this function to process requests. The basic loop should
             // pop a fiber, get the fiber request data, process it, and either
             // complete the request or return it to the queue.
@@ -127,32 +147,29 @@ namespace lptk
             // This callback can be overridden to change the service data when a
             // request has been cancelled by the fiber system - for example, if
             // Stop is called before all fibers have completed. 
-            virtual void CancelRequest(Fiber*) {}
+            virtual void CancelRequest(ServiceRequest*) {}
 
             // Enqueues the current fiber with the given request data. 
             // Used to implement the service function.
             void EnqueueRequest(void* requestData);
 
             // Pops a service fiber from the service queue. 
-            Fiber* PopServiceFiber();
+            ServiceRequest* PopServiceRequest();
 
             // Returns a service fiber to the service queue, possibly for doing further
             // service work on it.
-            void PushServiceFiber(Fiber* fiber);
+            void PushServiceFiber(ServiceRequest* request);
 
             // Used to 'wake' the fiber - returns the task back to the main queue and
             // allows it to resume. This will return execution to just after the EnqueueRequest
             // function.
-            void CompleteRequest(Fiber* fiber);
-
-            // Gets the user data that corresponds with the fiber.
-            void* GetFiberServiceData(Fiber* fiber);
+            void CompleteRequest(ServiceRequest* request);
         private:
             static void RunThread(FiberService* service);
             void Notify();
             void WaitForUpdate();
 
-            lptk::IntrusiveSpinLockQueue<Fiber, FiberNodeTraits> m_queue;
+            lptk::IntrusiveSpinLockQueue<ServiceRequest> m_queue;
             lptk::Thread m_thread;
 
             std::atomic<bool> m_finished = false;
@@ -160,6 +177,8 @@ namespace lptk
             Semaphore m_semNotify;
         };
         
+
+        ////////////////////////////////////////////////////////////////////////////////
         using TaskFunc = void(*)(void* userData);
         // Task is a convenient container for the task function pointer and its associated user data
         struct Task
@@ -167,21 +186,20 @@ namespace lptk
             struct NodeTraits;
 
             Task() = default;
-            Task(TaskFunc fn, void* userData, bool largeStack = false)
+            Task(TaskFunc fn, void* userData)
                 : m_task(fn)
                 , m_userData(userData)
-                , m_largeStack(largeStack)
             {}
-            void Set(TaskFunc fn, void* userData, bool largeStack = false)
+            void Set(TaskFunc fn, void* userData)
             {
                 m_task = fn;
                 m_userData = userData;
-                m_largeStack = largeStack;
             }
-            bool IsLargeStackTask() const { return m_largeStack; }
+
             TaskFunc GetFunc() const { return m_task; }
             void* GetUserData() const { return m_userData; }
 
+            void Execute();
         private:
             friend class FiberManager;
             friend class Fiber;
@@ -192,7 +210,6 @@ namespace lptk
 
             TaskFunc m_task = nullptr;
             void* m_userData = nullptr;
-            bool m_largeStack = false;
             Task* m_next = nullptr;
             Counter* m_counter = nullptr;
         };
@@ -205,20 +222,10 @@ namespace lptk
         {
             // Number of worker threads that handle normal and high priority tasks.
             unsigned numWorkerThreads = 1;
-            // Number of worker threads dedicated to high priority tasks.
-            unsigned numHighPriorityWorkerThreads = 0;
             // Stack size in bytes for 'small' stack fibers.
-            unsigned smallFiberStackSize = 32 * (1 << 10);
-            // Stack size in bytes for 'large' stack fibers.
-            unsigned largeFiberStackSize = 64 * (1 << 10);
+            unsigned stackSize = 32 * (1 << 10);
             // Number of small stack fibers in each worker thread.
-            unsigned numSmallFibersPerThread = 32;
-            // Number of small stack fibers in each high priority worker thread (probably smaller).
-            unsigned numSmallFibersPerHighPriorityThread = 4;
-            // Number of 'large' stack fibers in each worker thread.
-            unsigned numLargeFibersPerThread = 4;
-            // Number of 'large' stack fibers in each high priority worker thread (probably smaller).
-            unsigned numLargeFibersPerHighPriorityThread = 2;
+            unsigned numFibers = 128;
         };
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -232,10 +239,7 @@ namespace lptk
         bool Purge();
 
         // Run 'small' stack tasks in the normal queue.
-        void RunTasks(Task* tasks, size_t numTasks, Counter* counter);
-        
-        // Run 'small' stack tasks in the high priority queue, which are preferred over normal tasks.
-        void RunHighPriorityTasks(Task* tasks, size_t numTasks, Counter* counter);
+        void RunTasks(Task* tasks, size_t numTasks, Counter* counter, int priority = 0);
         
         // cooperative yield - allow us to switch to another fiber.
         void YieldFiber();
@@ -244,9 +248,10 @@ namespace lptk
         // This wil only true for the main thread that Init() was called on and any worker threads.
         bool IsInFiberThread();
 
+        // return index >= 0 for valid worker thread, -1 otherwise.
+        int GetFiberThreadId();
+
         // yield current fiber and keep doing so anytime we are rescheduled until the counter has reached zero.
-        // This must not be called in a task! For long-running tasks that need 'child' tasks, the best way
-        // is to kick subtasks which re-use the same counter before the current task ends.
         void WaitForCounter(Counter* counter);
     }
 }
