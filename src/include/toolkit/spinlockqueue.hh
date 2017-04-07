@@ -3,6 +3,7 @@
 #define INCLUDED_toolkit_spinlockqueue_HH
 
 #include <atomic>
+#include "parallel.hh"
 
 namespace lptk
 {
@@ -118,27 +119,6 @@ namespace lptk
 
     
     
-    ////////////////////////////////////////////////////////////////////////////////
-    class Spinlock
-    {
-    public:
-        void lock()
-        {
-            while (m_lock.exchange(true, std::memory_order_acq_rel)) {}
-        }
-        void unlock()
-        {
-            m_lock.store(false, std::memory_order_release);
-        }
-    private:
-        static constexpr unsigned kCacheLine = 64;
-        std::atomic<bool> m_lock = false;
-        char padding[kCacheLine - sizeof(decltype(m_lock))];
-
-    };
-
-   
-
     ////////////////////////////////////////////////////////////////////////////////
     // helper to specify which trait functions the default trait struct (T::NodeTraits)
     // should have.
