@@ -16,11 +16,11 @@ namespace lptk
 template<MemPoolId POOL>
 class StringImpl;
 
-template<unsigned int SIZE>
+template<size_t SIZE>
 class ArrayString
 {
     // Data members
-    uint32_t m_length;
+    size_t m_length;
     char m_data[SIZE];
 public:
     ArrayString()
@@ -76,8 +76,8 @@ public:
     const char& operator[](int idx) const { return c_str()[idx]; }
 
     const char* c_str() const { return m_data; }
-    uint32_t capacity() const { return SIZE; }
-    uint32_t length() const { return m_length; }
+    size_t capacity() const { return SIZE; }
+    size_t length() const { return m_length; }
     bool empty() const { return m_length == 0; }
 
     void clear() {
@@ -562,13 +562,25 @@ bool EndsWith( const StringType &str, const char *ending )
 {
     auto const len = strlen(ending);
     auto const i = str.length() - len;
-    return (i > 0 && strcmp(&str.c_str()[i], ending) == 0);
+    return (i >= 0 && strcmp(&str.c_str()[i], ending) == 0);
+}
+
+bool EndsWith(const char* str, const char* ending)
+{
+	auto const len = strlen(ending);
+	auto const i = strlen(str) - len;
+	return (i >= 0 && strcmp(&str[i], ending) == 0);
 }
 
 template<class StringType>
 bool StartsWith( const StringType &str, const char *beginning)
 {
     return StrNCaseEqual(str.c_str(), beginning, static_cast<unsigned int>(strlen(beginning)));
+}
+
+bool StartsWith(const char* str, const char* beginning)
+{
+	return StrNCaseEqual(str, beginning, static_cast<unsigned int>(strlen(beginning)));
 }
 
 inline const char* GetExtension( const char* szStr )
