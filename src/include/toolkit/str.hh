@@ -567,9 +567,9 @@ bool EndsWith( const StringType &str, const char *ending )
 
 bool EndsWith(const char* str, const char* ending)
 {
-	auto const len = strlen(ending);
-	auto const i = strlen(str) - len;
-	return (i >= 0 && strcmp(&str[i], ending) == 0);
+    auto const len = strlen(ending);
+    auto const i = strlen(str) - len;
+    return (i >= 0 && strcmp(&str[i], ending) == 0);
 }
 
 template<class StringType>
@@ -580,7 +580,7 @@ bool StartsWith( const StringType &str, const char *beginning)
 
 bool StartsWith(const char* str, const char* beginning)
 {
-	return StrNCaseEqual(str, beginning, static_cast<unsigned int>(strlen(beginning)));
+    return StrNCaseEqual(str, beginning, static_cast<unsigned int>(strlen(beginning)));
 }
 
 inline const char* GetExtension( const char* szStr )

@@ -36,10 +36,10 @@ namespace lptk
         IntrusiveListDL& operator=(const IntrusiveListDL&) = delete;
         IntrusiveListDL(IntrusiveListDL&& o);
         IntrusiveListDL& operator=(IntrusiveListDL&& o);
-	
+    
         class iterator;
         class const_iterator;
-	
+    
         iterator begin() { return iterator(m_head); }
         iterator end() { return iterator(nullptr); }
 
