@@ -134,8 +134,9 @@ namespace lptk
     {
 #if defined(LINUX)
         const char* err = strerror(errno);
+        fprintf(stderr, "network error (%s): %s\n", prm ? prm : "", err);
 #elif defined(WINDOWS)
-        char msgBuf[1024];
+        wchar_t msgBuf[1024];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
             NULL,
             WSAGetLastError(),
@@ -143,9 +144,8 @@ namespace lptk
             msgBuf,
             ARRAY_SIZE(msgBuf),
             NULL);
-        const char* err = msgBuf;
+        std::wcerr << "network error (" << prm << "): " << msgBuf << "\n";
 #endif
-        fprintf(stderr, "network error (%s): %s\n", prm ? prm : "", err);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ namespace lptk
         addrinfo *result = nullptr;
         int status = getaddrinfo(hostname, service, &hints, &result);
         if(status) {
-            fprintf(stderr, "network: getaddrinfo error: %s\n", gai_strerror(status));
+            std::wcerr << "network: getaddrinfo error: " << gai_strerror(status) << "\n";
             return false;
         }
         

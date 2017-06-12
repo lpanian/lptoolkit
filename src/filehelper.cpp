@@ -17,6 +17,7 @@
 #if defined(WINDOWS)
 #include <io.h>
 #include <direct.h>
+#include <codecvt>
 #endif
 
 #ifndef PATH_MAX
@@ -47,16 +48,26 @@ namespace lptk
 
     Str GetProgramPath()
     {
-        char path[PATH_MAX+1];
 #if defined(LINUX)
+        char path[PATH_MAX+1];
         char procQuery[PATH_MAX+1];
         snprintf(procQuery, PATH_MAX, "/proc/%d/exe", getpid());
         int bytes = readlink(procQuery, path, PATH_MAX);
-#elif defined(_WINDOWS)
+#elif defined(WINDOWS)
+        wchar_t path[PATH_MAX+1];
         int bytes = GetModuleFileName(NULL, path, PATH_MAX);
 #endif
         path[bytes] = '\0';
+
+#if defined(WINDOWS)
+        // convert to utf8 before returning to lptk::Str (which is char only)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+            return converter.to_bytes(path).c_str();
+        }
+#else
         return path;
+#endif
     }
     
     Str GetWorkingDirectory()
@@ -128,7 +139,7 @@ namespace lptk
         if(stat(filename,&s) == 0) {
 #if defined(LINUX)
             return S_ISDIR(s.st_mode);
-#elif defined(_WINDOWS)
+#elif defined(WINDOWS)
             return 0 != (_S_IFDIR & s.st_mode);
 #endif
         } else {
@@ -143,7 +154,7 @@ namespace lptk
 #if defined(LINUX)
         mode = W_OK;
         return (access(filename,mode) == 0);
-#elif defined(_WINDOWS)
+#elif defined(WINDOWS)
         return (_access(filename,mode) == 0);
 #endif
     }
@@ -154,7 +165,7 @@ namespace lptk
 #if defined(LINUX)
         mode = R_OK;
         return (access(filename,mode) == 0);
-#elif defined(_WINDOWS)
+#elif defined(WINDOWS)
         return (_access(filename,mode) == 0);
 #endif
     }
@@ -175,7 +186,7 @@ namespace lptk
         bool result = false;
 #if defined(LINUX)
         result = (filename[0] == FILE_SEP);
-#elif defined(_WINDOWS)
+#elif defined(WINDOWS)
         result = isalpha(filename[0]) && filename[1] == ':' && filename[2] == FILE_SEP;
 #endif
         return result;
@@ -271,7 +282,7 @@ namespace lptk
 #ifdef LINUX
         : m_dir(0)
 #endif
-#ifdef _WINDOWS
+#ifdef WINDOWS
         : m_findData()
         , m_handle(INVALID_HANDLE_VALUE)
         , m_done(false)
@@ -280,11 +291,15 @@ namespace lptk
 #ifdef LINUX
             m_dir = opendir(dir.c_str());
 #endif
-#ifdef _WINDOWS
+#ifdef WINDOWS
             Str actualDir = dir;
             if(!EndsWith(dir, "\\*"))
                 actualDir += "\\*";
-            m_handle = FindFirstFile(actualDir.c_str(), &m_findData);
+
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+            const auto wideString = converter.from_bytes(actualDir.c_str());
+
+            m_handle = FindFirstFile(wideString.c_str(), &m_findData);
             if(m_handle == INVALID_HANDLE_VALUE)
                 m_done = true;
 #endif
@@ -296,7 +311,7 @@ namespace lptk
         if(m_dir)
             closedir(m_dir);
 #endif
-#ifdef _WINDOWS
+#ifdef WINDOWS
         if(m_handle != INVALID_HANDLE_VALUE)
             FindClose(m_handle);
 #endif
@@ -316,11 +331,12 @@ namespace lptk
         return true;
 #endif
 
-#ifdef _WINDOWS
+#ifdef WINDOWS
         if(m_done)
             return false;
 
-        fname = m_findData.cFileName;
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        fname = converter.to_bytes(m_findData.cFileName).c_str();
 
         m_done = (FindNextFile(m_handle, &m_findData) == 0);
         return true;

@@ -2,6 +2,9 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cwchar>
+#include <ostream>
+
 #include "toolkit/dynary.hh"
 
 #if defined(LINUX)
@@ -11,24 +14,34 @@
 #if defined(WINDOWS)
 #include <shellapi.h>
 #include <strsafe.h>
+#include <codecvt>
 #endif
 
 namespace lptk
 {
 #if defined(WINDOWS)
-    static void ExtractProgramAndParams(const char* origCmd,
-        lptk::Str& cmdStr,
-        const char*& program,
-        const char*& params)
+    static void ExtractProgramAndParams(
+        const char* origCmd,
+        std::wstring& cmdStr,
+        const WCHAR*& program,
+        const WCHAR*& params)
     {
-        cmdStr = origCmd;
-        cmdStr.sub('/', '\\');
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
+        cmdStr = convert.from_bytes(origCmd);
 
-        program = &cmdStr[0];
+        size_t pos = 0;
+        while (pos != cmdStr.npos)
+        {
+            pos = cmdStr.find('/');
+            if (pos != cmdStr.npos)
+                cmdStr.replace(pos, 1, 1, '\\');
+        }
+
+        program = cmdStr.c_str();
         params = nullptr;
 
-        int loc = cmdStr.find(' ');
-        if(loc >= 0) 
+        size_t loc = cmdStr.find(' ');
+        if(loc != cmdStr.npos) 
         {
             cmdStr[loc] = '\0';
             ++loc;
@@ -40,7 +53,8 @@ namespace lptk
 
     bool LaunchProgram(const char* command)
     {
-    #if defined(LINUX)
+
+#if defined(LINUX)
         Str cmdStr = command;
         const char* program = &cmdStr[0];
         DynAry<char*> args;
@@ -84,16 +98,16 @@ namespace lptk
             fflush(NULL);
             return true;
         }
-    #elif defined(WINDOWS)
-        Str cmdStr;
-        const char* program = nullptr;
-        const char* params = nullptr;
-        ExtractProgramAndParams(command, cmdStr, program, params);
+#elif defined(WINDOWS)
+        std::wstring commandCopy;
+        const WCHAR* program = nullptr;
+        const WCHAR* params = nullptr;
+        ExtractProgramAndParams(command, commandCopy, program, params);
 
         SHELLEXECUTEINFO shexi;
         bzero(&shexi, sizeof(shexi));
         shexi.cbSize = sizeof(shexi);
-        shexi.lpVerb = "open";
+        shexi.lpVerb = L"open";
         shexi.lpFile = program;
         shexi.lpParameters = params;
         shexi.nShow = SW_SHOW;
@@ -102,12 +116,12 @@ namespace lptk
             return true;
         else
         {
-            fprintf(stderr, "failed to execute %s\n", program);
+            std::wcerr << "Failed to execute " << program << "with params: " << params << "\n";
             return false;
         }
-    #else
-    #error "Missing LaunchProgram implementation"
-    #endif
+#else
+#error "Missing LaunchProgram implementation"
+#endif
     }
     
 
@@ -127,13 +141,17 @@ namespace lptk
             (LPTSTR)&msgBuf,
             0, NULL);
 
-        std::cerr << "Error (" << dw << "): " << (LPCTSTR)msgBuf << "\n";
+        std::wcerr << "Error (" << dw << "): " << (LPCTSTR)msgBuf << "\n";
 
         LocalFree(msgBuf);
     }
 
     int RunProgram(const char* command, lptk::Str* programOutput)
     {
+        std::wstring cmd;
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
+        cmd = convert.from_bytes(command);
+
         // Handles for piping output
         SECURITY_ATTRIBUTES sa;
         bzero(&sa, sizeof(sa));
@@ -144,7 +162,7 @@ namespace lptk
         HANDLE hOutRead, hOutWrite;
         if (!CreatePipe(&hOutRead, &hOutWrite, &sa, 0))
         {
-            std::cerr << "Failed to create stdout pipes for child process: \"" << command << "\"\n";
+            std::wcerr << "Failed to create stdout pipes for child process: \"" << cmd << "\"\n";
             PrintLastError();
             return 1;
         }
@@ -169,7 +187,7 @@ namespace lptk
         // create process may modify the command buffer...so just copy it.
         // see windows docs on CreateProcess for why this size is used
         TCHAR winCmd[32768]; 
-        StringCbCopy(winCmd, sizeof(winCmd), command);
+        StringCbCopy(winCmd, sizeof(winCmd), cmd.c_str());
         
         if(!CreateProcess(NULL,
             winCmd,
@@ -182,7 +200,7 @@ namespace lptk
             &si,
             &pi))
         {
-            std::cerr << "CreateProcess failed for \"" << command << "\"\n";
+            std::wcerr << "CreateProcess failed for \"" << command << "\"\n";
             PrintLastError();
             return 1;
         }

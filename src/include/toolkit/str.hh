@@ -558,14 +558,14 @@ inline StringType StripExtension( const StringType &str )
 }
 
 template<class StringType>
-bool EndsWith( const StringType &str, const char *ending )
+inline bool EndsWith( const StringType &str, const char *ending )
 {
     auto const len = strlen(ending);
     auto const i = str.length() - len;
     return (i >= 0 && strcmp(&str.c_str()[i], ending) == 0);
 }
 
-bool EndsWith(const char* str, const char* ending)
+inline bool EndsWith(const char* str, const char* ending)
 {
     auto const len = strlen(ending);
     auto const i = strlen(str) - len;
@@ -573,12 +573,12 @@ bool EndsWith(const char* str, const char* ending)
 }
 
 template<class StringType>
-bool StartsWith( const StringType &str, const char *beginning)
+inline bool StartsWith( const StringType &str, const char *beginning)
 {
     return StrNCaseEqual(str.c_str(), beginning, static_cast<unsigned int>(strlen(beginning)));
 }
 
-bool StartsWith(const char* str, const char* beginning)
+inline bool StartsWith(const char* str, const char* beginning)
 {
     return StrNCaseEqual(str, beginning, static_cast<unsigned int>(strlen(beginning)));
 }
