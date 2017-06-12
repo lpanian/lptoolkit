@@ -490,7 +490,7 @@ template< int SIZE >
 bool Printf(ArrayString<SIZE>& strDest, const char* szFormat, ... )
 {
     char* szTarget = strDest.write_str();
-    int nTarget = strDest.capacity();
+    size_t nTarget = strDest.capacity();
 
     va_list arglist;
     va_start(arglist, szFormat);
