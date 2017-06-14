@@ -15,6 +15,7 @@ namespace lptk
         {
         }
 
+        virtual ~refcounted() {}
     public:
         refcounted(const refcounted&) = delete;
         refcounted& operator=(const refcounted&) = delete;
