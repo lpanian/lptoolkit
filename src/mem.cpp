@@ -13,7 +13,7 @@ static const char *g_poolName[] = {
 	"Temp",
 	"String",
 	"Debug",
-        "Network",
+    "Network",
 };
 static_assert(lptk::MEMPOOL_NUM == ARRAY_SIZE(g_poolName), "size mismatch for pool names");
 
