@@ -436,8 +436,7 @@ private:
         str_head* head = reinterpret_cast<str_head*>(data);
         if(head->refCount == std::numeric_limits<uint16_t>::max())
         {
-            head = reinterpret_cast<str_head*>(m_data);
-            const char* sz = m_data + sizeof(str_head);
+            const char* sz = data + sizeof(str_head);
             CopyString(sz, head->length);
         }
         else
@@ -458,7 +457,7 @@ private:
             {
 #ifdef DEBUG
                 if(head->length > 0)
-                    memset(m_data, 0xDEADBEEF, head->length);
+                    memset(m_data, 0xAF, head->length);
 #endif
                 delete[] m_data;
             }
