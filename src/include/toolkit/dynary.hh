@@ -316,13 +316,21 @@ public:
         const size_type cutIndex = (size_type)(first - begin());
         ASSERT(cutIndex + amountToCut <= m_size && "Invalid range"); 
         const size_type lastIndex = cutIndex + amountToCut;
-        const size_type firstEnd = m_size - amountToCut;
         for(size_type i = cutIndex; i < lastIndex; ++i) 
         {
             m_array[i].~T();
-            new(&m_array[i]) T(std::move(m_array[firstEnd + i]));
-            m_array[firstEnd + i].~T();
         }
+
+        if (lastIndex < m_size)
+        {
+            for (size_type i = lastIndex; i < m_size; ++i)
+            {
+                const auto replaceIndex = i - amountToCut;
+                new(&m_array[replaceIndex]) T(std::move(m_array[i]));
+                m_array[i].~T();
+            }
+        }
+
         m_size -= amountToCut;
     }
 
@@ -393,9 +401,6 @@ public:
 
 private:
     ////////////////////////////////////////
-    // Compile time choice of contructor implementation based on whether or not T is integral.
-    // this avoids the dynary<int>(10, 1) vs. dynary<int>(pIntAry, pIntAry+10) problem. Apparently std::vector
-    // does this too. 
     template<class U>
     void internal_ctor_init(U&& init)
     {
@@ -457,12 +462,14 @@ private:
 
     void fill_n(size_type index, size_type n, const T& val)
     {
-        for(size_type i = index, last = index+n; i < last; ++i)
+        ASSERT(index < m_size && index + n <= m_size);
+        for (size_type i = index, last = index + n; i < last; ++i)
             new (&m_array[i]) T(val);
     }
 
     void move_1(size_type index, T&& val)
     {
+        ASSERT(index < m_size);
         new (&m_array[index]) T(std::move(val));
     }
 

@@ -187,7 +187,7 @@ TEST( DynAryTest, Erase ) {
         EXPECT_NE(40, v);
 
     // erase at middle
-    temp.erase(temp.begin() + 4);
+    temp.erase(temp.begin() + 3);
     EXPECT_EQ( 8u, temp.size() );
     for(auto v : temp)
         EXPECT_NE(44, v);
@@ -218,8 +218,8 @@ TEST( DynAryTest, EraseRange) {
     EXPECT_EQ(6u, temp.size());
     for(auto v : temp)
     {
-        EXPECT_NE(42, v);
-        EXPECT_NE(43, v);
+        EXPECT_NE(44, v);
+        EXPECT_NE(45, v);
     }
 
     // erase end
