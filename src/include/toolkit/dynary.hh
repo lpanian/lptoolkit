@@ -424,11 +424,10 @@ private:
     }
 
     ////////////////////////////////////////
-    void grow( int minSize = 16 )
+    void grow( size_t minSize )
     {
-        int size = static_cast<int>(m_capacity * m_grow);
-        if(minSize > size)
-            size = minSize;
+        size_t size = static_cast<size_t>(minSize * m_grow);
+        if(size < 8) size = 8;
         ASSERT(size > m_capacity);
         reserve(size);
     }
@@ -441,7 +440,10 @@ private:
         size_type insertIndex = (size_type)(pos - begin());	
 
         ASSERT(insertIndex >= 0 && insertIndex <= (size_type)(end() - begin()) && "bad insert index");
-        reserve(size() + n);
+        if (size() + n > m_capacity)
+        {
+            grow(size() + n);
+        }
         m_size += n;
 
         // shift stuff down if we're not pushing onto the end.
