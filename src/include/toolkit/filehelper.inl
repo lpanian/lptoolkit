@@ -23,7 +23,7 @@ inline Container ReadFile(const char* filename)
     rewind(fp);
 
     Container buffer(fileSize);
-    size_t numRead = fread(buffer.data(), 1, buffer.size(), fp);
+    size_t numRead = fread(buffer.data(), 1, size_t{ buffer.size() }, fp);
     if (numRead != fileSize)
         return Container();
     return buffer;
@@ -42,7 +42,7 @@ inline bool WriteFile(const char* filename, Container&& buffer)
     if (!fp) return false;
     auto closeOnExit = at_scope_exit([&] {fclose(fp); });
 
-    size_t numWritten = fwrite(buffer.data(), 1, buffer.size(), fp);
+    size_t numWritten = fwrite(buffer.data(), 1, size_t{ buffer.size() }, fp);
     if (numWritten != buffer.size())
         return false;
     return true;
