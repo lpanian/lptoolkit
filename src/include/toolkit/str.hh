@@ -262,9 +262,14 @@ public:
         else return nullptr; // don't want to write into a constant string
     }
 
+    char* data() { return m_data ? m_data + sizeof(str_head) : nullptr; }
+    const char* data() const { return m_data ? m_data + sizeof(str_head) : nullptr; }
+    uint16_t size() const { return length(); }
     uint16_t length() const { return m_data ? reinterpret_cast<str_head*>(m_data)->length : 0; }
     uint16_t capacity() const { return length(); }
     bool empty() const { return length() == 0; }
+    const char* begin() const { return c_str(); }
+    const char* end() const { return c_str() + length(); }
 
     int cmp(const char* other) const { return strcmp(c_str(), other); }
     int cmp(const StringImpl& other) const { if(m_data == other.m_data) return 0; else return cmp(other.c_str()); }
