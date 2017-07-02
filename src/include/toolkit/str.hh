@@ -311,6 +311,17 @@ public:
         return find(str.c_str(), pos); 
     }
 
+    template<typename Fn>
+    int find(int pos, Fn&& fn) const
+    {
+        if(empty() || pos < 0 || pos >= length()) return -1;
+        const char* str = c_str();
+        for (; pos < length(); ++pos)
+            if (fn(str[pos]))
+                break;
+        return pos >= length() ? -1 : pos;
+    }
+
     int rfind(char c) const 
     { 
         if(empty()) return -1;
