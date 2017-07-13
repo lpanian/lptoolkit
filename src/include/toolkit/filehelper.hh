@@ -42,12 +42,12 @@ bool ChangeWorkingDirectory(const char* path);
 bool MakeDir(const char* path);
 bool MakeDirs(const char* path);
 
-Str FileBasename(const char* filename);
-Str FileBasename(const Str& filename);
-Str FileDirname(const char* filename);
-Str FileDirname(const Str& filename);
-Str PathJoin(const Str& left, const Str& right);
-Str PathJoin(const char* left, const char* right);
+Str FileBasename(const char* filename, char fileSep=FILE_SEP);
+Str FileBasename(const Str& filename, char fileSep=FILE_SEP);
+Str FileDirname(const char* filename, char fileSep=FILE_SEP);
+Str FileDirname(const Str& filename, char fileSep=FILE_SEP);
+Str PathJoin(const Str& left, const Str& right, const char* fileSep=FILE_SEP_STR);
+Str PathJoin(const char* left, const char* right, const char* fileSep=FILE_SEP_STR);
 
 Str ToSystemFilename(const char* filename);
 Str ToSystemFilename(const Str& filename);

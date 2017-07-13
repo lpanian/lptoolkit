@@ -192,12 +192,12 @@ namespace lptk
         return result;
     }
 
-    Str FileBasename(const char* filename)
+    Str FileBasename(const char* filename, char fileSep)
     {
         int curIdx = 0;
         int lastEnd = 0;
         while(filename[curIdx] != '\0') {
-            if(filename[curIdx] == FILE_SEP)
+            if(filename[curIdx] == fileSep)
                 lastEnd = curIdx;
             ++curIdx;
         }
@@ -205,9 +205,9 @@ namespace lptk
         return Str(filename + lastEnd, curIdx - lastEnd);
     }
 
-    Str FileBasename(const Str& filename)
+    Str FileBasename(const Str& filename, char fileSep)
     {
-        int pos = filename.rfind(FILE_SEP);
+        int pos = filename.rfind(fileSep);
         if(pos >= 0)
         {
             return filename.substr(pos+1, -1);
@@ -215,21 +215,21 @@ namespace lptk
         else return Str();
     }
 
-    Str FileDirname(const char* filename)
+    Str FileDirname(const char* filename, char fileSep)
     {
         int curIdx = 0;
         int lastEnd = 0;
         while(filename[curIdx] != '\0') {
-            if(filename[curIdx] == FILE_SEP)
+            if(filename[curIdx] == fileSep)
                 lastEnd = curIdx;
             ++curIdx;
         }
         return Str(filename, lastEnd);
     }
 
-    Str FileDirname(const Str& filename)
+    Str FileDirname(const Str& filename, char fileSep)
     {
-        int pos = filename.rfind(FILE_SEP);
+        int pos = filename.rfind(fileSep);
         if(pos >= 0)
         {
             return filename.substr(0, pos);
@@ -237,25 +237,25 @@ namespace lptk
         else return Str();
     }
 
-    Str PathJoin(const Str& left, const Str& right)
+    Str PathJoin(const Str& left, const Str& right, const char* fileSep)
     {
         Str l = left;
         Str r = right;
-        while (!r.empty() && StartsWith(r, FILE_SEP_STR))
-            r = r.substr(static_cast<int>(strlen(FILE_SEP_STR)));
-        while (!l.empty() && EndsWith(l, FILE_SEP_STR))
-            l = l.substr(0, static_cast<int>(l.length() - strlen(FILE_SEP_STR)));
+        while (!r.empty() && StartsWith(r, fileSep))
+            r = r.substr(static_cast<int>(strlen(fileSep)));
+        while (!l.empty() && EndsWith(l, fileSep))
+            l = l.substr(0, static_cast<int>(l.length() - strlen(fileSep)));
         if (l.empty())
             return r;
         else if (r.empty())
             return l;
         else
-            return l + FILE_SEP_STR + r;
+            return l + fileSep + r;
     }
 
-    Str PathJoin(const char* left, const char* right)
+    Str PathJoin(const char* left, const char* right, const char* fileSep)
     {
-        return PathJoin(Str(left), Str(right));
+        return PathJoin(Str(left), Str(right), fileSep);
     }
 
     Str ToSystemFilename(const char* filename)
