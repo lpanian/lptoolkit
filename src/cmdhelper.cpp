@@ -196,8 +196,8 @@ namespace lptk
             }
             else if (cmd[0] == '-')
             {
-                printf("WARN: Ignoring unrecognized option: %s\n", cmd);
-                remainingIndex = i + 1;
+                fprintf(stderr, "ERROR: unrecognized option: %s\n", cmd);
+                return false;
             }
         }
 
