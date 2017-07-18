@@ -86,6 +86,11 @@ public:
     }
 
     char* write_str() { return m_data; }
+    void resize(size_t length) 
+    {
+        m_length = lptk::Min(SIZE - 1, length);
+        m_data[m_length] = '\0';
+    }
 
     int cmp(const char* other) const { return strcmp(c_str(), other); }
     int cmp(const ArrayString& other) const { if(m_data == other.m_data) return 0; else return cmp(other.c_str()); }
@@ -512,7 +517,7 @@ bool Printf(ArrayString<SIZE>& strDest, const char* szFormat, ... )
     int nWritten = vsnprintf(szTarget, nTarget, szFormat, arglist);
     va_end(arglist);
 
-    szTarget[nTarget - 1] = '\0';
+    strDest.resize(nWritten);
     return nWritten == SIZE;
 }
 
