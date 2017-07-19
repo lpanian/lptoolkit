@@ -32,6 +32,10 @@ namespace lptk
                 delete this;
             }
         }
+
+        auto numRefs() const {
+            return m_refs.load(std::memory_order_relaxed);
+        }
     };
 
     template<class T>
