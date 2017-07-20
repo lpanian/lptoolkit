@@ -61,24 +61,26 @@ static void* ThreadMain(void* param)
 
 void Thread::StartThread(ImplPtr impl)
 {
-	impl->m_this = impl; // create a ref to itself to keep the thread in memory until the end of ThreadMain
+    auto self = impl.get();
+	self->m_this = std::move(impl); // create a ref to itself to keep the thread in memory until the end of ThreadMain
+
 #ifdef USING_VS
 	m_thread = CreateThread(
 			NULL, // default security
 			0, // default stack size
 			ThreadMain, // func
-			(LPVOID)impl.get(),
+			(LPVOID)self,
 			0, // default creation flags
 			NULL // thread id
 			);
 	if(m_thread == 0)
-		impl->m_this.reset();
+		self->m_this.reset();
 #endif
 
 #ifdef LINUX
-	if(pthread_create(&m_thread, NULL, ThreadMain, (void*)impl.get()))
+	if(pthread_create(&m_thread, NULL, ThreadMain, (void*)self))
 	{
-		impl->m_this.reset();
+		self->m_this.reset();
 	}
 #endif
 

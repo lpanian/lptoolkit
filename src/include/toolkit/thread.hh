@@ -2,7 +2,8 @@
 #ifndef INCLUDED_toolkit_thread_hh
 #define INCLUDED_toolkit_thread_hh
 
-#include <functional>
+#include <utility>
+#include <tuple>
 #include <memory>
 #if defined(LINUX)
 #include <pthread.h>
@@ -12,20 +13,21 @@ namespace lptk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-// minimal replacement for <thread> - <thread> on windows requires 
-// c++ exceptions. this makes me sad.
 class Thread
 {
 public:
     struct ThreadImplBase;
-    typedef std::shared_ptr<ThreadImplBase> ImplPtr;
+    typedef std::unique_ptr<ThreadImplBase> ImplPtr;
 
     Thread(); // doesn't do anything, just empty
     Thread(Thread&&); // move
     Thread& operator=(Thread&&);
+    Thread(const Thread&) = delete;
+    Thread& operator=(const Thread&) = delete;
 
     template<class Fn, class... ArgType>
         explicit Thread(Fn&& f, ArgType&&... args);
+    
     ~Thread();
 
     void swap(Thread& other);
@@ -35,28 +37,39 @@ public:
     ////////////////////////////////////////	
     struct ThreadImplBase
     {
-        std::shared_ptr<ThreadImplBase> m_this;
+        std::unique_ptr<ThreadImplBase> m_this;
         inline virtual ~ThreadImplBase() {}
         virtual void Run() = 0;
     };
 
-    template<typename Callable>
+    template<typename Callable, typename... Args>
         struct ThreadImpl : public ThreadImplBase
     {
         Callable m_func;
-        ThreadImpl(Callable&& f) : m_func(std::forward<Callable>(f)) {}
-        void Run() { m_func(); }
+        std::tuple<Args...> m_args;
+        ThreadImpl(Callable&& f, Args&&... args) 
+            : m_func(std::forward<Callable>(f)) 
+            , m_args(std::forward<Args>(args)...)
+        {}
+
+        void Run() 
+        { 
+            DoCall(std::index_sequence_for<Args...>{});
+        }
+    private:
+        template<size_t... S>
+            void DoCall(std::integer_sequence<size_t, S...>)
+        {
+            m_func(std::get<S>(m_args)...);
+        }
     };
 private:
-    Thread(const Thread&) DELETED; // no copy
-    Thread& operator=(const Thread&) DELETED; // no copy
-
     void StartThread(ImplPtr);
 
-    template<class Callable>
-        std::shared_ptr<ThreadImpl<Callable> > MakeThreadImpl(Callable&& fn)
+    template<typename Callable, typename... Args>
+        std::unique_ptr<ThreadImpl<Callable, Args...> > MakeThreadImpl(Callable&& fn, Args&&... args)
         {
-            return std::make_shared<ThreadImpl<Callable>>(std::forward<Callable>(fn));
+            return std::make_unique<ThreadImpl<Callable, Args...>>(std::forward<Callable>(fn), std::forward<Args>(args)...);
         }
 
     ////////////////////////////////////////
@@ -71,8 +84,7 @@ private:
 template<class Fn, class... ArgType>
 Thread::Thread(Fn&& f, ArgType&&... args)
 {
-    StartThread(MakeThreadImpl(std::bind<void>(std::forward<Fn>(f), 
-                    std::forward<ArgType>(args)...)));
+    StartThread(MakeThreadImpl(std::forward<Fn>(f), std::forward<ArgType>(args)...));
 }
 
 
