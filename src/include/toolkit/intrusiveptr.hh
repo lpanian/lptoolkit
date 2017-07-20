@@ -86,6 +86,7 @@ namespace lptk
         {
             if (this != &other)
             {
+                if (m_p) m_p->decRef();
                 m_p = other.m_p;
                 other.m_p = nullptr;
             }
@@ -96,7 +97,7 @@ namespace lptk
         intrusive_ptr(const intrusive_ptr<U>& other)
             : m_p(other.m_p)
         {
-            m_p->addRef();
+            if(m_p) m_p->addRef();
         }
 
         template<class U>
@@ -119,8 +120,12 @@ namespace lptk
         template<class U>
         intrusive_ptr& operator=(intrusive_ptr<U>&& other)
         {
-            m_p = other.m_p;
-            other.m_p = nullptr;
+            if (this != &other)
+            {
+                if (m_p) m_p->decRef();
+                m_p = other.m_p;
+                other.m_p = nullptr;
+            }
             return *this;
         }
 
