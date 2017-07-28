@@ -274,16 +274,12 @@ template<class T>
 mat44<T> TransformInverse(const mat44<T>& m)
 {
     mat44<T> dest;
-    T isx = T(1)/sqrtf(m.m[0]*m.m[0] + m.m[1]*m.m[1] + m.m[2]*m.m[2]);
-    T isy = T(1)/sqrtf(m.m[4]*m.m[4] + m.m[5]*m.m[5] + m.m[6]*m.m[6]);
-    T isz = T(1)/sqrtf(m.m[8]*m.m[8] + m.m[9]*m.m[9] + m.m[10]*m.m[10]);
+    T isx2 = T(1)/(m.m[0]*m.m[0] + m.m[1]*m.m[1] + m.m[2]*m.m[2]);
+    T isy2 = T(1)/(m.m[4]*m.m[4] + m.m[5]*m.m[5] + m.m[6]*m.m[6]);
+    T isz2 = T(1)/(m.m[8]*m.m[8] + m.m[9]*m.m[9] + m.m[10]*m.m[10]);
     T itx = -m.m[12];
     T ity = -m.m[13];
     T itz = -m.m[14];
-
-    T isx2 = isx*isx;
-    T isy2 = isy*isy;
-    T isz2 = isz*isz;
 
     dest.m[0] = isx2 * m.m[0];
     dest.m[4] = isx2 * m.m[1];
