@@ -98,7 +98,6 @@ inline mat44<T> TransposeOfInverse(const mat44<T>& m) {
 	return Transpose(TransformInverse(m));
 }
 
-// general inverse
 template<class T>
 mat44<T> GeneralInverse(const mat44<T>& m);
 
