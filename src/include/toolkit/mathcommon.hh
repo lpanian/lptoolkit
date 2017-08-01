@@ -207,6 +207,13 @@ inline float LanczosSinc(float x, float tau)
 bool SolveQuadratic(float a, float b, float c, float *t1, float *t2);
 bool SolveLinear2x2(const float* A, const float* b, float* x0, float *x1);
 
+template<class T>
+inline T Remap(T param, T oldMin, T oldMax, T newMin, T newMax)
+{
+    const auto t = (param - oldMin) / (oldMax - oldMin);
+    return t * (newMax - newMin) + newMin;
+}
+
 }
 
 #endif
