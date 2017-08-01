@@ -32,23 +32,62 @@ mat33<T>::mat33(IdentityType) {
 }
 
 template<class T>
-    mat33<T>::mat33(
-        T m0, T m1, T m2,
-        T m3, T m4, T m5,
-        T m6, T m7, T m8)
-	{
-		m[0] = m0;
-		m[1] = m1;
-		m[2] = m2;
+mat33<T>::mat33(
+    T m0, T m1, T m2,
+    T m3, T m4, T m5,
+    T m6, T m7, T m8)
+{
+    m[0] = m0;
+    m[1] = m1;
+    m[2] = m2;
 
-		m[3] = m3;
-		m[4] = m4;
-		m[5] = m5;
+    m[3] = m3;
+    m[4] = m4;
+    m[5] = m5;
 
-		m[6] = m6;
-		m[7] = m7;
-		m[8] = m8;
-	}
+    m[6] = m6;
+    m[7] = m7;
+    m[8] = m8;
+}
+   
+template<class T>
+mat33<T>::mat33(
+    const vec3<T>& col0,
+    const vec3<T>& col1,
+    const vec3<T>& col2)
+{
+    m[0] = col0.x;
+    m[1] = col0.y;
+    m[2] = col0.z;
+    
+    m[3] = col1.x;
+    m[4] = col1.y;
+    m[5] = col1.z;
+
+    m[6] = col2.x;
+    m[7] = col2.y;
+    m[8] = col2.z;
+}
+
+template<class T>
+mat33<T>::mat33(
+    ByRowsType,
+    const vec3<T>& row0,
+    const vec3<T>& row1,
+    const vec3<T>& row2)
+{
+    m[0] = row0.x;
+    m[1] = row1.x;
+    m[2] = row2.x;
+    
+    m[3] = row0.y;
+    m[4] = row1.y;
+    m[5] = row2.y;
+
+    m[6] = row0.z;
+    m[7] = row1.z;
+    m[8] = row2.z;
+}
 
 template<class T>
 inline void mat33<T>::Copy(const mat33<T>& r)
@@ -254,6 +293,63 @@ mat44<T>::mat44(T m0, T m1, T m2, T m3,
     m[13] = m13;
     m[14] = m14;
     m[15] = m15;
+}
+    
+template<class T>
+mat44<T>::mat44(
+    const vec4<T>& col0,
+    const vec4<T>& col1,
+    const vec4<T>& col2,
+    const vec4<T>& col3)
+{
+    m[0] = col0.x;
+    m[1] = col0.y;
+    m[2] = col0.z;
+    m[3] = col0.w;
+
+    m[4] = col1.x;
+    m[5] = col1.y;
+    m[6] = col1.z;
+    m[7] = col1.w;
+
+    m[8] =  col2.x;
+    m[9] =  col2.y;
+    m[10] = col2.z;
+    m[11] = col2.w;
+
+    m[12] = col3.x;
+    m[13] = col3.y;
+    m[14] = col3.z;
+    m[15] = col3.w;
+}
+
+template<class T>
+mat44<T>::mat44(
+    ByRowsType,
+    const vec4<T>& row0,
+    const vec4<T>& row1,
+    const vec4<T>& row2,
+    const vec4<T>& row3)
+{
+    m[0] = row0.x;
+    m[1] = row1.x;
+    m[2] = row2.x;
+    m[3] = row3.x;
+
+    m[4] = row0.y;
+    m[5] = row1.y;
+    m[6] = row2.y;
+    m[7] = row3.y;
+
+    m[8] =  row0.z;
+    m[9] =  row1.z;
+    m[10] = row2.z;
+    m[11] = row3.z;
+
+    m[12] = row0.w;
+    m[13] = row1.w;
+    m[14] = row2.w;
+    m[15] = row3.w;
 }
     
 template<class T>

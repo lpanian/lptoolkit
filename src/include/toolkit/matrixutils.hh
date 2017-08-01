@@ -76,6 +76,10 @@ mat44<T> MakeM44RotationZ(T rad);
 // where v' = M v = T R Sh S v
 template<class T>
 mat44<T> MakeTransform44(const vec3<T>& translation, const vec3<T>& scale, const vec3<T>& shear, const quaternion<T>& rotation);
+// create transformation matrix given T, S, and R
+// where v' = M v = T R S v
+template<class T>
+mat44<T> MakeTransform44(const vec3<T>& translation, const vec3<T>& scale, const quaternion<T>& rotation);
 
 template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans);

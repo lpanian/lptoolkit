@@ -24,6 +24,7 @@ public:
     T m[9];
     typedef T baseType;
     enum IdentityType { identity };
+    enum ByRowsType { row_init };
 
     mat33();
     mat33(IdentityType);
@@ -31,6 +32,15 @@ public:
         T m0, T m1, T m2,
         T m3, T m4, T m5,
         T m6, T m7, T m8);
+    mat33(
+        const vec3<T>& col0,
+        const vec3<T>& col1,
+        const vec3<T>& col2);
+    mat33(
+        ByRowsType,
+        const vec3<T>& row0,
+        const vec3<T>& row1,
+        const vec3<T>& row2);
     mat33<T>(const T* m_);
     inline mat33<T>(const mat33<T>& r) { Copy(r); }
 
@@ -53,6 +63,13 @@ public:
     vec3<T> Row(int idx) const;
 
     bool Equal(const mat33<T>& other, T eps = T(1e-3)) const;
+    
+    T operator()(int row, int col) const {
+        return m[row + col * 3];
+    }
+    T& operator()(int row, int col) {
+        return m[row + col * 3];
+    }
 };
 
 template<class T>
@@ -81,6 +98,7 @@ public:
     T m[16];
     typedef T baseType;
     enum IdentityType { identity };
+    enum ByRowsType { row_init };
 
     mat44();
     mat44(IdentityType);
@@ -89,6 +107,17 @@ public:
         T m4, T m5, T m6, T m7,
         T m8, T m9, T m10, T m11,
         T m12, T m13, T m14, T m15);
+    mat44(
+        const vec4<T>& col0,
+        const vec4<T>& col1,
+        const vec4<T>& col2,
+        const vec4<T>& col3);
+    mat44(
+        ByRowsType,
+        const vec4<T>& row0,
+        const vec4<T>& row1,
+        const vec4<T>& row2,
+        const vec4<T>& row3);
     mat44(const T* m_);
     mat44(const mat33<T>& m33);
     inline mat44(const mat44<T>& r) { Copy(r); }
@@ -112,6 +141,13 @@ public:
     vec4<T> Row(int idx) const;
 
     bool Equal(const mat44<T>& other, T eps = T(1e-3)) const;
+
+    T operator()(int row, int col) const {
+        return m[row + col * 4];
+    }
+    T& operator()(int row, int col) {
+        return m[row + col * 4];
+    }
 };
 
 template<class T>

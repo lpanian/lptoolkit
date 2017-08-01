@@ -569,6 +569,28 @@ mat44<T> MakeTransform44(const vec3<T>& translation, const vec3<T>& scale, const
 }
 
 template<class T>
+mat44<T> MakeTransform44(const vec3<T>& translation, const vec3<T>& scale, const quaternion<T>& rotation)
+{
+    const auto matRotation = rotation.ToMatrix44();
+
+    const auto colR0 = matRotation.Col(0);
+    const auto colR1 = matRotation.Col(1);
+    const auto colR2 = matRotation.Col(2);
+
+    const auto resultColumn0 = scale.x * colR0;
+    const auto resultColumn1 = scale.y * colR1;
+    const auto resultColumn2 = scale.z * colR2;
+    const auto resultColumn3 = vec4<T>{ translation.x, translation.y, translation.z, 1 };
+
+    return mat44<T>(
+        resultColumn0.x, resultColumn0.y, resultColumn0.z, resultColumn0.w, 
+        resultColumn1.x, resultColumn1.y, resultColumn1.z, resultColumn1.w, 
+        resultColumn2.x, resultColumn2.y, resultColumn2.z, resultColumn2.w, 
+        resultColumn3.x, resultColumn3.y, resultColumn3.z, resultColumn3.w
+        );
+}
+
+template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans)
 {
     mat44<T> result;
