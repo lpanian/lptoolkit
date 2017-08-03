@@ -98,8 +98,8 @@ mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& target, cons
 template<class T>
 mat44<T> MatLookAt_WorldSpace(const vec3<T>& eyePos, const vec3<T>& axis, float angle);
 template<class T>
-inline mat44<T> TransposeOfInverse(const mat44<T>& m) {
-	return Transpose(TransformInverse(m));
+inline mat44<T> InverseTransposeOfTransform(const mat44<T>& m) {
+	return TransformInverse(Transpose(m));
 }
 
 template<class T>
