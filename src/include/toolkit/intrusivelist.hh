@@ -40,8 +40,8 @@ namespace lptk
         class iterator;
         class const_iterator;
     
-        iterator begin() { return iterator(m_head); }
-        iterator end() { return iterator(nullptr); }
+        iterator begin() { return iterator{ m_head }; }
+        iterator end() { return iterator{ nullptr }; }
 
         const_iterator begin() const { return const_iterator(m_head); }
         const_iterator end() const { return const_iterator(nullptr); }
@@ -68,9 +68,10 @@ namespace lptk
     class IntrusiveListDL<T, NT>::iterator
     {
         using NodeType = T;
-        NodeType m_cur = nullptr;
+        NodeType* m_cur = nullptr;
     public:
         iterator() = default;
+        iterator(NodeType* cur) : m_cur(cur) {}
         iterator(const iterator& o) = default;
         iterator& operator=(const iterator& o) = default;
         iterator(iterator&& o) = default;
@@ -98,9 +99,10 @@ namespace lptk
     class IntrusiveListDL<T, NT>::const_iterator
     {
         using NodeType = T;
-        NodeType m_cur = nullptr;
+        const NodeType* m_cur = nullptr;
     public:
         const_iterator() = default;
+        const_iterator(const NodeType* cur) : m_cur(cur) {}
         const_iterator(const const_iterator& o) = default;
         const_iterator& operator=(const const_iterator& o) = default;
         const_iterator(const_iterator&& o) = default;
