@@ -290,6 +290,7 @@ typename HashMap<K,V>::Pair* HashMap<K,V>::set(const K& key, const V& value)
         ++m_numSetItems;
         m_used.set(index, true);
     }
+
     return &m_pairs[index];
 }
 	
@@ -310,6 +311,7 @@ typename HashMap<K,V>::Pair* HashMap<K,V>::set(const K& key, V&& value)
         ++m_numSetItems;
         m_used.set(index, true);
     }
+
     return &m_pairs[index];
 }
 
@@ -374,7 +376,7 @@ void HashMap<K,V>::del(const K& key)
     m_used.set(delIndex, false);
     ASSERT(m_numSetItems > 0);
     --m_numSetItems;					
-
+    
     // reinsert values after delIndex until they don't probe
     for(auto i = size_t(1), c = m_pairs.size(); i < c; ++i)
     {
@@ -386,6 +388,7 @@ void HashMap<K,V>::del(const K& key)
         {
             Pair pair = std::move(m_pairs[probeIndex]);
             m_used.set(probeIndex, false);
+            --m_numSetItems;
             set(pair.key, std::move(pair.value));
         }
     }
