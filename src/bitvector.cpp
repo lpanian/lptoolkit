@@ -47,6 +47,7 @@ namespace lptk
     void BitVector::set(size_t index, bool value)
     {
         auto const byteIndex = index >> kLog2;
+        ASSERT(byteIndex < m_bytes.size());
         auto const bitIndex = index - byteIndex * kNumBits;
         auto const byte = m_bytes[byteIndex];
         PrimType const mask = PrimType(1) << bitIndex;
@@ -57,6 +58,7 @@ namespace lptk
     bool BitVector::get(size_t index) const
     {
         auto const byteIndex = index >> kLog2;
+        ASSERT(byteIndex < m_bytes.size());
         auto const bitIndex = index - byteIndex * kNumBits;
         auto const byte = m_bytes[byteIndex];
         PrimType const mask = PrimType(1) << bitIndex;
@@ -104,6 +106,90 @@ namespace lptk
     {
         std::swap(m_numBits, other.m_numBits);
         m_bytes.swap(other.m_bytes);
+    }
+        
+    size_t BitVector::pop_count() const
+    {
+        size_t result = 0;
+        for (auto&& block : m_bytes)
+            // ugh, make this generic?
+            result += lptk::PopCount64(block);
+        return result;
+    }
+
+    size_t BitVector::find_first_true() const
+    {
+        size_t index = 0;
+        for (auto&& block : m_bytes)
+        {
+            const auto blockIndex = lptk::FirstBitIndex64(block);
+            index += blockIndex;
+            if (blockIndex <= kMask)
+                return index;
+        }
+        return m_numBits;
+    }
+    
+    size_t BitVector::find_first_false() const
+    {
+        size_t index = 0;
+        for (auto&& block : m_bytes)
+        {
+            const auto blockIndex = lptk::FirstBitIndex64(~block);
+            index += blockIndex;
+            if (blockIndex <= kMask)
+                return index;
+        }
+        return m_numBits;
+    }
+        
+    void BitVector::unset_all()
+    { 
+        for (auto&& block : m_bytes)
+            block = PrimType(0);
+    }
+        
+    void BitVector::subtract(const BitVector& other)
+    {
+        auto bitsRemaining = m_numBits;
+        auto otherBitsRemaining = other.m_numBits;
+        // assume any past-numBits values in other are 0 and do nothing
+        const auto maxCount = lptk::Min(m_bytes.size(), other.m_bytes.size());
+        for (size_t i = 0; i < maxCount; ++i)
+        {
+            const auto bitShift = bitsRemaining & (kNumBits - 1);
+            const auto otherBitShift = otherBitsRemaining & (kNumBits - 1);
+
+            auto bitMask = ~PrimType(0) >> bitShift;
+            auto otherBitMask = ~PrimType(0) >> otherBitShift;
+
+            m_bytes[i] = (m_bytes[i] & bitMask) & ~(other.m_bytes[i] & otherBitMask);
+
+            bitsRemaining -= kNumBits;
+            otherBitsRemaining -= other.kNumBits;
+        }
+    }
+
+    void BitVector::add(const BitVector& other)
+    {
+        if (other.size() > size())
+        {
+            resize(other.size());
+        }
+       
+        auto bitsRemaining = m_numBits;
+        // assume any past-numBits values in other are 0 and do nothing
+        const auto maxCount = lptk::Min(m_bytes.size(), other.m_bytes.size());
+        for (size_t i = 0; i < maxCount; ++i)
+        {
+            const auto bitShift = bitsRemaining & (kNumBits - 1);
+
+            auto bitMask = ~PrimType(0) >> bitShift;
+
+            m_bytes[i] = (m_bytes[i] & bitMask) | (other.m_bytes[i] & bitMask);
+
+            bitsRemaining -= kNumBits;
+        }
     }
 }
 

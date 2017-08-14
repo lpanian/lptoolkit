@@ -33,6 +33,15 @@ namespace lptk
 
         bool operator[](size_t index) const;
         void swap(BitVector& other);
+
+        size_t pop_count() const;
+        size_t find_first_true() const;
+        size_t find_first_false() const;
+
+        void unset_all();
+
+        void subtract(const BitVector& other);
+        void add(const BitVector& other);
     private:
         size_t m_numBits;
         DynAry<PrimType> m_bytes;

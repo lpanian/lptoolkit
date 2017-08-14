@@ -153,23 +153,43 @@ inline unsigned long FirstBitIndex(unsigned long num)
 {
 #ifdef _WINDOWS
 	unsigned long index;
-    if (_BitScanForward(&index, num))
-    {
-        return index;
-    }
-    else
-    {
-        return 0;
-    }
+    return _BitScanForward(&index, num) ? index : sizeof(unsigned long) * 8;
 #else
-    return num ? __builtin_ctzl(num) : 0;
+    return num ? __builtin_ctzl(num) : sizeof(unsigned long)*8;
 #endif
+}
 
+inline unsigned long FirstBitIndex64(uint64_t num)
+{
+#ifdef _WINDOWS
+	unsigned long index;
+    return _BitScanForward64(&index, num) ? index : sizeof(uint64_t) * 8;
+#else
+    return num ? __builtin_ctzll(num) : sizeof(uint64_t)*8;
+#endif
 }
 
 inline unsigned long IntNearestPower2(unsigned long num)
 {
     return (1u << IntLog2(num));
+}
+
+inline unsigned int PopCount(unsigned int value)
+{
+#ifdef _WINDOWS
+    return __popcnt(value);
+#else
+    return __builtin_popcount(value);
+#endif
+}
+
+inline uint64_t PopCount64(uint64_t value)
+{
+#ifdef _WINDOWS
+    return __popcnt64(value);
+#else
+    return __builtin_popcountll(value);
+#endif
 }
 
 inline unsigned long IntNextPower2(unsigned long num)
