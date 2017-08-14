@@ -39,10 +39,15 @@ namespace lptk
     size_t mem_GetSizeAllocated(MemPoolId id);
     void mem_ReportText(const char* title = nullptr);
 
-    // raw allocate functions
+    // basic allocate functions
     void* mem_allocate(size_t n, MemPoolId id, unsigned int align);
     void* mem_reallocate(void* previous, size_t n, MemPoolId id, unsigned int align);
     void mem_free(void* p);
+
+    // raw allocate functions - wrapper around whatever we use to allocate (usually malloc/free)
+    void* raw_allocate(size_t n);
+    void raw_free(void* p);
+
 
     template< typename T, MemPoolId PoolId, unsigned int Align = 1> 
     class MemPoolSTLAlloc

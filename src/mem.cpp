@@ -99,7 +99,7 @@ namespace lptk
         ASSERT(id < MEMPOOL_NUM);
 
         const size_t totalSize = computeTotalSize(n, align);
-        void* p = malloc(totalSize);
+        void* p = raw_allocate(totalSize);
         if(!p) return nullptr;
 
         void *result = writeHeader(p, id, n, totalSize, align);
@@ -132,7 +132,7 @@ namespace lptk
         const size_t alignResult = (realpBits & ~(size_t(align)-1));
 
         const size_t totalSize = computeTotalSize(n, align);
-        void* newp = alignResult == 0 ? realloc(realp, totalSize) : malloc(totalSize);
+        void* newp = alignResult == 0 ? realloc(realp, totalSize) : raw_allocate(totalSize);
         
         void* result = nullptr;
         if(newp != realp)
@@ -168,8 +168,18 @@ namespace lptk
         ASSERT(poolId < MEMPOOL_NUM);
 
         g_poolMemUsed[poolId].fetch_sub(allocedSize);
-        free(realp);
+        raw_free(realp);
 #endif
+    }
+    
+    void* raw_allocate(size_t n)
+    {
+        return malloc(n);
+    }
+
+    void raw_free(void* p)
+    {
+        free(p);
     }
 
 }
