@@ -149,6 +149,17 @@ inline unsigned long IntLog2(unsigned long num)
 #endif
 }
 
+inline unsigned long IntLog2_64(unsigned long long num)
+{
+#ifdef _WINDOWS
+	unsigned long index;
+	_BitScanReverse64(&index, num);
+	return index;
+#else
+	return 8*sizeof(num) - 1 - __builtin_clzll(num);
+#endif
+}
+
 inline unsigned long FirstBitIndex(unsigned long num)
 {
 #ifdef _WINDOWS
