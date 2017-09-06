@@ -18,6 +18,7 @@ public:
     using iterator = T*;
     using const_iterator = T*;
     using size_type = size_t;
+    using value_type = T;
 private:
     T* m_array;
     size_type m_capacity;
