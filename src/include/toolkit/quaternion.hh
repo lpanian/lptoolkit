@@ -191,6 +191,15 @@ namespace lptk
     inline quaternion<T> Normalize(const quaternion<T>& q) {
         return q / Magnitude(q);
     }
+    
+    template<class T>
+    inline quaternion<T> NormalizeSafe(const quaternion<T>& q, const quaternion<T>& def = quaternion<T>::no_rotation) {
+        const auto m = Magnitude(q);
+        if (m > 0)
+            return q / m;
+        else
+            return def;
+    }
 
     template<class T>
     quaternion<T> MakeRotation(T radians, const vec3<T>& vec);
