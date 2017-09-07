@@ -72,6 +72,17 @@ mat33<T> MakeM33RotationZ(T rad);
 template<class T>
 mat44<T> MakeM44RotationZ(T rad);
 
+// I'm being a bit lazy here regarding rotation order, these 
+// all assume the same order of XYZ (or v = ZYX * v)
+template<class T>
+mat33<T> MakeM33FromEuler(const vec3<T>& euler);
+template<class T>
+mat44<T> MakeM44FromEuler(const vec3<T>& euler);
+template<class T>
+vec3<T> EulerFromM33(const mat33<T>& m);
+template<class T>
+vec3<T> EulerFromM44(const mat44<T>& m);
+
 // create transformation matrix given T, S, Sh, and R
 // where v' = M v = T R Sh S v
 template<class T>

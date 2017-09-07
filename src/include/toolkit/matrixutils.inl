@@ -591,6 +591,36 @@ mat44<T> MakeTransform44(const vec3<T>& translation, const vec3<T>& scale, const
 }
 
 template<class T>
+mat33<T> MakeM33FromEuler(const vec3<T>& euler)
+{
+    return MakeM33RotationZ(euler.z) * MakeM33RotationY(euler.y) * MakeM33RotationX(euler.x);
+}
+
+template<class T>
+mat44<T> MakeM44FromEuler(const vec3<T>& euler)
+{
+    return MakeM44RotationZ(euler.z) * MakeM44RotationY(euler.y) * MakeM44RotationX(euler.x);
+}
+
+template<class T>
+vec3<T> EulerFromM33(const mat33<T>& m)
+{
+    const auto roll = lptk::Atan2(m.m[5], m.m[8]);
+    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[5] * m.m[5] + m.m[8] + m.m[8]));
+    const auto yaw = lptk::Atan2(m.m[1], m.m[0]);
+    return vec3<T>{roll, pitch, yaw};
+}
+
+template<class T>
+vec3<T> EulerFromM44(const mat44<T>& m)
+{
+    const auto roll = lptk::Atan2(m.m[6], m.m[10]);
+    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[6] * m.m[6] + m.m[10] + m.m[10]));
+    const auto yaw = lptk::Atan2(m.m[1], m.m[0]);
+    return vec3<T>{roll, pitch, yaw};
+}
+
+template<class T>
 mat44<T> MatFromFrame(const vec3<T>& xaxis, const vec3<T>& yaxis, const vec3<T>& zaxis, const vec3<T>& trans)
 {
     mat44<T> result;
