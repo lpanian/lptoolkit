@@ -204,7 +204,7 @@ void GetAxisAngle(const quaternion<T>& q, vec3<T>& axis, T &rotation)
     rotation *= T(2);
     if (sin_a == 0)
     {
-        axis.Set(1, 0, 0);
+        axis.Set(0, 0, 1);
     }
     else
     {
