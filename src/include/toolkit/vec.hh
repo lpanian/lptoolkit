@@ -220,6 +220,17 @@ inline vec2<T> Max(const vec2<T>& l, const vec2<T>& r)
 	return vec2<T>(Max(l.x,r.x), Max(l.y,r.y));
 }
 
+template<class T>
+inline vec2<T> RadFromDeg(const vec2<T>& v)
+{
+    return { RadFromDeg(v.x), RadFromDeg(v.y) };
+}
+
+template<class T>
+inline vec2<T> DegFromRad(const vec2<T>& v)
+{
+    return { DegFromRad(v.x), DegFromRad(v.y) };
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,6 +457,19 @@ inline vec3<T> Max(const vec3<T>& l, const vec3<T>& r)
 {
 	return vec3<T>(Max(l.x,r.x), Max(l.y,r.y), Max(l.z,r.z));
 }
+
+template<class T>
+inline vec3<T> RadFromDeg(const vec3<T>& v)
+{
+    return { RadFromDeg(v.x), RadFromDeg(v.y), RadFromDeg(v.z) };
+}
+
+template<class T>
+inline vec3<T> DegFromRad(const vec3<T>& v)
+{
+    return { DegFromRad(v.x), DegFromRad(v.y), DegFromRad(v.z) };
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
@@ -680,6 +704,18 @@ template<class T>
 inline vec4<T> Max(const vec4<T>& l, const vec4<T>& r)
 {
 	return vec4<T>(Max(l.x,r.x), Max(l.y,r.y), Max(l.z,r.z), Max(l.w, r.w));
+}
+
+template<class T>
+inline vec4<T> RadFromDeg(const vec4<T>& v)
+{
+    return { RadFromDeg(v.x), RadFromDeg(v.y), RadFromDeg(v.z), RadFromDeg(v.w) };
+}
+
+template<class T>
+inline vec4<T> DegFromRad(const vec4<T>& v)
+{
+    return { DegFromRad(v.x), DegFromRad(v.y), DegFromRad(v.z), DegFromrad(v.w) };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
