@@ -46,7 +46,7 @@ public:
     template<MemPoolId POOL>
     ArrayString(const StringImpl<POOL>& other)
     {
-        int copyLen = Min(SIZE-1, other.length() + 1);
+        const auto copyLen = Min(SIZE-1, size_t(other.length() + 1));
         strncpy(m_data, other.c_str(), copyLen );
         m_data[copyLen] = '\0';
         m_length = copyLen - 1;
