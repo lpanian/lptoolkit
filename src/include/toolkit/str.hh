@@ -91,6 +91,8 @@ public:
         m_length = lptk::Min(SIZE - 1, length);
         m_data[m_length] = '\0';
     }
+    // used to fix the string after passing it to a function that writes directly to write_str()
+    void resize_after_write() { resize(strnlen(m_data, SIZE)); }
 
     int cmp(const char* other) const { return strcmp(c_str(), other); }
     int cmp(const ArrayString& other) const { if(m_data == other.m_data) return 0; else return cmp(other.c_str()); }
