@@ -22,7 +22,9 @@ void SleepMS(unsigned int ms);
 #include <Windows.h>
 #undef max
 #undef min
+#if _MSC_VER < 1910
 #define noexcept
+#endif
 
 #pragma warning( disable: 4351)
 
