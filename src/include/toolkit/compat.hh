@@ -22,16 +22,22 @@ void SleepMS(unsigned int ms);
 #include <Windows.h>
 #undef max
 #undef min
-#if _MSC_VER < 1910
+
+// This is a stupid hack to get rid of warnings/errors related to having exceptions turned off
+// even when we find noexcept in the code.
+#ifndef _CPPUNWIND
 #define noexcept
 #endif
 
-#pragma warning( disable: 4351)
+#pragma warning( disable: 4351) // disable 'new behavior: elements of array 'array' will be default initialized'
 
 // windows test
 // you get alignof, but no alignas. Anything requiring that level of control will probably
 // have to be aligned manually.
+#if _MSC_VER < 1910
 #define alignof __alignof
+#endif
+
 // constexpr isn't implemented in vs2013, so... this. Which breaks constexpr ctors
 #if _MSC_VER < 1900
 #define constexpr const
