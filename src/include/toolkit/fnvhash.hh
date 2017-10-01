@@ -17,17 +17,9 @@ namespace lptk
     };
 
     template<typename T>
-    constexpr T c_fnv1a(const char* s,
+    constexpr T fnv1a(const char* s,
         T hash = FNVParam<T>::offset,
-        T prime = FNVParam<T>::prime)
-    {
-        return *s ? c_fnv1a(s + 1, prime * (hash ^ *s), prime) : hash;
-    }
-
-    template<typename T>
-    T fnv1a(const char* s,
-        T hash = FNVParam<T>::offset,
-        T prime = FNVParam<T>::prime)
+        const T prime = FNVParam<T>::prime)
     {
         while (*s)
             hash = prime * (hash ^ *s++);
@@ -35,17 +27,9 @@ namespace lptk
     }
 
     template<typename T>
-    constexpr T c_fnv1(const char* s,
-        T hash = FNVParam<T>::offset,
-        T prime = FNVParam<T>::prime)
-    {
-        return *s ? c_fnv1(s + 1, (prime * hash) ^ *s, prime) : hash;
-    }
-    
-    template<typename T>
     constexpr T fnv1(const char* s,
         T hash = FNVParam<T>::offset,
-        T prime = FNVParam<T>::prime)
+        const T prime = FNVParam<T>::prime)
     {
         while (*s)
             hash = (prime * hash) ^ *s++;
