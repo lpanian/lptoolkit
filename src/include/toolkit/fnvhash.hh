@@ -25,6 +25,16 @@ namespace lptk
             hash = prime * (hash ^ *s++);
         return hash;
     }
+    
+    template<typename T>
+    constexpr T fnv1a_n(const char* s, size_t len,
+        T hash = FNVParam<T>::offset,
+        const T prime = FNVParam<T>::prime)
+    {
+        while (len-- > 0)
+            hash = prime * (hash ^ *s++);
+        return hash;
+    }
 
     template<typename T>
     constexpr T fnv1(const char* s,
@@ -32,6 +42,16 @@ namespace lptk
         const T prime = FNVParam<T>::prime)
     {
         while (*s)
+            hash = (prime * hash) ^ *s++;
+        return hash;
+    }
+    
+    template<typename T>
+    constexpr T fnv1_n(const char* s, size_t len,
+        T hash = FNVParam<T>::offset,
+        const T prime = FNVParam<T>::prime)
+    {
+        while (len-- > 0)
             hash = (prime * hash) ^ *s++;
         return hash;
     }
