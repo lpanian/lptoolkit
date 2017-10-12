@@ -606,7 +606,7 @@ template<class T>
 vec3<T> EulerFromM33(const mat33<T>& m)
 {
     const auto roll = lptk::Atan2(m.m[5], m.m[8]);
-    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[5] * m.m[5] + m.m[8] + m.m[8]));
+    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[5] * m.m[5] + m.m[8] * m.m[8]));
     const auto yaw = lptk::Atan2(m.m[1], m.m[0]);
     return vec3<T>{roll, pitch, yaw};
 }
@@ -615,7 +615,7 @@ template<class T>
 vec3<T> EulerFromM44(const mat44<T>& m)
 {
     const auto roll = lptk::Atan2(m.m[6], m.m[10]);
-    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[6] * m.m[6] + m.m[10] + m.m[10]));
+    const auto pitch = lptk::Atan2(-m.m[2], lptk::Sqrt(m.m[6] * m.m[6] + m.m[10] * m.m[10]));
     const auto yaw = lptk::Atan2(m.m[1], m.m[0]);
     return vec3<T>{roll, pitch, yaw};
 }
