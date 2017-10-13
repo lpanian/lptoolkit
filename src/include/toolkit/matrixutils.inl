@@ -140,6 +140,33 @@ void TransformFloat4(T* out, const mat44<T>& m, const T *in)
 }
 
 template<class T>
+vec4<T> TransformVec4(const mat44<T>& m, const vec4<T>& v)
+{
+    T x,y,z,w;
+    x = v.x * m.m[0];
+    y = v.x * m.m[1];
+    z = v.x * m.m[2];
+    w = v.x * m.m[3];
+
+    x += v.y * m.m[4];
+    y += v.y * m.m[5];
+    z += v.y * m.m[6];
+    w += v.y * m.m[7];
+
+    x += v.z * m.m[8];
+    y += v.z * m.m[9];
+    z += v.z * m.m[10];
+    w += v.z * m.m[11];
+
+    x += v.w * m.m[12];
+    y += v.w * m.m[13];
+    z += v.w * m.m[14];
+    w += v.w * m.m[15];
+
+    return vec4<T>{x, y, z, w};
+}
+
+template<class T>
 mat44<T> Compute2DProj(T w, T h, T znear, T zfar)
 {
     mat44<T> result;

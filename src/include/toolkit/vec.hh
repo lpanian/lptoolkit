@@ -719,6 +719,38 @@ inline vec4<T> DegFromRad(const vec4<T>& v)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+template<class T>
+inline vec2<T> ToVec2(const vec3<T>& v) {
+    return vec2<T>{v.x, v.y};
+}
+
+template<class T>
+inline vec2<T> ToVec2(const vec4<T>& v) {
+    return vec2<T>{v.x, v.y};
+}
+
+template<class T>
+inline vec3<T> ToVec3(const vec2<T>& v, float z = 0.f) {
+    return vec3<T>{v.x, v.y, z};
+}
+
+template<class T>
+inline vec3<T> ToVec3(const vec4<T>& v) {
+    return vec3<T>{v.x, v.y, v.z};
+}
+
+template<class T>
+inline vec4<T> ToVec4(const vec2<T>& v, float z = 0.f, float w = 0.f) {
+    return vec4<T>{v.x, v.y, z, w};
+}
+
+template<class T>
+inline vec4<T> ToVec4(const vec3<T>& v, float w = 0.f) {
+    return vec4<T>{v.x, v.y, v.z, w};
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 typedef vec2<int32_t> v2i;
 typedef vec3<int32_t> v3i;
 typedef vec4<int32_t> v4i;
