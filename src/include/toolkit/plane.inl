@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "matrixutils.hh"
 
 namespace lptk
@@ -37,4 +39,18 @@ namespace lptk
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
+    template<typename T>
+    void ClipLine(const plane<T>& plane,
+        vec3<T>& from,
+        vec3<T>& to)
+    {
+        float fromDist = plane.Distance(from);
+        if (fromDist < 0.f)
+            from = from - plane.N() * (fromDist - std::numeric_limits<T>::epsilon() * fromDist) ;
+
+        float toDist = plane.Distance(to);
+        if (toDist < 0.f)
+            to = to - plane.N() * (toDist - std::numeric_limits<T>::epsilon() * toDist);
+    }
 }

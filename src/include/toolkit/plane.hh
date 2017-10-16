@@ -65,6 +65,11 @@ template<typename T>
 void TransformPlanes(
     const mat44<T>& mat, plane<T>* planes, size_t numPlanes);
 
+template<typename T>
+void ClipLine(const plane<T>& plane,
+    vec3<T>& from,
+    vec3<T>& to);
+
 // TODO: Frustum Planes from proj matrix
 // TODO: Frustum Planes from fov/aspec
 
