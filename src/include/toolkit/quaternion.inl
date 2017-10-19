@@ -195,6 +195,25 @@ quaternion<T> MakeRotation(T radians, const vec3<T>& vec)
     T c = vec.z * sin_a;
     return Normalize(quaternion<T>(a,b,c,r));
 }
+    
+template<class T>
+quaternion<T> MakeRotation(const vec3<T>& fromVec, const vec3<T>& toVec)
+{
+    const auto fromToDot = lptk::Dot(fromVec, toVec);
+    const auto fromLenSq = lptk::LengthSq(fromVec);
+    const auto toLenSq = lptk::LengthSq(toVec);
+
+    const auto normalizedDot = fromToDot / fromLenSq / toLenSq;
+    if (normalizedDot >= 1.f)
+        return quaternion<T>{quaternion<T>::no_rotation};
+    else if (normalizedDot < (1e-6f - 1.f))
+        return MakeRotation(lptk::kPi, lptk::vec3<T>{1, 0, 0});
+    
+    const auto scaledAxis = lptk::Cross(fromVec, toVec);
+    const auto w = fromLenSq * toLenSq + lptk::Dot(fromVec, toVec);
+    const quaternion<T> result{ scaledAxis.x, scaledAxis.y, scaledAxis.z, w };
+    return lptk::Normalize(result);
+}
 
 template<class T>
 void GetAxisAngle(const quaternion<T>& q, vec3<T>& axis, T &rotation)

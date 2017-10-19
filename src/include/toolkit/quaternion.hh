@@ -205,6 +205,9 @@ namespace lptk
     quaternion<T> MakeRotation(T radians, const vec3<T>& vec);
 
     template<class T>
+    quaternion<T> MakeRotation(const vec3<T>& fromVec, const vec3<T>& toVec);
+
+    template<class T>
     void GetAxisAngle(const quaternion<T>& q, vec3<T>& axis, T &rotation);
 
     // assumes q is unit length - otherwise conjugate should be inverse
