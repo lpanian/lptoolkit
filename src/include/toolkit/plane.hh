@@ -70,6 +70,12 @@ void ClipLine(const plane<T>& plane,
     vec3<T>& from,
     vec3<T>& to);
 
+template<typename T>
+bool IntersectPlane(const plane<T>& plane,
+    const vec3<T>& from,
+    const vec3<T>& dir,
+    float& t);
+
 // TODO: Frustum Planes from proj matrix
 // TODO: Frustum Planes from fov/aspec
 

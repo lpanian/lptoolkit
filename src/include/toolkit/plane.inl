@@ -53,4 +53,19 @@ namespace lptk
         if (toDist < 0.f)
             to = to - plane.N() * (toDist - std::numeric_limits<T>::epsilon() * toDist);
     }
+
+    template<typename T>
+    bool IntersectPlane(const plane<T>& plane,
+        const vec3<T>& from,
+        const vec3<T>& dir,
+        float& t)
+    {
+        const auto N = plane.N();
+        const auto dDotN = lptk::Dot(N, dir);
+        if (dDotN == 0.0)
+            return false;
+
+        t = -(plane.D() + lptk::Dot(N, from)) / dDotN;
+        return true;
+    }
 }
