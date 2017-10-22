@@ -19,8 +19,8 @@ public:
         : m_plane(n.x, n.y, n.z, d)
     {}
     plane(const vec3<T>& n, const vec3<T>& p)
-    {
         : m_plane(n.x, n.y, n.z, -Dot(n, p))
+    {
     }
     plane(const vec4<T>& p) : m_plane(p) { }
 
