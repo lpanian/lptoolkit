@@ -23,12 +23,6 @@ void SleepMS(unsigned int ms);
 #undef max
 #undef min
 
-// This is a stupid hack to get rid of warnings/errors related to having exceptions turned off
-// even when we find noexcept in the code.
-#ifndef _CPPUNWIND
-#define noexcept
-#endif
-
 #pragma warning( disable: 4351) // disable 'new behavior: elements of array 'array' will be default initialized'
 
 // windows test
