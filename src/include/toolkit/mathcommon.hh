@@ -46,6 +46,8 @@ inline int IntFloor(float x) { return static_cast<int>(x); }
 inline int IntFloor(double x) { return static_cast<int>(x); }
 inline int IntCeil(float x) { return static_cast<int>(ceill(x)); }
 inline int IntCeil(double x) { return static_cast<int>(ceill(x)); }
+inline float FastFloor(float x) { return static_cast<float>(int(x)) - static_cast<float>(x < 0); }
+inline double FastFloor(double x) { return static_cast<double>((long long)(x)) - static_cast<double>(x < 0); }
 
 static const float kPi = 4.f * Atan2(1.f, 1.f);
 static const double kPiD = 4.0 * Atan2(1.0, 1.0);
