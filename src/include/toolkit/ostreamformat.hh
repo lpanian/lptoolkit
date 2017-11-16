@@ -15,7 +15,7 @@ namespace lptk
             explicit spaces(int c) : count(4 * c) {}
         };
 
-        std::ostream& operator<<(std::ostream& out, const spaces& s)
+        inline std::ostream& operator<<(std::ostream& out, const spaces& s)
         {
             for (int i = 0; i < s.count; ++i)
                 out << " ";
