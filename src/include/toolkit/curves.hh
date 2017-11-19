@@ -2,6 +2,7 @@
 
 namespace lptk
 {
+    ////////////////////////////////////////////////////////////////////////////////
     // curve helpers that don't rely on the vector classes
     namespace curves
     {
