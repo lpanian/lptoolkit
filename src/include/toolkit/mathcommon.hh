@@ -19,9 +19,9 @@
 namespace lptk
 {
 
-template<class T> inline T Min(T x, T y) { return x < y ? x : y; }
-template<class T> inline T Max(T x, T y) { return x > y ? x : y; }
-template<class T> inline T Abs(T x) { return x < 0 ? -x : x; }
+template<class T> constexpr inline T Min(T x, T y) { return x < y ? x : y; }
+template<class T> constexpr inline T Max(T x, T y) { return x > y ? x : y; }
+template<class T> constexpr inline T Abs(T x) { return x < 0 ? -x : x; }
 inline float Cos(float x)  { return cosf(x); }
 inline double Cos(double x)  { return cos(x); }
 inline float Acos(float x)  { return acosf(x); }
