@@ -3,12 +3,13 @@
 #define INCLUDED_toolkit_bitvector_HH
 
 #include <cstdint>
+#include <functional>
 
 #include "dynary.hh"
 
 namespace lptk 
 {
-
+    ////////////////////////////////////////////////////////////////////////////////
     class BitVector
     {
         using PrimType = uint64_t;
@@ -36,7 +37,9 @@ namespace lptk
 
         size_t pop_count() const;
         size_t find_first_true() const;
+        size_t find_next_true(size_t after) const;
         size_t find_first_false() const;
+        size_t find_next_false(size_t after) const;
 
         void unset_all();
 
@@ -46,7 +49,49 @@ namespace lptk
         size_t m_numBits;
         DynAry<PrimType> m_bytes;
     };
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    class BitVectorEnumerator
+    {
+        const BitVector& m_bv;
+    public:
+        BitVectorEnumerator(const BitVector& bv) : m_bv(bv) {}
 
+        class iterator
+        {
+            ::std::reference_wrapper<const BitVector> m_bv;
+            size_t m_index = 0;
+        public:
+            iterator(::std::reference_wrapper<const BitVector> bv, size_t index) : m_bv(bv), m_index(index) {}
+
+            iterator& operator++() {
+                m_index = m_bv.get().find_next_true(m_index + 1);
+                return *this;
+            }
+            
+            iterator operator++(int) {
+                iterator self(m_bv, m_index);
+                m_index = m_bv.get().find_next_true(m_index + 1);
+                return self;
+            }
+
+            size_t operator*() const { return m_index; }
+
+            bool operator==(const iterator& o) const {
+                return &o.m_bv.get() == &m_bv.get() && o.m_index == m_index;
+            }
+            bool operator!=(const iterator& o) const {
+                return !operator==(o);
+            }
+        };
+
+        iterator begin() const { return iterator(m_bv, 0); }
+        iterator end() const { return iterator(m_bv, m_bv.size()); }
+    };
+
+    inline BitVectorEnumerator enumerate(const BitVector& bv) {
+        return BitVectorEnumerator(::std::cref(bv));
+    }
 }
 
 #endif

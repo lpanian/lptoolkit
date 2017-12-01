@@ -78,10 +78,10 @@ namespace lptk
         if (numPartialBits > 0)
         {
             const PrimType partialByte = m_bytes[numBytes - 1];
-            const PrimType oldMask = (1 << numPartialBits) - 1;
+            const PrimType oldMask = (PrimType(1) << numPartialBits) - 1;
             // extra mask with 0xff to get rid of VS exception about losing data. It claims
             // the resulting code won't be changed...
-            const PrimType newMask = kMask & (~oldMask & ((1 << numNewPartialBits) - 1));
+            const PrimType newMask = kMask & (~oldMask & ((PrimType(1) << numNewPartialBits) - 1));
             const PrimType newByte = (partialByte & oldMask) | (newDataVal & newMask);
             m_bytes[numBytes - 1] = newByte;
         }
@@ -119,12 +119,28 @@ namespace lptk
 
     size_t BitVector::find_first_true() const
     {
-        size_t index = 0;
-        for (auto&& block : m_bytes)
+        return find_next_true(0);
+    }
+        
+    size_t BitVector::find_next_true(size_t first) const
+    {
+        if (first >= m_numBits || !m_numBits)
+            return m_numBits;
+        const size_t firstBlockIndex = (first >> kLog2);
+        auto index = firstBlockIndex * kNumBits;
+
+        auto bitIndex = first - index;
+        const auto firstMask = ~((PrimType(1) << bitIndex) - 1);
+        const auto nextIndex = lptk::FirstBitIndex64(firstMask & m_bytes[0]);
+        index += nextIndex;
+        if (nextIndex < kNumBits)
+            return index;
+
+        for (auto i = firstBlockIndex + 1; i < m_bytes.size(); ++i)
         {
-            const auto blockIndex = lptk::FirstBitIndex64(block);
+            const auto blockIndex = lptk::FirstBitIndex64(m_bytes[i]);
             index += blockIndex;
-            if (blockIndex <= kMask)
+            if (blockIndex < kNumBits)
                 return index;
         }
         return m_numBits;
@@ -132,12 +148,28 @@ namespace lptk
     
     size_t BitVector::find_first_false() const
     {
-        size_t index = 0;
-        for (auto&& block : m_bytes)
+        return find_next_false(0);
+    }
+    
+    size_t BitVector::find_next_false(size_t first) const
+    {
+        if (first >= m_numBits || !m_numBits)
+            return m_numBits;
+        const size_t firstBlockIndex = (first >> kLog2);
+        auto index = firstBlockIndex * kNumBits;
+
+        auto bitIndex = first - index;
+        const auto firstMask = ~((PrimType(1) << bitIndex) - 1);
+        const auto nextIndex = lptk::FirstBitIndex64(firstMask & ~(m_bytes[0]));
+        index += nextIndex;
+        if (nextIndex < kNumBits)
+            return index;
+
+        for (auto i = firstBlockIndex + 1; i < m_bytes.size(); ++i)
         {
-            const auto blockIndex = lptk::FirstBitIndex64(~block);
+            const auto blockIndex = lptk::FirstBitIndex64(~m_bytes[i]);
             index += blockIndex;
-            if (blockIndex <= kMask)
+            if (blockIndex < kNumBits)
                 return index;
         }
         return m_numBits;
