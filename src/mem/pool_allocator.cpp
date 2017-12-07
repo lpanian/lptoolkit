@@ -1,4 +1,4 @@
-#include "toolkit/mem/poolmem.hh"
+#include "toolkit/mem/pool_allocator.hh"
 
 namespace lptk
 {

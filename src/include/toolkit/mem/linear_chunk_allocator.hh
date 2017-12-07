@@ -7,15 +7,15 @@ namespace lptk
     namespace mem
     {
         //////////////////////////////////////////////////////////////////////////////// 
-        class MemArena : public mem::Allocator
+        class LinearChunkAllocator : public mem::Allocator
         {
         public:
-            MemArena(size_t blockSize = 1 << 15, mem::Allocator* alloc = mem::GetDefaultAllocator());
-            MemArena(const MemArena&) = delete;
-            MemArena& operator=(const MemArena&) = delete;
-            MemArena(MemArena&& other);
-            MemArena& operator=(MemArena&& other);
-            ~MemArena();
+            LinearChunkAllocator(size_t blockSize = 1 << 15, mem::Allocator* alloc = mem::GetDefaultAllocator());
+            LinearChunkAllocator(const LinearChunkAllocator&) = delete;
+            LinearChunkAllocator& operator=(const LinearChunkAllocator&) = delete;
+            LinearChunkAllocator(LinearChunkAllocator&& other);
+            LinearChunkAllocator& operator=(LinearChunkAllocator&& other);
+            ~LinearChunkAllocator();
 
             void* Alloc(size_t numBytes, unsigned align) 
                 override;
@@ -26,7 +26,7 @@ namespace lptk
 
             void Clear();
         private:
-            void Move(MemArena&& other);
+            void Move(LinearChunkAllocator&& other);
             struct BlockHeader
             {
                 BlockHeader* m_next = nullptr;

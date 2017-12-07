@@ -5,7 +5,7 @@
 #include "toolkit/thread.hh"
 #include "toolkit/dynary.hh"
 #include "toolkit/mem.hh"
-#include "toolkit/mem/poolmem.hh"
+#include "toolkit/mem/pool_allocator.hh"
 
 namespace lptk
 {

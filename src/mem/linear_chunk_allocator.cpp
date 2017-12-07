@@ -1,4 +1,4 @@
-#include "toolkit/mem/memarena.hh"
+#include "toolkit/mem/linear_chunk_allocator.hh"
 #include <cstring>
 #include "toolkit/mathcommon.hh"
 
@@ -6,13 +6,13 @@ namespace lptk
 {
     namespace mem
     {
-        MemArena::MemArena(size_t blockSize, mem::Allocator* alloc)
+        LinearChunkAllocator::LinearChunkAllocator(size_t blockSize, mem::Allocator* alloc)
             : m_blockSize(lptk::Max(blockSize, lptk::AlignValue<size_t>(sizeof(BlockHeader), 16) + 16))
             , m_alloc(alloc)
         {
         }
 
-        MemArena::~MemArena()
+        LinearChunkAllocator::~LinearChunkAllocator()
         {
             BlockHeader* cur = m_root;
             while (cur)
@@ -23,7 +23,7 @@ namespace lptk
             }
         }
             
-        void MemArena::Move(MemArena&& other)
+        void LinearChunkAllocator::Move(LinearChunkAllocator&& other)
         {
             m_blockSize = std::exchange(other.m_blockSize, 0);
             m_root = std::exchange(other.m_root, nullptr);
@@ -32,12 +32,12 @@ namespace lptk
             m_alloc = other.m_alloc;
         }
 
-        MemArena::MemArena(MemArena&& other)
+        LinearChunkAllocator::LinearChunkAllocator(LinearChunkAllocator&& other)
         {
             Move(std::move(other));
         }
 
-        MemArena& MemArena::operator=(MemArena&& other)
+        LinearChunkAllocator& LinearChunkAllocator::operator=(LinearChunkAllocator&& other)
         {
             if (this != &other)
             {
@@ -46,7 +46,7 @@ namespace lptk
             return *this;
         }
 
-        MemArena::BlockHeader* MemArena::MakeBlock(size_t numBytes) const
+        LinearChunkAllocator::BlockHeader* LinearChunkAllocator::MakeBlock(size_t numBytes) const
         {
             const size_t computedSize = lptk::Max(numBytes + lptk::AlignValue<size_t>(sizeof(BlockHeader), 16),
                 m_blockSize);
@@ -56,7 +56,7 @@ namespace lptk
             return newHeader;
         }
 
-        void* MemArena::Alloc(size_t numBytes, unsigned align)
+        void* LinearChunkAllocator::Alloc(size_t numBytes, unsigned align)
         {
             lptk::unused_arg(align); // TODO should be able to align up to builtin alignment
             numBytes = lptk::AlignValue<size_t>(numBytes, 16u);
@@ -104,11 +104,11 @@ namespace lptk
             return result;
         }
             
-        void MemArena::Free(void*)
+        void LinearChunkAllocator::Free(void*)
         {
         }
 
-        char* MemArena::CopyString(const char* src)
+        char* LinearChunkAllocator::CopyString(const char* src)
         {
             size_t const numBytes = strlen(src) + 1;
             char* dest = reinterpret_cast<char*>(Alloc(numBytes, 1));
@@ -116,7 +116,7 @@ namespace lptk
             return dest;
         }
 
-        void MemArena::Clear()
+        void LinearChunkAllocator::Clear()
         {
             m_pos = 0;
             m_cur = m_root;

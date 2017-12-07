@@ -4,7 +4,7 @@
 
 #include <cstdarg>
 #include <cstdio>
-#include "toolkit/mem/memarena.hh"
+#include "toolkit/mem/linear_chunk_allocator.hh"
 #include "toolkit/dynary.hh"
 
 namespace lptk
@@ -39,7 +39,7 @@ namespace lptk
             std::strncpy(m_fmt, formatStr, len);
         }
 
-        mem::MemArena m_arena;
+        mem::LinearChunkAllocator m_arena;
         char* m_fmt = nullptr;
         lptk::DynAry<ArgNode*> m_args;
     };
@@ -106,7 +106,7 @@ namespace lptk
                 ++lenFmt;
         }
 
-        mem::MemArena localArena(sizeof(char) * (lenFmt + 1));
+        mem::LinearChunkAllocator localArena(sizeof(char) * (lenFmt + 1));
         char* strData = static_cast<char*>(localArena.Alloc(sizeof(char) * (lenFmt + 1), 1));
         memset(strData, 0, sizeof(char) * (lenFmt + 1));
 
