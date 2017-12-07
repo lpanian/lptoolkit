@@ -28,7 +28,7 @@ function declareToolkit(baseFolder)
 	addToolkitIncludes(baseFolder)
 
 	files {
-		"src/*.cpp",
+		"src/**.cpp",
 		"src/include/**.hh",
 		"src/include/**.inl"
 	}
