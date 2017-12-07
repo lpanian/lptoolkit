@@ -4,7 +4,7 @@
 
 #include <cstdarg>
 #include <cstdio>
-#include "toolkit/memarena.hh"
+#include "toolkit/mem/memarena.hh"
 #include "toolkit/dynary.hh"
 
 namespace lptk
@@ -35,11 +35,11 @@ namespace lptk
             : m_arena(1024)
         {
             const size_t len = strlen(formatStr) + 1;
-            m_fmt = static_cast<char*>(m_arena.Alloc(len));
+            m_fmt = static_cast<char*>(m_arena.Alloc(len, 1));
             std::strncpy(m_fmt, formatStr, len);
         }
 
-        MemArena m_arena;
+        mem::MemArena m_arena;
         char* m_fmt = nullptr;
         lptk::DynAry<ArgNode*> m_args;
     };
@@ -106,8 +106,8 @@ namespace lptk
                 ++lenFmt;
         }
 
-        MemArena localArena(sizeof(char) * (lenFmt + 1));
-        char* strData = static_cast<char*>(localArena.Alloc(sizeof(char) * (lenFmt + 1)));
+        mem::MemArena localArena(sizeof(char) * (lenFmt + 1));
+        char* strData = static_cast<char*>(localArena.Alloc(sizeof(char) * (lenFmt + 1), 1));
         memset(strData, 0, sizeof(char) * (lenFmt + 1));
 
         size_t resultIdx = 0;
@@ -162,10 +162,10 @@ namespace lptk
         
     inline FormatContainer::ArgNode* FormatContainer::AllocNode(size_t const len)
     {
-        ArgNode* node = m_data->m_arena.Alloc<ArgNode>();
+        ArgNode* node = m_data->m_arena.Create<ArgNode>();
         m_data->m_args.push_back(node);
         
-        node->m_str = static_cast<char*>(m_data->m_arena.Alloc(len));
+        node->m_str = static_cast<char*>(m_data->m_arena.Alloc(len, 1));
         node->m_str[0] = '\0';
         node->m_len = len;
 

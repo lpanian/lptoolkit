@@ -1,6 +1,4 @@
 #pragma once
-#ifndef INCLUDED_TOOLKIT_MEM_ALLOCATOR_HH
-#define INCLUDED_TOOLKIT_MEM_ALLOCATOR_HH
 
 #include <cstdint>
 #include <type_traits>
@@ -22,6 +20,8 @@ namespace lptk
             T* Create(Args&&... args)
             {
                 void* mem = Alloc(sizeof(T), alignof(T));
+                if (!mem)
+                    return nullptr;
                 return new (mem) T(std::forward<Args>(args)...);
             }
 
@@ -31,6 +31,8 @@ namespace lptk
                 const auto requiredSize = N * sizeof(T);
                 constexpr auto requiredAlign = unsigned(alignof(T));
                 void* mem = Alloc(requiredSize, requiredAlign);
+                if (!mem)
+                    return nullptr;
                 for (size_t i = 0; i < N; ++i)
                     new (&reinterpret_cast<T*>(mem)[i]) T;
                 return reinterpret_cast<T*>(mem);
@@ -42,6 +44,8 @@ namespace lptk
                 const auto requiredSize = N > sizeof(T) ? N : sizeof(T);
                 const auto requiredAlign = align > unsigned(alignof(T)) ? align : unsigned(alignof(T));
                 void* mem = Alloc(requiredSize, requiredAlign);
+                if (!mem)
+                    return nullptr;
                 return new (mem) T(std::forward<Args>(args)...);
             }
 
@@ -160,5 +164,4 @@ namespace lptk
     }
 }
 
-#endif
 

@@ -5,7 +5,7 @@
 #include "toolkit/thread.hh"
 #include "toolkit/dynary.hh"
 #include "toolkit/mem.hh"
-#include "toolkit/poolmem.hh"
+#include "toolkit/mem/poolmem.hh"
 
 namespace lptk
 {
@@ -314,7 +314,7 @@ namespace lptk
             struct ThreadLocalData
             {
                 ThreadLocalData(uint32_t logSize)
-                    : m_taskPool(1u << logSize, sizeof(Task), false)
+                    : m_taskPool(size_t(1) << logSize, sizeof(Task), false)
                     , m_workQueue(logSize)
                     , m_stealIndex(0)
                 {
@@ -323,7 +323,7 @@ namespace lptk
                 ThreadLocalData(const ThreadLocalData&) = delete;
                 ThreadLocalData& operator=(const ThreadLocalData&) = delete;
 
-                lptk::PoolAlloc m_taskPool;
+                lptk::mem::PoolAlloc m_taskPool;
                 std::atomic<Task*> m_freeList;
                 WorkQueue m_workQueue;
                 unsigned int m_stealIndex;
@@ -554,7 +554,7 @@ namespace lptk
             }
 
             // allocate the new task from our pool
-            auto task = new (threadData->m_taskPool.Alloc()) Task;
+            auto task = threadData->m_taskPool.Create<Task>();
             if (task)
             {
                 task->m_ownerIndex = s_ownerIndex;
@@ -587,7 +587,7 @@ namespace lptk
             if (ownerIndex == s_ownerIndex)
             {
                 task->m_function = &FreedTask;
-                ownerData->m_taskPool.Free(task);
+                ownerData->m_taskPool.Destroy(task);
             }
             else
             {
