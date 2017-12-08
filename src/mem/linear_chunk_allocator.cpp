@@ -14,6 +14,11 @@ namespace lptk
 
         LinearChunkAllocator::~LinearChunkAllocator()
         {
+            Destruct();
+        }
+            
+        void LinearChunkAllocator::Destruct()
+        {
             BlockHeader* cur = m_root;
             while (cur)
             {
@@ -25,6 +30,8 @@ namespace lptk
             
         void LinearChunkAllocator::Move(LinearChunkAllocator&& other)
         {
+            Destruct();
+
             m_blockSize = std::exchange(other.m_blockSize, 0);
             m_root = std::exchange(other.m_root, nullptr);
             m_cur = std::exchange(other.m_cur, nullptr);

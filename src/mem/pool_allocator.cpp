@@ -30,8 +30,20 @@ namespace lptk
             Init(itemsPerBlock, itemSize, canGrow, alloc);
         }
 
+        void PoolAlloc::Destruct()
+        {
+            Block* block = m_block;
+            while (block) {
+                Block* next = block->m_next;
+                m_alloc->Free(block);
+                block = next;
+            }
+        }
+
         void PoolAlloc::Move(PoolAlloc&& other)
         {
+            Destruct();
+
             m_itemsPerBlock = std::exchange(other.m_itemsPerBlock, 0);
             m_itemSize = std::exchange(other.m_itemSize, 0);
             m_block = std::exchange(other.m_block, nullptr);
@@ -56,12 +68,7 @@ namespace lptk
 
         PoolAlloc::~PoolAlloc()
         {
-            Block* block = m_block;
-            while (block) {
-                Block* next = block->m_next;
-                m_alloc->Free(block);
-                block = next;
-            }
+            Destruct();
         }
 
         PoolAlloc::Block* PoolAlloc::AllocBlock()

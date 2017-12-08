@@ -34,6 +34,7 @@ namespace lptk
             // for debugging
             bool IsValidPtr(const void*) const;
         private:
+            void Destruct();
             void Move(PoolAlloc&& other);
 
             class BlockItem

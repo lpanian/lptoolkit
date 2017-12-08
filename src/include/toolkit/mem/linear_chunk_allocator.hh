@@ -26,6 +26,7 @@ namespace lptk
 
             void Clear();
         private:
+            void Destruct();
             void Move(LinearChunkAllocator&& other);
             struct BlockHeader
             {
