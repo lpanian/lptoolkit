@@ -104,21 +104,45 @@ namespace lptk
     }
         
     template<typename T>
-        template<typename... Arg>
-        bool BankedVector<T>::emplace_back(Arg&&... args)
+    bool BankedVector<T>::uninitialized_insert(size_t index)
+    {
+        auto index_offset = chunk_index_offset(m_size); // m_size + n - 1
+        if (ensure_size(index_offset.first))
         {
-            auto index_offset = chunk_index_offset(m_size);
-            if (ensure_size(index_offset.first))
+            ++m_size;
+            for (size_t i = index; i < m_size - 1; ++i)
             {
-                ++m_size;
-                new (&m_chunks[index_offset.first][index_offset.second]) T(std::forward<Arg>(args)...);
-                return true;
+                const auto cur = m_size - 1 - i;
+                const auto from = cur - 1;
+                auto& curRef = this->at(cur);
+                auto& fromRef = this->at(from);
+                new (&curRef) T(std::move(fromRef));
+                fromRef.~T();
             }
-            else
-            {
-                return false;
-            }
+            return true;
         }
+        else
+        {
+            return false;
+        }
+    }
+        
+    template<typename T>
+    template<typename... Arg>
+    bool BankedVector<T>::emplace_back(Arg&&... args)
+    {
+        auto index_offset = chunk_index_offset(m_size);
+        if (ensure_size(index_offset.first))
+        {
+            ++m_size;
+            new (&m_chunks[index_offset.first][index_offset.second]) T(std::forward<Arg>(args)...);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     template<typename T>
     bool BankedVector<T>::push_back(const T& v)
@@ -151,12 +175,49 @@ namespace lptk
             return false;
         }
     }
+        
+    template<typename T>
+    bool BankedVector<T>::insert(size_t index, const T& v)
+    {
+        if (uninitialized_insert(index))
+        {
+            auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offest.first][index_offset.second]) T(v);
+            return true;
+        }
+        return false;
+    }
+
+    template<typename T>
+    bool BankedVector<T>::insert(size_t index, T&& v)
+    {
+        if (uninitialized_insert(index))
+        {
+            auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offest.first][index_offset.second]) T(std::move(v));
+            return true;
+        }
+        return false;
+    }
+        
+    template<typename T>
+    template<typename... Arg>
+    bool BankedVector<T>::emplace(size_t index, Arg&&... args)
+    {
+        if (uninitialized_insert(index))
+        {
+            auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offest.first][index_offset.second]) T(std::forward<Arg>(args)...);
+            return true;
+        }
+        return false;
+    }
 
     template<typename T>
     inline void BankedVector<T>::pop_back()
     {
         ASSERT(m_size > 0);
-        auto index_offset = chunk_index_offset(--m_size);
+        const auto index_offset = chunk_index_offset(--m_size);
         m_chunks[index_offset.first][index_offset.second].~T();
     }
 
@@ -164,7 +225,7 @@ namespace lptk
     inline T& BankedVector<T>::back()
     {
         ASSERT(m_size > 0);
-        auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(m_size - 1);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
     }
@@ -181,6 +242,18 @@ namespace lptk
     template<typename T>
     inline T& BankedVector<T>::operator[](size_t index)
     {
+        return this->at(index);
+    }
+
+    template<typename T>
+    inline const T& BankedVector<T>::operator[](size_t index) const
+    {
+        return this->at(index);
+    }
+        
+    template<typename T>
+    inline T& BankedVector<T>::at(size_t index)
+    {
         ASSERT(index < m_size);
         auto index_offset = chunk_index_offset(m_size - 1);
         ASSERT(index_offset.first < m_numChunks);
@@ -188,7 +261,7 @@ namespace lptk
     }
 
     template<typename T>
-    inline const T& BankedVector<T>::operator[](size_t index) const
+    inline const T& BankedVector<T>::at(size_t index) const
     {
         ASSERT(index < m_size);
         auto index_offset = chunk_index_offset(m_size - 1);

@@ -32,6 +32,8 @@ namespace lptk
     class BankedVector
     {
     public:
+        using value_type = T;
+
         BankedVector(size_t chunkLength, size_t maxNumChunks, mem::Allocator* alloc);
         BankedVector(const BankedVector&) = delete;
         BankedVector& operator=(const BankedVector&) = delete;
@@ -41,10 +43,15 @@ namespace lptk
 
         bool empty() const { return m_size == 0; }
 
-        template<typename... Args>
-        bool emplace_back(Args&&... args);
+        template<typename... Arg>
+        bool emplace_back(Arg&&... args);
         bool push_back(const T&);
         bool push_back(T&&);
+        
+        bool insert(size_t index, const T&);
+        bool insert(size_t index, T&&);
+        template<typename... Arg>
+        bool emplace(size_t index, Arg&&... args);
 
         void pop_back();
         T& back();
@@ -58,6 +65,8 @@ namespace lptk
         // operators. The storage is not necessarily contiguous.
         T& operator[](size_t index);
         const T& operator[](size_t index) const;
+        T& at(size_t index);
+        const T& at(size_t index) const;
 
         template<bool IsConst>
         class base_iterator;
@@ -71,6 +80,8 @@ namespace lptk
         const_iterator end() const { return iterator{ this, m_size }; }
 
     private:
+        bool uninitialized_insert(size_t index);
+
         void destroy();
         void move_from(BankedVector&& other);
         std::pair<size_t, size_t> chunk_index_offset(size_t index) const;
