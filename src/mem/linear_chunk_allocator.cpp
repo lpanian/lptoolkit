@@ -58,7 +58,7 @@ namespace lptk
             const size_t computedSize = lptk::Max(numBytes + lptk::AlignValue<size_t>(sizeof(BlockHeader), 16),
                 m_blockSize);
             char* newMem = reinterpret_cast<char*>(m_alloc->Alloc(computedSize, 16));
-            BlockHeader* newHeader = reinterpret_cast<BlockHeader*>(newMem);
+            BlockHeader* newHeader = new (newMem) BlockHeader;
             newHeader->m_size = computedSize - lptk::AlignValue<size_t>(sizeof(BlockHeader), 16);
             return newHeader;
         }
