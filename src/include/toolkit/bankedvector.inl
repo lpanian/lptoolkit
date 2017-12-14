@@ -94,26 +94,27 @@ namespace lptk
     }
         
     template<typename T>
-    inline bool BankedVector<T>::ensure_size(size_t index)
+    inline bool BankedVector<T>::ensure_chunk_allocated(size_t index)
     {
-        if (index >= m_numChunks)
+        while (index >= m_numChunks)
         {
-            return expand_chunks();
+            if (!expand_chunks())
+                return false;
         }
         return true;
     }
         
     template<typename T>
-    bool BankedVector<T>::uninitialized_insert(size_t index)
+    bool BankedVector<T>::uninitialized_insert_n(size_t index, size_t n)
     {
-        auto index_offset = chunk_index_offset(m_size); // m_size + n - 1
-        if (ensure_size(index_offset.first))
+        const auto index_offset = chunk_index_offset(m_size + n - 1); 
+        if (ensure_chunk_allocated(index_offset.first))
         {
-            ++m_size;
-            for (size_t i = index; i < m_size - 1; ++i)
+            m_size += n;
+            for (size_t i = index; i < m_size - n; ++i)
             {
                 const auto cur = m_size - 1 - i;
-                const auto from = cur - 1;
+                const auto from = cur - n;
                 auto& curRef = this->at(cur);
                 auto& fromRef = this->at(from);
                 new (&curRef) T(std::move(fromRef));
@@ -131,8 +132,8 @@ namespace lptk
     template<typename... Arg>
     bool BankedVector<T>::emplace_back(Arg&&... args)
     {
-        auto index_offset = chunk_index_offset(m_size);
-        if (ensure_size(index_offset.first))
+        const auto index_offset = chunk_index_offset(m_size);
+        if (ensure_chunk_allocated(index_offset.first))
         {
             ++m_size;
             new (&m_chunks[index_offset.first][index_offset.second]) T(std::forward<Arg>(args)...);
@@ -147,8 +148,8 @@ namespace lptk
     template<typename T>
     bool BankedVector<T>::push_back(const T& v)
     {
-        auto index_offset = chunk_index_offset(m_size);
-        if (ensure_size(index_offset.first))
+        const auto index_offset = chunk_index_offset(m_size);
+        if (ensure_chunk_allocated(index_offset.first))
         {
             ++m_size;
             new (&m_chunks[index_offset.first][index_offset.second]) T(v);
@@ -163,8 +164,8 @@ namespace lptk
     template<typename T>
     bool BankedVector<T>::push_back(T&& v)
     {
-        auto index_offset = chunk_index_offset(m_size);
-        if (ensure_size(index_offset.first))
+        const auto index_offset = chunk_index_offset(m_size);
+        if (ensure_chunk_allocated(index_offset.first))
         {
             ++m_size;
             new (&m_chunks[index_offset.first][index_offset.second]) T(std::move(v));
@@ -179,10 +180,10 @@ namespace lptk
     template<typename T>
     bool BankedVector<T>::insert(size_t index, const T& v)
     {
-        if (uninitialized_insert(index))
+        if (uninitialized_insert_n(index, 1))
         {
-            auto index_offset = chunk_index_offset(index);
-            new (&m_chunks[index_offest.first][index_offset.second]) T(v);
+            const auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offset.first][index_offset.second]) T(v);
             return true;
         }
         return false;
@@ -191,10 +192,10 @@ namespace lptk
     template<typename T>
     bool BankedVector<T>::insert(size_t index, T&& v)
     {
-        if (uninitialized_insert(index))
+        if (uninitialized_insert_n(index, 1))
         {
-            auto index_offset = chunk_index_offset(index);
-            new (&m_chunks[index_offest.first][index_offset.second]) T(std::move(v));
+            const auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offset.first][index_offset.second]) T(std::move(v));
             return true;
         }
         return false;
@@ -204,10 +205,10 @@ namespace lptk
     template<typename... Arg>
     bool BankedVector<T>::emplace(size_t index, Arg&&... args)
     {
-        if (uninitialized_insert(index))
+        if (uninitialized_insert_n(index, 1))
         {
-            auto index_offset = chunk_index_offset(index);
-            new (&m_chunks[index_offest.first][index_offset.second]) T(std::forward<Arg>(args)...);
+            const auto index_offset = chunk_index_offset(index);
+            new (&m_chunks[index_offset.first][index_offset.second]) T(std::forward<Arg>(args)...);
             return true;
         }
         return false;
@@ -234,7 +235,7 @@ namespace lptk
     inline const T& BankedVector<T>::back() const
     {
         ASSERT(m_size > 0);
-        auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(m_size - 1);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
     }
@@ -255,7 +256,7 @@ namespace lptk
     inline T& BankedVector<T>::at(size_t index)
     {
         ASSERT(index < m_size);
-        auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(m_size - 1);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
     }
@@ -264,9 +265,47 @@ namespace lptk
     inline const T& BankedVector<T>::at(size_t index) const
     {
         ASSERT(index < m_size);
-        auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(m_size - 1);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
+    }
+        
+    template<typename T>
+    bool BankedVector<T>::resize(size_t newSize, const value_type& def)
+    {
+        if (m_size == newSize)
+            return true;
+
+        // shrinking case
+        for (auto cur = newSize; cur < m_size; ++cur)
+        {
+            const auto index_offset = chunk_index_offset(cur);
+            m_chunks[index_offset.first][index_offset.second].~T();
+        }
+
+        // growing case
+        if (newSize > m_size && !reserve(newSize))
+            return false;
+
+        for (auto cur = m_size; cur < newSize; ++cur)
+        {
+            const auto index_offset = chunk_index_offset(cur);
+            new (&m_chunks[index_offset.first][index_offset.second]) T(def);
+        }
+
+        m_size = newSize;
+        return true;
+    }
+
+    template<typename T>
+    bool BankedVector<T>::reserve(size_t newCapacity)
+    {
+        if (newCapacity <= capacity())
+            return true;
+        if (newCapacity > max_capacity())
+            return false;
+        const auto index_offset = chunk_index_offset(newCapacity);
+        return ensure_chunk_allocated(index_offset.first);
     }
     
     ////////////////////////////////////////////////////////////////////////////////
@@ -274,16 +313,20 @@ namespace lptk
     template<bool IsConst> 
     class BankedVector<T>::base_iterator
     {
-        BankedVector<T>* m_vec = nullptr;
+    public:
+        using BankedVectorType = std::conditional_t<IsConst, const BankedVector<T>, BankedVector<T>>;
+    private:
+        BankedVectorType* m_vec = nullptr;
         size_t m_curIndex = 0;
     public:
         using value_type = T;
         using reference = std::conditional_t<IsConst, const T&, T&>;
         using pointer = std::conditional_t<IsConst, const T*, T*>;
         using difference_type = ptrdiff_t;
+        using iterator_category = std::random_access_iterator_tag;
 
         base_iterator() = default;
-        base_iterator(BankedVector<T>* bv, size_t curIndex = 0)
+        base_iterator(BankedVectorType* bv, size_t curIndex = 0)
             : m_vec(bv)
             , m_curIndex(curIndex)
         {
@@ -310,42 +353,91 @@ namespace lptk
             return &(*m_vec)[m_curIndex];
         }
 
-        // std::conditional<IsConst>
         base_iterator& operator++()
         {
-            next();
+            ++m_curIndex;
             return *this;
         }
 
         base_iterator operator++(int) 
         {
             auto tmp = *this;
-            next();
+            ++m_curIndex;
             return tmp;
         }
 
         base_iterator& operator--()
         {
-            prev();
+            if(m_curIndex > 0 )
+                --m_curIndex;
             return *this;
         }
 
         base_iterator operator--(int) 
         {
             auto tmp = *this;
-            prev();
+            if(m_curIndex > 0 )
+                --m_curIndex;
             return tmp;
         }
-    private:
-        void next()
+
+        // random access methods
+        base_iterator& operator+=(difference_type n)
         {
-            ++m_curIndex;
+            if(n > 0)
+                m_curIndex += n;
+            else if (difference_type(m_curIndex) >= -n)
+                m_curIndex -= n;
+            return *this;
         }
 
-        void prev()
+        base_iterator operator+(difference_type n) const
         {
-            if (m_curIndex > 0)
-                --m_curIndex;
+            auto tmp = *this;
+            return tmp += n;
         }
+
+        friend base_iterator operator+(difference_type n, const base_iterator& it) 
+        {
+            auto tmp = it;
+            return tmp += n;
+        }
+
+        base_iterator& operator-=(difference_type n)
+        {
+            return (*this) += -n;
+        }
+
+        base_iterator operator-(difference_type n) const
+        {
+            auto tmp = *this;
+            return tmp -= n;
+        }
+
+        reference operator[](difference_type n) const
+        {
+            return *((*this) + n);
+        }
+
+        bool operator<(const base_iterator& other) const
+        {
+            return m_curIndex < other.m_curIndex;
+        }
+
+        bool operator>(const base_iterator& other) const
+        {
+            return other < (this);
+        }
+
+        bool operator>=(const base_iterator& other) const
+        {
+            return !((this) < other);
+        }
+        
+        bool operator<=(const base_iterator& other) const
+        {
+            return !((this) > other);
+        }
+        
     };
 }

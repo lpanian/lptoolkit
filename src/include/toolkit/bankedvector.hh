@@ -59,7 +59,10 @@ namespace lptk
 
         size_t size() const { return m_size; }
         size_t capacity() const { return m_numChunks * m_chunkLength; }
-        size_t max_capacity() const { m_maxNumChunks * m_chunkLength; }
+        size_t max_capacity() const { return m_maxNumChunks * m_chunkLength; }
+
+        bool resize(size_t newSize, const value_type& def = value_type{});
+        bool reserve(size_t newCapacity);
 
         // do not do memcpy like operators on the addresses of the results of thise
         // operators. The storage is not necessarily contiguous.
@@ -75,18 +78,18 @@ namespace lptk
         using const_iterator = base_iterator<true>;
 
         iterator begin() { return iterator{ this, 0 }; }
-        iterator end() { return iterator{ this, m_size; } }
-        const_iterator begin() const { return iterator{ this, 0 }; }
-        const_iterator end() const { return iterator{ this, m_size }; }
+        iterator end() { return iterator{ this, m_size }; }
+        const_iterator begin() const { return const_iterator{ this, 0 }; }
+        const_iterator end() const { return const_iterator{ this, m_size }; }
 
     private:
-        bool uninitialized_insert(size_t index);
+        bool uninitialized_insert_n(size_t index, size_t n);
 
         void destroy();
         void move_from(BankedVector&& other);
         std::pair<size_t, size_t> chunk_index_offset(size_t index) const;
         bool expand_chunks();
-        bool ensure_size(size_t index);
+        bool ensure_chunk_allocated(size_t index);
 
         mem::Allocator* m_alloc = nullptr;
         size_t m_chunkLength = 0;
