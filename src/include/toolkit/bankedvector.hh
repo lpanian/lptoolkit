@@ -40,6 +40,11 @@ namespace lptk
         BankedVector(BankedVector&&);
         BankedVector& operator=(BankedVector&&);
         ~BankedVector();
+        
+        template<bool IsConst>
+        class base_iterator;
+        using iterator = base_iterator<false>;
+        using const_iterator = base_iterator<true>;
 
         bool empty() const { return m_size == 0; }
 
@@ -52,6 +57,10 @@ namespace lptk
         bool insert(size_t index, T&&);
         template<typename... Arg>
         bool emplace(size_t index, Arg&&... args);
+        bool insert(iterator it, const T&);
+        bool insert(iterator it, T&&);
+        bool erase(size_t index);
+        bool erase(iterator it);
 
         void pop_back();
         T& back();
@@ -70,12 +79,6 @@ namespace lptk
         const T& operator[](size_t index) const;
         T& at(size_t index);
         const T& at(size_t index) const;
-
-        template<bool IsConst>
-        class base_iterator;
-
-        using iterator = base_iterator<false>;
-        using const_iterator = base_iterator<true>;
 
         iterator begin() { return iterator{ this, 0 }; }
         iterator end() { return iterator{ this, m_size }; }

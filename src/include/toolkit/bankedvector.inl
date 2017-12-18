@@ -113,7 +113,7 @@ namespace lptk
             m_size += n;
             for (size_t i = index; i < m_size - n; ++i)
             {
-                const auto cur = m_size - 1 - i;
+                const auto cur = m_size - 1 - (i - index);
                 const auto from = cur - n;
                 auto& curRef = this->at(cur);
                 auto& fromRef = this->at(from);
@@ -213,6 +213,43 @@ namespace lptk
         }
         return false;
     }
+        
+    template<typename T>
+    bool BankedVector<T>::insert(iterator it, const T& v)
+    {
+        return insert(it - begin(), v);
+    }
+    
+    template<typename T>
+    bool BankedVector<T>::insert(iterator it, T&& v)
+    {
+        return insert(it - begin(), std::move(v));
+    }
+        
+    template<typename T>
+    bool BankedVector<T>::erase(size_t index)
+    {
+        if (index >= size())
+            return false;
+
+        for (auto cur = index; cur < m_size - 1; ++cur)
+        {
+            const auto index_offset = chunk_index_offset(cur);
+            m_chunks[index_offset.first][index_offset.second].~T();
+            const auto next_offset = chunk_index_offset(cur + 1);
+            auto& next = m_chunks[next_offset.first][next_offset.second];
+            new (&m_chunks[index_offset.first][index_offset.second]) T(std::move(next));
+        }
+
+        pop_back();
+        return true;
+    }
+
+    template<typename T>
+    bool BankedVector<T>::erase(iterator it)
+    {
+        return erase(it - begin());
+    }
 
     template<typename T>
     inline void BankedVector<T>::pop_back()
@@ -256,7 +293,7 @@ namespace lptk
     inline T& BankedVector<T>::at(size_t index)
     {
         ASSERT(index < m_size);
-        const auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(index);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
     }
@@ -265,7 +302,7 @@ namespace lptk
     inline const T& BankedVector<T>::at(size_t index) const
     {
         ASSERT(index < m_size);
-        const auto index_offset = chunk_index_offset(m_size - 1);
+        const auto index_offset = chunk_index_offset(index);
         ASSERT(index_offset.first < m_numChunks);
         return m_chunks[index_offset.first][index_offset.second];
     }
@@ -412,6 +449,11 @@ namespace lptk
         {
             auto tmp = *this;
             return tmp -= n;
+        }
+
+        difference_type operator-(const base_iterator& other) const
+        {
+            return m_curIndex - other.m_curIndex;
         }
 
         reference operator[](difference_type n) const
