@@ -11,6 +11,9 @@ namespace lptk
         const lptk::vec3<T>& translate,
         const lptk::quaternion<T>& rotate)
     {
+        if (!box.Valid())
+            return box;
+
         const auto lo = translate + lptk::Rotate(box.m_min, rotate);
         const auto hi = translate + lptk::Rotate(box.m_max, rotate);
 
