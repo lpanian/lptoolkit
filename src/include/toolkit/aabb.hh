@@ -36,6 +36,11 @@ namespace lptk
             return m_min.x <= m_max.x && m_min.y <= m_max.y;
         }
 
+        bool HasVolume() const
+        {
+            return m_min.x < m_max.x && m_min.y < m_max.y;
+        }
+
         const vec2<T>& operator[](int i) const { return i == 0 ? m_min : m_max; }
         vec2<T>& operator[](int i) { return i == 0 ? m_min : m_max; }
     };
@@ -110,6 +115,11 @@ namespace lptk
         bool Valid() const
         {
             return m_min.x <= m_max.x && m_min.y <= m_max.y && m_min.z <= m_max.z;
+        }
+        
+        bool HasVolume() const
+        {
+            return m_min.x < m_max.x && m_min.y < m_max.y && m_min.z < m_max.z;
         }
 
         const vec3<T>& operator[](int i) const { return i == 0 ? m_min : m_max; }
