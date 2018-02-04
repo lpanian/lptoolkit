@@ -15,10 +15,11 @@ class vec2
 {
 public:
 	typedef T baseType;
+    static constexpr auto Dims = 2;
 
 	T x, y;
 
-	static inline int dims() { return 2; }
+	static inline int dims() { return Dims; }
 
 	vec2() {}
 	explicit vec2(T v) : x(v), y(v) {}
@@ -239,10 +240,11 @@ class vec3
 {
 public:
 	typedef T baseType;
+    static constexpr auto Dims = 3;
 
 	T x, y, z;
 
-	static inline int dims() { return 3; }
+	static inline int dims() { return Dims; }
 
 	vec3() {}
 	explicit vec3(T v) : x(v), y(v), z(v) {}
@@ -477,10 +479,11 @@ class vec4
 {
 public:
 	typedef T baseType;
+    static constexpr auto Dims = 4;
 
 	T x, y, z, w;
 
-	static inline int dims() { return 4; }
+	static inline int dims() { return Dims; }
 
 	vec4() {}
 	explicit vec4(T v) : x(v), y(v), z(v), w(v) {}
@@ -749,6 +752,17 @@ inline vec4<T> ToVec4(const vec3<T>& v, float w = 0.f) {
     return vec4<T>{v.x, v.y, v.z, w};
 }
 
+////////////////////////////////////////////////////////////////////////////////
+template<class VecT>
+inline VecT ComponentwiseMultiply(const VecT& lhs, const VecT& rhs)
+{
+    VecT result;
+    for (int i = 0; i < VecT::Dims; ++i)
+    {
+        result[i] = lhs[i] * rhs[i];
+    }
+    return result;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 typedef vec2<int32_t> v2i;
