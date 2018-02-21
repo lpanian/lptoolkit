@@ -34,12 +34,16 @@ namespace lptk
     public:
         using value_type = T;
 
+        BankedVector() = default;
         BankedVector(size_t chunkLength, size_t maxNumChunks, mem::Allocator* alloc);
         BankedVector(const BankedVector&) = delete;
         BankedVector& operator=(const BankedVector&) = delete;
         BankedVector(BankedVector&&);
         BankedVector& operator=(BankedVector&&);
         ~BankedVector();
+
+        bool Init(size_t chunkLength, size_t maxNumChunks, mem::Allocator* alloc);
+        bool Destroy();
         
         template<bool IsConst>
         class base_iterator;

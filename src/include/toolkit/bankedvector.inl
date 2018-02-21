@@ -5,10 +5,9 @@ namespace lptk
     ////////////////////////////////////////////////////////////////////////////////
     template<typename T>
     BankedVector<T>::BankedVector(size_t chunkLength, size_t maxNumChunks, mem::Allocator* alloc)
-        : m_alloc(alloc)
-        , m_chunkLength(chunkLength)
-        , m_maxNumChunks(maxNumChunks)
     {
+        const auto ok = Init(chunkLength, maxNumChunks, alloc);
+        ASSERT(ok);
     }
 
     template<typename T>
@@ -17,6 +16,28 @@ namespace lptk
         destroy();
     }
         
+    template<typename T>
+    bool BankedVector<T>::Init(size_t chunkLength, size_t maxNumChunks, mem::Allocator* alloc)
+    {
+        if (m_alloc)
+            return false;
+
+        m_alloc = alloc;
+        m_chunkLength = chunkLength;
+        m_maxNumChunks = maxNumChunks;
+        return true;
+    }
+
+    template<typename T>
+    bool BankedVector<T>::Destroy()
+    {
+        if (!m_alloc)
+            return false;
+
+        destroy();
+        return true;
+    }
+
     template<typename T>
     void BankedVector<T>::destroy()
     {
@@ -36,6 +57,13 @@ namespace lptk
         for (size_t i = 0; i < m_numChunks; ++i)
             m_alloc->Free(m_chunks[m_numChunks - 1 - i]);
         m_alloc->DestroyN(m_maxNumChunks, m_chunks);
+
+        m_alloc = nullptr;
+        m_chunkLength = 0;
+        m_maxNumChunks = 0;
+        m_chunks = nullptr;
+        m_numChunks = 0;
+        m_size = 0;
     }
         
     template<typename T>
