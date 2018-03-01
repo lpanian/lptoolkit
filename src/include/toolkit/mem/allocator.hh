@@ -34,7 +34,7 @@ namespace lptk
                 if (!mem)
                     return nullptr;
                 for (size_t i = 0; i < N; ++i)
-                    new (&reinterpret_cast<T*>(mem)[i]) T;
+                    new (&reinterpret_cast<T*>(mem)[i]) T{};
                 return reinterpret_cast<T*>(mem);
             }
 
