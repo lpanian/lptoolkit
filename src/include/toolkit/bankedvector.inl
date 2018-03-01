@@ -41,6 +41,9 @@ namespace lptk
     template<typename T>
     void BankedVector<T>::destroy()
     {
+        if (!m_alloc)
+            return;
+
         if (!std::is_trivially_destructible_v<T>)
         {
             size_t curChunkOffset = 0;
