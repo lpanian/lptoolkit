@@ -3,8 +3,10 @@
 #define INCLUDED_LPTOOLKIT_FLAGS_HH
 
 #include <cstring>
+
 #include "toolkit/compat.hh"
 #include "toolkit/str.hh"
+#include "toolkit/dynary.hh"
 
 namespace lptk
 {
