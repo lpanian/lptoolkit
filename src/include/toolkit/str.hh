@@ -72,6 +72,19 @@ public:
         return *this;
     }
 
+    ArrayString& operator+=(const char* szStr)
+    {
+        const auto numRemaining = SIZE - 1 - m_length;
+        const auto addedLen = strlen(szStr);
+        const auto numToCopy = lptk::Min(addedLen, numRemaining);
+
+        strncat(&m_data[m_length], szStr, numToCopy);
+        m_length += numToCopy;
+        m_data[m_length] = '\0';
+
+        return *this;
+    }
+
     char& operator[](int idx) { return write_str()[idx]; }
     const char& operator[](int idx) const { return c_str()[idx]; }
 
@@ -79,6 +92,7 @@ public:
     size_t capacity() const { return SIZE; }
     size_t length() const { return m_length; }
     bool empty() const { return m_length == 0; }
+    bool remaining_capacity() { return SIZE - m_length; }
 
     void clear() {
         m_data[0] = '\0';
