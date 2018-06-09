@@ -1181,7 +1181,8 @@ namespace lptk
                 {
                     if (!dataReader)
                     {
-                        fprintf(stderr, "LoadPFM: Ran out of data at %u x %u ch %u\n", x, y, ch);
+                        fprintf(stderr, "LoadPFM: Ran out of data at %u x %u ch %u (expected %u x %u with %u channels)\n", x, y, ch,
+                            xRes, yRes, numChannels);
                         return false;
                     }
 
