@@ -15,18 +15,37 @@ namespace lptk
         size_t m_len = 0;
     };
 
-    template<size_t N>
-    inline void SafeSnprintf(char(&buf)[N], const char* fmt, ...)
+    inline bool SafeSnprintf(char* buf, size_t N, const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
+        int result = 0;
 #if defined(LINUX)
-        vsnprintf(buf, N - 1, fmt, args);
+        result = vsnprintf(buf, N - 1, fmt, args);
 #elif defined(WINDOWS)
-        _vsnprintf(buf, N - 1, fmt, args);
+        result = _vsnprintf(buf, N - 1, fmt, args);
 #endif
         va_end(args);
         buf[N - 1] = '\0';
+
+        return result >= 0 && result < N;
+    }
+
+    template<size_t N>
+    inline bool SafeSnprintf(char(&buf)[N], const char* fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        int result = 0;
+#if defined(LINUX)
+        result = vsnprintf(buf, N - 1, fmt, args);
+#elif defined(WINDOWS)
+        result = _vsnprintf(buf, N - 1, fmt, args);
+#endif
+        va_end(args);
+        buf[N - 1] = '\0';
+
+        return result >= 0 && result < N;
     }
 
     struct FormatContainer::Data
