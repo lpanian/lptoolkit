@@ -15,6 +15,10 @@ namespace lptk
     class quaternion
     {
     public:
+        using baseType = T;
+        static constexpr auto Dims = 4;
+        static inline auto dims() { return Dims; }
+
         T a, b, c, r;
 
         enum NoRotationType { no_rotation };
