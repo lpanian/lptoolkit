@@ -84,7 +84,7 @@ namespace lptk
                 buffer.push_back(*p++);
         }
 
-        result = buffer.data();
+        result = lptk::Str{ buffer.data(), buffer.size() };
         return result;
     }
 
