@@ -93,8 +93,8 @@ inline const char* ChoosePlural(T count, const char* singular, const char* plura
 template<class T> struct ReversedType {
     T m_t;
     ReversedType (T& t) : m_t(t) {}
-    auto begin() -> decltype(m_t.rbegin()) { return m_t.rbegin(); }
-    auto end() -> decltype(m_t.rend()) { return m_t.rend(); }
+    auto begin() { return std::make_reverse_iterator(m_t.end()); }
+    auto end() { return std::make_reverse_iterator(m_t.begin()); }
 };
 
 template<class T> ReversedType<T> reversed(T& t) { return ReversedType<T>(t); }
