@@ -52,6 +52,7 @@ namespace lptk
 
         void Acquire(unsigned long val=1);
         void Release(unsigned long val=1);
+        unsigned long GetCount();
     private:
         std::condition_variable m_cv;
         std::mutex m_mutex;

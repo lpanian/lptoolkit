@@ -28,4 +28,10 @@ namespace lptk
         if (old == 0)
             m_cv.notify_all();
     }
+        
+    unsigned long Semaphore::GetCount()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        return m_count;
+    }
 }
