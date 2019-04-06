@@ -21,8 +21,7 @@ namespace lptk
         buf[1] = 'x';
         for (unsigned i = 0; i < 16; ++i)
         {
-            const auto hexVal = uint8_t(val & 0xF);
-            val >>= 4;
+            const auto hexVal = uint8_t((val >> 4*i) & 0xF);
             const char c = HexCharFromDigit(hexVal);
             buf[(15-i) + 2] = c;
         }
