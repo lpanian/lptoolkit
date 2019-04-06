@@ -415,6 +415,7 @@ void HashMap<K,V>::clear()
 {
     for (auto& pair : m_pairs)
         pair = Pair();
+    m_used.unset_all();
     m_numSetItems = 0;
 }
 
