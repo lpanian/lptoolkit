@@ -357,10 +357,19 @@ public:
     }
 
     template<class... Args>
-    void emplace_back(Args&&... args)
+    T& emplace_back(Args&&... args)
     {
         const size_type insertIndex = uninitialized_insert_n(end(), 1);
         construct_1(insertIndex, std::forward<Args>(args)...);
+        return m_array[insertIndex];
+    }
+
+    template<class... Args>
+    T& emplace_front(Args&&... args)
+    {
+        const size_type insertIndex = uninitialized_insert_n(begin(), 1);
+        construct_1(insertIndex, std::forward<Args>(args)...);
+        return m_array[insertIndex];
     }
 
     void pop_back()
