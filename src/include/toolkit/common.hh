@@ -33,7 +33,7 @@ char (&array_size_helper(T (&)[N]))[N];
 #endif
 
 #ifdef DEBUG
-#define ASSERT(condition) do { bool cond = (condition); if(!L__ASSERT_TEST(cond)) { \
+#define ASSERT(condition) do { bool myAssertCond = (condition); if(!L__ASSERT_TEST(myAssertCond)) { \
 	std::cout << "ASSERT FAILED @ " << __FILE__ << ":" << __LINE__ << std::endl; \
 	DEBUGBREAK() } } L__ASSERT_END()
 #else
