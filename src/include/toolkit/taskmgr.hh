@@ -1,6 +1,4 @@
 #pragma once
-#ifndef INCLUDED_TOOLKIT_TASKMGR_HH
-#define INCLUDED_TOOLKIT_TASKMGR_HH
 
 #include <atomic>
 
@@ -111,4 +109,3 @@ namespace lptk
     }
 }
 
-#endif

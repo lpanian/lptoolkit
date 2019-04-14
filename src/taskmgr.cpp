@@ -314,7 +314,7 @@ namespace lptk
             struct ThreadLocalData
             {
                 ThreadLocalData(uint32_t logSize)
-                    : m_taskPool(size_t(1) << logSize, sizeof(Task), false)
+                    : m_taskPool(size_t(1) << logSize, sizeof(Task), true)
                     , m_workQueue(logSize)
                     , m_stealIndex(0)
                 {
