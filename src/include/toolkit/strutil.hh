@@ -76,5 +76,51 @@ namespace lptk
             return false;
         return true;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    inline bool StrMatchPattern(const char* pattern, const char* str)
+    {
+        if (!*pattern && !*str)
+            return true;
 
+        int patternPos = 0,
+            strPos = 0,
+            wildPatternPos = -1,
+            wildStrPos = -1;
+
+        while (str[strPos])
+        {
+            if (pattern[patternPos] == str[strPos] ||
+                pattern[patternPos] == '?')
+            {
+                ++patternPos;
+                ++strPos;
+            }
+            else if (pattern[patternPos] == '*')
+            {
+                wildPatternPos = patternPos;
+                wildStrPos = strPos;
+                ++patternPos;
+            }
+            else if (wildPatternPos >= 0)
+            {
+                patternPos = wildPatternPos + 1;
+                strPos = wildStrPos + 1;
+                ++wildStrPos;
+            }
+            else
+                return false;
+        }
+
+        if (str[strPos])
+            return false;
+
+        while (pattern[patternPos] && pattern[patternPos] == '*')
+            ++patternPos;
+
+        if (pattern[patternPos])
+            return false;
+
+        return true;
+    }
 }
