@@ -9,7 +9,7 @@ TEST(UTF8, Decode8)
     const auto utf8 = u8"$";
     auto pair = utf8_decode(utf8);
 
-    EXPECT_EQ('$', pair.first);
+    EXPECT_EQ(lptk::CharPoint('$'), pair.first);
     EXPECT_EQ(utf8 + 1, pair.second);
 }
 
@@ -18,7 +18,7 @@ TEST(UTF8, Decode16)
     const auto utf8 = u8"\u00a2";
     auto pair = utf8_decode(utf8);
 
-    EXPECT_EQ(0xa2, pair.first);
+    EXPECT_EQ(lptk::CharPoint(0xa2), pair.first);
     EXPECT_EQ(utf8 + 2, pair.second);
 }
 
@@ -27,7 +27,7 @@ TEST(UTF8, Decode24)
     const auto utf8 = u8"\u20ac";
     auto pair = utf8_decode(utf8);
 
-    EXPECT_EQ(0x20ac, pair.first);
+    EXPECT_EQ(lptk::CharPoint(0x20ac), pair.first);
     EXPECT_EQ(utf8 + 3, pair.second);
 }
 
@@ -36,7 +36,7 @@ TEST(UTF8, Decode32)
     const auto utf8 = u8"\U00010348";
     auto pair = utf8_decode(utf8);
 
-    EXPECT_EQ(0x10348, pair.first);
+    EXPECT_EQ(lptk::CharPoint(0x10348), pair.first);
     EXPECT_EQ(utf8 + 4, pair.second);
 }
 
@@ -44,7 +44,7 @@ TEST(UTF8, BadContinuation)
 {
     const char bad[] = { '\xc1', '\xc0', 0 };
     auto pair = utf8_decode(bad);
-    EXPECT_EQ(0, pair.first);
+    EXPECT_EQ(lptk::CharPoint(0), pair.first);
     EXPECT_EQ(bad + 2, pair.second);
 }
 
