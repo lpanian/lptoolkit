@@ -1,5 +1,6 @@
 #include "toolkit/common.hh"
 #include "toolkit/mem.hh"
+#include <new>
 #include <atomic>
 #include <limits>
 #include <cstdint>
@@ -185,26 +186,6 @@ namespace lptk
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void *operator new(size_t n) 
-{
-    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
-}
-
-void *operator new[](size_t n)
-{
-    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
-}
-
-void *operator new(size_t n, const std::nothrow_t&) 
-{
-    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
-}
-
-void *operator new[](size_t n, const std::nothrow_t&)
-{
-    return lptk::mem_allocate(n, lptk::MEMPOOL_General, 16);
-}
-
 void *operator new(size_t n, lptk::MemPoolId id, unsigned int align) 
 {
     return lptk::mem_allocate(n, id, align);
@@ -215,16 +196,7 @@ void *operator new[](size_t n, lptk::MemPoolId id, unsigned int align)
     return lptk::mem_allocate(n, id, align);
 }
 
-void operator delete(void* p) noexcept
-{
-    lptk::mem_free(p);
-}
-
-void operator delete[](void* p) noexcept
-{
-    lptk::mem_free(p);
-}
-
+////////////////////////////////////////////////////////////////////////////////
 namespace lptk
 {
     size_t mem_GetSizeAllocated(MemPoolId id)

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <toolkit/mem/new_delete_overload.hh>
 
 using namespace lptk;
 
