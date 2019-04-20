@@ -493,8 +493,11 @@ private:
             if(head->refCount == 0)
             {
 #ifdef DEBUG
-                if(head->length > 0)
-                    memset(m_data, 0xAF, head->length);
+                if (head->length > 0)
+                {
+                    const unsigned length = head->length;
+                    memset(m_data, 0xAF, length + sizeof(str_head));
+                }
 #endif
                 delete[] m_data;
             }
