@@ -1,6 +1,4 @@
 #pragma once
-#ifndef INCLUDED_toolkit_lockedqueue_HH
-#define INCLUDED_toolkit_lockedqueue_HH
 
 #include <mutex>
 
@@ -139,5 +137,3 @@ namespace lptk
         return result;
     }
 }
-
-#endif
