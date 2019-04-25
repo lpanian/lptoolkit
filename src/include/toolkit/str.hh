@@ -626,19 +626,16 @@ inline const char* GetExtension( const char* szStr )
 {
     if (!szStr || !*szStr)
         return nullptr;
-    int extIdx = -1;
-    int i = 0;
-    while(szStr[i] != '\0')
+    auto const len = strlen(szStr);
+    for (size_t i = 0; i < len; ++i)
     {
-        if(szStr[i] == '.')
-            extIdx = i;
-        ++i;
+        const size_t index = len - 1 - i;
+        if (szStr[index] == '.')
+        {
+            return &szStr[index + 1];
+        }
     }
-
-    if(extIdx > 0)
-        return &szStr[extIdx];
-    else
-        return 0;
+    return nullptr;
 }
 
 template<MemPoolId POOL>
