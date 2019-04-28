@@ -55,4 +55,20 @@ namespace lptk
             hash = (prime * hash) ^ *s++;
         return hash;
     }
+    
+    template<typename T, typename V>
+    constexpr T fnv1(const V& v, 
+        T hash = FNVParam<T>::offset,
+        const T prime = FNVParam<T>::prime)
+    {
+        return fnv1_n(reinterpret_cast<const char*>(&v), sizeof(v), hash, prime);
+    }
+
+    template<typename T, typename V>
+    constexpr T fnv1a(const V& v, 
+        T hash = FNVParam<T>::offset,
+        const T prime = FNVParam<T>::prime)
+    {
+        return fnv1a_n(reinterpret_cast<const char*>(&v), sizeof(v), hash, prime);
+    }
 }
