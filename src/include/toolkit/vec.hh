@@ -752,6 +752,21 @@ inline vec4<T> ToVec4(const vec3<T>& v, float w = 0.f) {
     return vec4<T>{v.x, v.y, v.z, w};
 }
 
+template<class To, class From>
+inline vec2<To> ConvertVec(const vec2<From>& v) {
+    return vec2<To>{To(v[0]), To(v[1])};
+}
+
+template<class To, class From>
+inline vec3<To> ConvertVec(const vec3<From>& v) {
+    return vec3<To>{To(v[0]), To(v[1]), To(v[2])};
+}
+
+template<class To, class From>
+inline vec4<To> ConvertVec(const vec4<From>& v) {
+    return vec3<To>{To(v[0]), To(v[1]), To(v[2]), To(v[3])};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 template<class VecT>
 inline VecT ComponentwiseMultiply(const VecT& lhs, const VecT& rhs)

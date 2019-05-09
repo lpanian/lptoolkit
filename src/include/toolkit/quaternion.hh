@@ -250,6 +250,11 @@ namespace lptk
 
     typedef quaternion<float> quatf;
     typedef quaternion<double> quatd;
+
+    template<class To, class From>
+    inline quaternion<To> ConvertQuat(const quaternion<From>& v) {
+        return quaternion<To>{To(v[0]), To(v[1]), To(v[2]), To(v[3])};
+    }
 }
 
 #include "quaternion.inl"
