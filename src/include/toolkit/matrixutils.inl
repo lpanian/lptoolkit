@@ -718,6 +718,15 @@ mat44<T> MakeCoordinateScale(T scale, T add)
             add, add, add, T(1));
 }
 
+namespace detail {
+    template<size_t ByteSize>
+    struct DeduceUintType { using type = void; };
+    template<>
+    struct DeduceUintType<4> { using type = uint32_t; };
+    template<>
+    struct DeduceUintType<8> { using type = uint64_t; };
+}
+
 template<class T>
 T Cofactor(const mat44<T>& m, int i, int j)
 {
@@ -748,12 +757,13 @@ T Cofactor(const mat44<T>& m, int i, int j)
 
     const T det3x3 = (aei + dch + gbf) - (afh + dbi + gce);
 
-    CONSTEXPR_CONST unsigned int shift = 8 * sizeof(T) - 1;
-    const unsigned int signmask = ((i + j) & 1) << shift;
+    using UintType = typename detail::DeduceUintType<sizeof(T)>::type;
+    constexpr unsigned shift = 8 * sizeof(UintType) - 1;
+    const UintType signmask = UintType((unsigned(i) + unsigned(j)) & 1) << shift;
 
     union {
         T f;
-        int i;
+        UintType i;
     } cofactor;
 
     cofactor.f = det3x3;
