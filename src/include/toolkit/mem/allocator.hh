@@ -141,11 +141,11 @@ namespace lptk
 
         ////////////////////////////////////////////////////////////////////////////////
         // Helper for simple allocations that just alloc/free, no ctor/dtor.
-        using RawPtrWithDeleter = std::unique_ptr<char, PtrDeleter>;
+        using RawPtrWithDeleter = std::unique_ptr<int8_t, PtrDeleter>;
         inline RawPtrWithDeleter Alloc(size_t N, unsigned align, mem::Allocator* alloc)
         {
             return RawPtrWithDeleter{
-                reinterpret_cast<char*>(alloc->Alloc(N, align)),
+                reinterpret_cast<int8_t*>(alloc->Alloc(N, align)),
                 PtrDeleter{alloc}
             };
         }
