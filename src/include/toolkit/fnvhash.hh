@@ -22,7 +22,7 @@ namespace lptk
         const T prime = FNVParam<T>::prime)
     {
         while (*s)
-            hash = prime * (hash ^ *s++);
+            hash = T(static_cast<unsigned long long>(prime) * (hash ^ *s++));
         return hash;
     }
     
@@ -32,7 +32,7 @@ namespace lptk
         const T prime = FNVParam<T>::prime)
     {
         while (len-- > 0)
-            hash = prime * (hash ^ *s++);
+            hash = T(static_cast<unsigned long long>(prime) * (hash ^ *s++));
         return hash;
     }
 
@@ -42,7 +42,7 @@ namespace lptk
         const T prime = FNVParam<T>::prime)
     {
         while (*s)
-            hash = (prime * hash) ^ *s++;
+            hash = T(static_cast<unsigned long long>(prime) * hash) ^ *s++;
         return hash;
     }
     
@@ -52,7 +52,7 @@ namespace lptk
         const T prime = FNVParam<T>::prime)
     {
         while (len-- > 0)
-            hash = (prime * hash) ^ *s++;
+            hash = T(static_cast<unsigned long long>(prime) * hash) ^ *s++;
         return hash;
     }
     
