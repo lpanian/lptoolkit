@@ -91,13 +91,13 @@ inline const char* ChoosePlural(T count, const char* singular, const char* plura
 
 // TODO: move this to a range helper header
 template<class T> struct ReversedType {
-    T m_t;
-    ReversedType (T& t) : m_t(t) {}
+    T&& m_t;
+    ReversedType (T&& t) : m_t(std::forward<T>(t)) {}
     auto begin() { return std::make_reverse_iterator(m_t.end()); }
     auto end() { return std::make_reverse_iterator(m_t.begin()); }
 };
 
-template<class T> ReversedType<T> reversed(T& t) { return ReversedType<T>(t); }
+template<class T> ReversedType<T> reversed(T&& t) { return ReversedType<T>(std::forward<T>(t)); }
 
 template<typename T>
 inline void unused_arg(const T&){}
