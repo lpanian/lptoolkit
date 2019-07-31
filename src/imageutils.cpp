@@ -1128,12 +1128,12 @@ namespace lptk
             const auto cur = reader.Get<char>();
             if (cur == ' ')
                 break;
-            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf))
+            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf) - 1)
             {
                 numBuf[bufIdx++] = cur;
             }
         }
-        numBuf[ARRAY_SIZE(numBuf) - 1] = '\0';
+        numBuf[bufIdx] = '\0';
         auto const xRes = unsigned(atoi(numBuf));
        
         bufIdx = 0;
@@ -1141,12 +1141,12 @@ namespace lptk
             const auto cur = reader.Get<char>();
             if (cur == '\n')
                 break;
-            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf))
+            if (isdigit(cur) && bufIdx < ARRAY_SIZE(numBuf) - 1)
             {
                 numBuf[bufIdx++] = cur;
             }
         }
-        numBuf[ARRAY_SIZE(numBuf) - 1] = '\0';
+        numBuf[bufIdx] = '\0';
         auto const yRes = unsigned(atoi(numBuf));
 
         if (!xRes || !yRes) 
