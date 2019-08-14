@@ -597,29 +597,39 @@ inline StringType StripExtension( const StringType &str )
 }
 
 template<class StringType>
-inline bool EndsWith( const StringType &str, const char *ending )
+inline const char* EndsWith( const StringType &str, const char *ending )
 {
     auto const len = strlen(ending);
     auto const i = str.length() - len;
-    return (i >= 0 && strcmp(&str.c_str()[i], ending) == 0);
+    if (i >= 0 && strcmp(&str.c_str()[i], ending) == 0)
+        return &str.c_str()[i];
+    return nullptr;
 }
 
-inline bool EndsWith(const char* str, const char* ending)
+inline const char* EndsWith(const char* str, const char* ending)
 {
     auto const len = strlen(ending);
     auto const i = strlen(str) - len;
-    return (i >= 0 && strcmp(&str[i], ending) == 0);
+    if (i >= 0 && strcmp(&str[i], ending) == 0)
+        return &str[i];
+    return nullptr;
 }
 
 template<class StringType>
-inline bool StartsWith( const StringType &str, const char *beginning)
+inline const char* StartsWith( const StringType &str, const char *beginning)
 {
-    return StrNCaseEqual(str.c_str(), beginning, static_cast<unsigned int>(strlen(beginning)));
+    const size_t beginningLen = strlen(beginning);
+    if (StrNCaseEqual(str.c_str(), beginning, static_cast<unsigned int>(beginningLen)))
+        return str.c_str() + beginningLen;
+    return nullptr;
 }
 
-inline bool StartsWith(const char* str, const char* beginning)
+inline const char* StartsWith(const char* str, const char* beginning)
 {
-    return StrNCaseEqual(str, beginning, static_cast<unsigned int>(strlen(beginning)));
+    const size_t beginningLen = strlen(beginning);
+    if(StrNCaseEqual(str, beginning, static_cast<unsigned int>(beginningLen)))
+        return str + beginningLen;
+    return nullptr;
 }
 
 inline const char* GetExtension( const char* szStr )
