@@ -50,7 +50,7 @@ namespace lptk
     {
         float bestDist = m_max[0] - m_min[0];
         int best = 0;
-        for (int i = 1; i < 3; ++i)
+        for (int i = 1; i < 2; ++i)
         {
             const float dist = m_max[i] - m_min[i];
             if (dist > bestDist)
