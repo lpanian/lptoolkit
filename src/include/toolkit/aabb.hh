@@ -16,6 +16,7 @@ namespace lptk
         vec2<T> m_min;
         vec2<T> m_max;
         Box2() : m_min(std::numeric_limits<T>::max()), m_max(std::numeric_limits<T>::lowest()) {}
+        Box2(const vec2<T> lo, const vec2<T> hi) : m_min(lo), m_max(hi) {}
 
         void Extend(const vec2<T>& v)
         {
@@ -88,6 +89,7 @@ namespace lptk
         vec3<T> m_min;
         vec3<T> m_max;
         Box3() : m_min(std::numeric_limits<T>::max()), m_max(std::numeric_limits<T>::lowest()) {}
+        Box3(const vec3<T> lo, const vec3<T> hi) : m_min(lo), m_max(hi) {}
 
         inline void Extend(const vec3<T>& v)
         {
@@ -129,11 +131,11 @@ namespace lptk
     template<class T>
     inline int Box3<T>::MajorAxis() const
     {
-        float bestDist = m_max[0] - m_min[0];
+        T bestDist = m_max[0] - m_min[0];
         int best = 0;
         for (int i = 1; i < 3; ++i)
         {
-            const float dist = m_max[i] - m_min[i];
+            const T dist = m_max[i] - m_min[i];
             if (dist > bestDist)
             {
                 bestDist = dist;
@@ -160,7 +162,50 @@ namespace lptk
         result.m_max = Max(left.m_max, right.m_max);
         return result;
     }
+    
+    template<class T>
+    inline bool Contains(const Box2<T>& box, const vec2<T>& pt)
+    {
+        return
+            pt.x >= box.m_min.x && pt.x <= box.m_max.x &&
+            pt.y >= box.m_min.y && pt.y <= box.m_max.y;
+    }
 
+    template<class T>
+    inline bool Contains(const Box3<T>& box, const vec3<T>& pt)
+    {
+        return 
+            pt.x >= box.m_min.x && pt.x <= box.m_max.x &&
+            pt.y >= box.m_min.y && pt.y <= box.m_max.y &&
+            pt.z >= box.m_min.z && pt.z <= box.m_max.z;
+    }
+    
+    template<class T>
+    inline bool Contains(const Box2<T>& box, const Box2<T>& otherBox)
+    {
+        return Contains(box, otherBox.m_min) && Contains(box, otherBox.m_max);
+    }
+
+    template<class T>
+    inline bool Contains(const Box3<T>& box, const Box3<T>& otherBox)
+    {
+        return Contains(box, otherBox.m_min) && Contains(box, otherBox.m_max);
+    }
+
+    template<class T>
+    inline bool Overlaps(const Box3<T>& left, const Box3<T>& right)
+    {
+        for(int i = 0; i < 3; ++i)
+            if (left.m_min[i] > right.m_max[i])
+                return false;
+        
+        for (int i = 0; i < 3; ++i)
+            if (left.m_max[i] < right.m_min[i])
+                return false;
+
+        return true;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////////
     template<class Vec>
     struct BoxType { };
