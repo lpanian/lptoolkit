@@ -68,7 +68,7 @@ public:
         ~Pair() = default;
         Pair(const Pair&) = default;
         Pair& operator=(const Pair&) = default;
-        Pair(Pair&& other)
+        Pair(Pair&& other) noexcept
             : key(std::move(other.key))
             , value(std::move(other.value))
         {}

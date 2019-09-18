@@ -188,7 +188,7 @@ public:
             CopyData(other.m_data);
     }
 
-    StringImpl(StringImpl&& other)
+    StringImpl(StringImpl&& other) noexcept
         : m_data(nullptr)
     {
         m_data = other.m_data;
